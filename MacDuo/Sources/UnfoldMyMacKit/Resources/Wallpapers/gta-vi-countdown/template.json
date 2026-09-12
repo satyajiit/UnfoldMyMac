@@ -2,15 +2,15 @@
   "version": 2,
   "id": "gta-vi-countdown",
   "title": "GTA VI — Vice City Countdown",
-  "subtitle": "The wait, in cinematic colour. Official Rockstar artwork and a calendar-day countdown to the announced console release.",
+  "subtitle": "The wait, in cinematic colour. Rockstar's own promotional artwork and a calendar-day countdown to the announced console release.",
   "author": "UnfoldMyMac · artwork by Rockstar Games",
-  "credit": "Artwork by Rockstar Games",
+  "credit": "Artwork © Rockstar Games. Not affiliated or endorsed. Takedown: admin@matterwardlabs.com",
   "category": "play",
   "order": 90,
   "tags": [
     "Gaming",
     "Countdown",
-    "Official artwork"
+    "Tribute"
   ],
   "accent": 16746620,
   "background": 2168366,
@@ -91,7 +91,7 @@
     {
       "id": "credit",
       "kind": "text",
-      "content": "Official artwork © Rockstar Games",
+      "content": "Artwork © Rockstar Games · not affiliated or endorsed",
       "format": "text",
       "x": 0.065,
       "y": 0.873,
