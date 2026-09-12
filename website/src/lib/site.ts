@@ -29,7 +29,7 @@ export const navigation = [
   { href: "/story/", label: "The story" }, { href: "/blog/", label: "Field notes" },
 ];
 export const pages = [
-  { path: "/", title: "A little drama for your desktop", description: "Desktop effects that follow your MacBook lid, from an iPhone Duo-inspired frost to live wallpapers with something going on. A native Mac app by Matterward Labs." },
+  { path: "/", title: "A little more life on your Mac", description: "Live wallpapers that react to your work, lid effects that follow your MacBook including an iPhone Duo frost, and room for your own ideas. A native Mac app." },
   { path: "/features/", title: "Made for the way you open your Mac", description: "Explore lid-driven effects, custom image reveals, live wallpapers, and optional data connections in UnfoldMyMac." },
   { path: "/showcase/", title: "Pick your kind of desktop", description: "See all 13 effects and ten live wallpaper scenes, with previews rendered by UnfoldMyMac." },
   { path: "/story/", title: "I only meant to make one effect", description: "The illustrated story of UnfoldMyMac: how an iPhone Duo animation inspired a MacBook experiment, desktop effects, and a collection of live wallpapers." },

@@ -12,9 +12,18 @@ import { DownloadCTA, JsonLd } from "@/components/shared";
 import { featured, catalog } from "@/lib/catalog";
 import { pageMetadata } from "@/lib/metadata";
 import { site, release } from "@/lib/site";
+import heroStyles from "./home-hero.module.css";
 export const metadata = pageMetadata("/");
 export default function Home() {
-  return <div className="container"><section className="hero"><div className="hero-copy"><div className="availability"><span className="live-dot" />A native Mac app with a playful side</div><h1>Lid down.<br />Drama up.</h1><p>Desktop effects that follow your lid.<br className="desktop-break" /> Live wallpapers with something going on.</p><div className="hero-actions"><Button asChild><Link href="/download/"><Download size={18} aria-hidden="true" />Get UnfoldMyMac</Link></Button><Button asChild variant="secondary"><Link href="/showcase/">Explore the collection <ArrowUpRight size={17} aria-hidden="true" /></Link></Button></div><span className="hero-footnote">macOS 26+ · Open source · Made by <a href={site.company}>Matterward Labs</a></span></div><LidDemo /></section>
+  return <div className="container"><section className={heroStyles.hero} aria-labelledby="hero-heading">
+    <div className={heroStyles.intro}>
+      <div className={heroStyles.title}><p className={heroStyles.eyebrow}>UnfoldMyMac for macOS</p><h1 id="hero-heading">A little more life<br />on your Mac.</h1></div>
+      <div className={heroStyles.copy}><p>Live wallpapers that react to your work. Cover effects that follow your lid. A native Mac app, with room for your own ideas.</p>
+        <div className={heroStyles.actions}><Button asChild><Link href="/download/"><Download size={17} aria-hidden="true" />Get UnfoldMyMac</Link></Button><Button asChild variant="secondary"><Link href="/showcase/">Explore the collection <ArrowUpRight size={16} aria-hidden="true" /></Link></Button></div>
+        <span className={heroStyles.footnote}>macOS 26+ · Open source · Made by <a href={site.company}>Matterward Labs</a></span>
+      </div>
+    </div><LidDemo />
+    </section>
     <div className="feature-strip"><span><Laptop aria-hidden="true" />Follows your MacBook lid</span><span><Sparkles aria-hidden="true" />13 effects. 10 little worlds.</span><span><SlidersHorizontal aria-hidden="true" />Make it your own</span><span><Code2 aria-hidden="true" />SwiftUI, AppKit & Metal</span></div>
     <LidSetupSection />
     <RealLifeSection />

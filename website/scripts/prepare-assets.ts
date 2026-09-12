@@ -1,10 +1,12 @@
 import sharp from "sharp";
 import { mkdir, copyFile } from "node:fs/promises";
 import path from "node:path";
+import { heroCovers } from "../src/lib/hero-demo";
 const root = path.resolve("..");
 const resources = path.join(root, "MacDuo/Sources/UnfoldMyMacKit/Resources");
 await mkdir("public/media", { recursive: true });
 await mkdir("public/artwork", { recursive: true });
+await mkdir("public/artwork/thumbs", { recursive: true });
 await mkdir("public/fonts", { recursive: true });
 const assets = [
   ["Covers/Curtains.png", "curtains"], ["Covers/Peekaboo.png", "peekaboo"], ["Covers/Current.png", "current"],
@@ -14,6 +16,7 @@ const assets = [
   ["Artwork/CodexAfterDark.png", "codex-after-dark"], ["Artwork/ClaudeHasNotes.png", "claude-has-notes"],
 ];
 for (const [source, name] of assets) await sharp(path.join(resources, source)).resize({ width: 1200, withoutEnlargement: true }).webp({ quality: 85 }).toFile(`public/artwork/${name}.webp`);
+for (const [source, name] of assets.filter(([, name]) => heroCovers.some(cover => cover.id === name))) await sharp(path.join(resources, source)).resize(220, 138, { fit: "cover" }).webp({ quality: 80 }).toFile(`public/artwork/thumbs/${name}.webp`);
 await sharp(path.join(root, ".github/media/origin-comic.png")).resize({ width: 1400 }).webp({ quality: 85 }).toFile("public/media/origin-comic.webp");
 await sharp(path.join(resources, "Brand/UnfoldMyMacLogo.png")).resize(128).webp({ quality: 90 }).toFile("public/media/logo.webp");
 await sharp(path.join(resources, "Brand/UnfoldMyMacLogo.png")).resize(48).png().toFile("public/media/icon.png");

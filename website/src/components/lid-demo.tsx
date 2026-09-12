@@ -1,32 +1,49 @@
 "use client";
-import Image from "next/image";
-import { useRef, useState } from "react";
-import { RotateCcw, MoveHorizontal } from "lucide-react";
-const designs = [{ id: "peekaboo", name: "Peekaboo" }, { id: "curtains", name: "Curtains" }, { id: "reverie", name: "Reverie" }];
+import { useState } from "react";
+import { Hand, Pause, Play } from "lucide-react";
+import { HeroCoverControls } from "./hero-cover-controls";
+import { HeroMac } from "./hero-mac";
+import { useLidMotion } from "./use-lid-motion";
+import { useLidGestures } from "./use-lid-gestures";
+import { heroCovers, heroWallpapers, lidAngles } from "@/lib/hero-demo";
+import { useHeroPlayback } from "./use-hero-playback";
+import styles from "./lid-demo.module.css";
+
 export function LidDemo() {
-  const [design, setDesign] = useState("peekaboo");
-  const stage = useRef<HTMLDivElement>(null);
-  const slider = useRef<HTMLInputElement>(null);
-  const output = useRef<HTMLOutputElement>(null);
-  function move(angle: number) {
-    const opening = Math.max(0, Math.min(1, (angle - 25) / 100));
-    stage.current?.style.setProperty("--opening", String(opening));
-    stage.current?.style.setProperty("--lid-rotation", `${(125 - angle) * 0.17}deg`);
-    if (output.current) output.current.value = `${angle}°`;
-  }
-  return <div className="lid-demo">
-    <div className="demo-toolbar"><span><span className="live-dot" />Try a lid effect</span><span className="demo-toolbar-note">Made for MacBook</span></div>
-    <div className="demo-stage" ref={stage} style={{ "--opening": 0.2, "--lid-rotation": "13.6deg" } as React.CSSProperties}>
-      <div className="laptop">
-        <div className="laptop-screen"><div className="camera" /><div className="screen-content">
-          <div className="demo-desktop"><Image src="/media/demo-desktop.webp" alt="" fill sizes="(max-width: 700px) 90vw, 750px" priority /></div>
-          <div className="effect-half effect-left"><Image src={`/artwork/${design}.webp`} alt="" fill sizes="(max-width: 700px) 90vw, 750px" priority /></div>
-          <div className="effect-half effect-right"><Image src={`/artwork/${design}.webp`} alt="" fill sizes="(max-width: 700px) 90vw, 750px" priority /></div>
-        </div><span className="laptop-wordmark">MacBook</span></div><div className="laptop-base"><span /></div>
+  const [coverIndex, setCoverIndex] = useState(0);
+  const cover = heroCovers[coverIndex];
+  const { viewport, videos, index: wallpaperIndex, playing, ready, failed, select, toggle, onReady, onError } = useHeroPlayback();
+  const wallpaper = heroWallpapers[wallpaperIndex];
+  const { lid, left, right, glass, surface, slider, output, move, getAngle } = useLidMotion(coverIndex);
+  const { gestureEvents, holdEvents } = useLidGestures(move, getAngle);
+
+  return (
+    <div className={`lid-demo ${styles.demo}`} aria-label="Interactive Mac preview" data-wallpaper={wallpaper.id} data-effect={cover.id} data-playing={playing}>
+      <div className={styles.workspace}>
+        <div className={styles.preview}>
+          <div className={styles.nowShowing}>
+            <div><span className={styles.wallpaperLabel}>Live wallpaper</span><span className={styles.wallpaperName}>{wallpaper.name}</span></div>
+            <button type="button" className={styles.playbackButton} onClick={toggle} aria-label={`${playing ? "Pause" : "Play"} wallpaper loop`}>
+              {playing ? <Pause size={15} aria-hidden="true" /> : <Play size={15} aria-hidden="true" />}<span>{playing ? "Pause" : "Play"}</span>
+            </button>
+          </div>
+          <div className={styles.viewport} ref={viewport}>
+            <div className={styles.gestureSurface} ref={surface} role="slider" tabIndex={0} aria-label="MacBook lid gesture" aria-valuemin={lidAngles.min} aria-valuemax={lidAngles.max} aria-valuenow={lidAngles.max} aria-valuetext="125 degrees open" aria-orientation="vertical" aria-describedby="gesture-hint" {...gestureEvents}>
+              <HeroMac cover={cover} wallpaperIndex={wallpaperIndex} ready={ready} videos={videos} lid={lid} left={left} right={right} glass={glass} onReady={onReady} onError={onError} />
+            </div>
+          </div>
+          <p id="gesture-hint" className={styles.gestureHint}><Hand size={13} aria-hidden="true" />Drag or swipe down to close. Up to open.</p>
+          <div className={styles.wallpaperPicker} role="group" aria-label="Preview wallpapers">
+            {heroWallpapers.map((item, index) => <button key={item.id} type="button" aria-label={`Show ${item.label} wallpaper`} aria-pressed={wallpaperIndex === index} onClick={() => select(index)}>
+              <span className={styles.sceneNumber} aria-hidden="true">0{index + 1}</span>{item.label}<span className={styles.progress} aria-hidden="true" />
+            </button>)}
+          </div>
+          <p className={styles.sceneDetail}>{wallpaper.detail}</p>
+          {failed && <p role="status" className={styles.mediaError}>The recording couldn’t play. Its still preview is shown. Press play to try again.</p>}
+        </div>
+        <HeroCoverControls selected={coverIndex} onSelect={setCoverIndex} onAngle={move} slider={slider} output={output} holdEvents={holdEvents} />
       </div>
+      <p id="simulation-note" className={styles.caption}>Native wallpaper recordings with sample data. Lid movement and covers are an interactive illustration.</p>
     </div>
-    <div className="demo-controls"><div className="design-picker" role="group" aria-label="Demo effect">{designs.map(item => <button type="button" aria-pressed={design === item.id} key={item.id} onClick={() => setDesign(item.id)}>{item.name}</button>)}</div>
-      <div className="angle-control"><label htmlFor="lid-angle"><MoveHorizontal size={17} aria-hidden="true" /><span>Drag to open</span></label><input id="lid-angle" ref={slider} type="range" min="25" max="125" defaultValue="45" onInput={event => move(Number(event.currentTarget.value))} aria-describedby="simulation-note" /><output htmlFor="lid-angle" ref={output}>45°</output><button type="button" className="reset-demo" aria-label="Reset lid angle" onClick={() => { if (slider.current) slider.current.value = "45"; move(45); }}><RotateCcw size={15} /></button></div>
-    </div><p id="simulation-note" className="demo-disclaimer">Interactive illustration using app artwork. Real app recordings are in the showcase.</p>
-  </div>;
+  );
 }

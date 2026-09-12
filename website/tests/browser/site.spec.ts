@@ -34,15 +34,15 @@ test("appearance persists and follows system when selected", async ({ page }) =>
 });
 test("lid responds to keyboard, design choice, and reset", async ({ page }) => {
   await page.goto("/");
-  const slider = page.getByRole("slider", { name: "Drag to open" });
+  const slider = page.getByRole("slider", { name: "Lid angle" });
   await slider.focus();
-  await slider.press("ArrowRight");
-  await expect(slider).toHaveValue("46");
-  await expect(page.locator("output")).toHaveText("46°");
+  await slider.press("ArrowLeft");
+  await expect(slider).toHaveValue("124");
+  await expect(page.locator("output")).toHaveText("124°");
   await page.getByRole("button", { name: "Curtains", exact: true }).click();
   await expect(page.getByRole("button", { name: "Curtains", exact: true })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Reset lid angle" }).click();
-  await expect(slider).toHaveValue("45");
+  await expect(slider).toHaveValue("125");
 });
 test("showcase filters and stops offscreen video", async ({ page }) => {
   await page.goto("/showcase/");
@@ -67,7 +67,7 @@ test("reduced motion starts with still media and allows manual lid input", async
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   expect(await page.locator("video").evaluateAll(videos => videos.every(video => video instanceof HTMLVideoElement && video.paused && !video.autoplay))).toBe(true);
-  const slider = page.getByRole("slider", { name: "Drag to open" });
+  const slider = page.getByRole("slider", { name: "Lid angle" });
   await slider.focus(); await slider.press("End");
   await expect(slider).toHaveValue("125");
 });
