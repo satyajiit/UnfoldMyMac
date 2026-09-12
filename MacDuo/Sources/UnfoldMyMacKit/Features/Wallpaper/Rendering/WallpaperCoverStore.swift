@@ -2,8 +2,8 @@ import AppKit
 import Observation
 import UnfoldMyMacCore
 
-/// Gallery covers resolved off the launch path (P17): memory, then the bundled cover, then the disk cache, then one
-/// offscreen render at a time with a yield between renders so the window and its events come first.
+/// Gallery covers resolved off the launch path (P17): memory, then the template folder's `cover.png`, then the disk
+/// cache, then one offscreen render at a time with a yield between renders so the window and its events come first.
 @MainActor @Observable final class WallpaperCoverStore {
     static let cacheVersion = "cover-v1"
     static let defaultDirectory = URL.cachesDirectory.appendingPathComponent(AppIdentity.bundleIdentifier + "/WallpaperCovers", isDirectory: true)
@@ -12,7 +12,7 @@ import UnfoldMyMacCore
     @ObservationIgnored private(set) var rendered = 0
     @ObservationIgnored private let factory: WallpaperPipelineFactory?
     @ObservationIgnored private let directory: URL
-    @ObservationIgnored private var queue: [WallpaperTemplate] = []
+    @ObservationIgnored private var queue: [(template: WallpaperTemplate, assets: WallpaperAssetResolver)] = []
     @ObservationIgnored private var worker: Task<Void, Never>?
 
     init(factory: WallpaperPipelineFactory?, directory: URL = WallpaperCoverStore.defaultDirectory) {
@@ -26,26 +26,28 @@ import UnfoldMyMacCore
     func cacheURL(for template: WallpaperTemplate) -> URL { directory.appendingPathComponent(Self.cacheKey(for: template) + ".png") }
 
     /// Queues every template whose cover is not in memory; nothing is read or rendered before the caller returns.
-    func request(_ templates: [WallpaperTemplate]) {
-        for template in templates where images[template.id] == nil && !queue.contains(where: { $0.id == template.id }) { queue.append(template) }
+    func request(_ templates: [WallpaperTemplate], assets: (String) -> WallpaperAssetResolver = { _ in .shared }) {
+        for template in templates where images[template.id] == nil && !queue.contains(where: { $0.template.id == template.id }) {
+            queue.append((template, assets(template.id)))
+        }
         guard worker == nil, !queue.isEmpty else { return }
         worker = Task { [weak self] in
             await self?.drain()
             self?.worker = nil
         }
     }
-    func invalidate(_ id: String) { images[id] = nil; queue.removeAll { $0.id == id } }
+    func invalidate(_ id: String) { images[id] = nil; queue.removeAll { $0.template.id == id } }
     func cancel() { worker?.cancel(); worker = nil; queue.removeAll() }
 
     private func drain() async {
         while !queue.isEmpty, !Task.isCancelled {
             await Task.yield()
-            let template = queue.removeFirst()
+            let (template, assets) = queue.removeFirst()
             guard images[template.id] == nil else { continue }
-            if let url = template.coverImage.flatMap(BundleResources.wallpaperCover), let image = NSImage(contentsOf: url) { images[template.id] = image; continue }
+            if let url = assets.cover(for: template), let image = NSImage(contentsOf: url) { images[template.id] = image; continue }
             let cached = cacheURL(for: template)
             if let image = NSImage(contentsOf: cached) { images[template.id] = image; continue }
-            guard let factory, let image = try? WallpaperCoverRenderer.image(pipeline: factory.make(template)) else { continue }
+            guard let factory, let image = try? WallpaperCoverRenderer.image(pipeline: factory.make(template, assets: assets)) else { continue }
             rendered += 1
             images[template.id] = image
             try? write(image, to: cached)

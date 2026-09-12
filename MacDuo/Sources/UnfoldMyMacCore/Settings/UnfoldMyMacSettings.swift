@@ -44,7 +44,9 @@ public struct UnfoldMyMacSettings: Codable, Equatable, Sendable {
         activation = activation.isFinite ? activation.clamped(to: EffectTuning.activationRange).rounded() : EffectMath.defaultActivation
         completionFraction = completionFraction.isFinite ? completionFraction.clamped(to: EffectTuning.completionRange) : EffectTuning.defaultCompletionFraction
         for (key, value) in parameters {
-            parameters[key] = .init(strength: value.strength.isFinite ? min(1, max(0, value.strength)) : 1, reveal: value.reveal)
+            var next = value
+            next.strength = value.strength.isFinite ? min(1, max(0, value.strength)) : 1
+            parameters[key] = next
         }
     }
 }

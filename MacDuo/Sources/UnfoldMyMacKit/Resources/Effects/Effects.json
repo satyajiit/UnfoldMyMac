@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "default": "frost",
+  "fallback": "veil",
+  "reduceTransparencyFallback": "fade",
+  "effects": [
+    {
+      "id": "frost", "title": "Frost", "subtitle": "A softer close.",
+      "detail": "Your desktop stays in place as a soft blur deepens toward the upper edge. Inspired by the iPhone Duo transition.",
+      "symbol": "snowflake", "category": "glass", "tags": ["Glass", "Blur", "Calm"],
+      "cover": "Covers/Frost", "renderer": "metal-capture:frost", "renderingLabel": "Live capture",
+      "capabilities": {"requiresCapture": true},
+      "parameters": [{"key": "strength", "title": "Intensity", "kind": "slider", "range": [0, 1], "step": 0.01, "format": "percent", "default": 1}]
+    },
+    {
+      "id": "veil", "title": "Veil", "subtitle": "A quiet layer of glass.",
+      "detail": "A translucent native material settles over your desktop, with a soft neutral tint. No Screen Recording needed.",
+      "symbol": "square.stack.3d.up", "category": "glass", "tags": ["Glass", "Minimal", "Calm"],
+      "cover": "Covers/Veil", "renderer": "native:veil", "renderingLabel": "Native",
+      "parameters": [{"key": "strength", "title": "Intensity", "kind": "slider", "range": [0, 1], "step": 0.01, "format": "percent", "default": 1}]
+    },
+    {
+      "id": "fade", "title": "Fade", "subtitle": "Ease into the dark.",
+      "detail": "A smooth shade follows the lid toward a gentle blackout. No Screen Recording needed.",
+      "symbol": "moon", "category": "glass", "tags": ["Minimal", "Dark", "Calm"],
+      "cover": "Covers/Fade", "renderer": "native:fade", "renderingLabel": "Native",
+      "parameters": [{"key": "strength", "title": "Intensity", "kind": "slider", "range": [0, 1], "step": 0.01, "format": "percent", "default": 1}]
+    },
+    {
+      "id": "curtains", "title": "Curtains", "subtitle": "Every close deserves a curtain call.",
+      "detail": "Garnet velvet draws in from both sides. Sculpted folds catch the stage lights as the curtains meet, then gather away when you open the lid.",
+      "symbol": "theatermasks", "category": "motion", "tags": ["3D", "Theatre", "Cinematic"],
+      "cover": "Covers/Curtains", "renderer": "metal-pipeline:curtains", "renderingLabel": "3D velvet",
+      "parameters": [{"key": "strength", "title": "Fold depth", "kind": "slider", "range": [0, 1], "step": 0.01, "format": "percent", "default": 1}]
+    },
+    {
+      "id": "current", "title": "Current", "subtitle": "A little life in every opening.",
+      "detail": "Luminous mint and coral ribbons flow around a widening opening. Drifting sparks and soft waves keep the scene alive while your lid holds still. Reduce Motion stills the flow.",
+      "symbol": "water.waves", "category": "motion", "tags": ["Animated", "Abstract", "Energetic", "Neon"],
+      "cover": "Covers/Current", "renderer": "metal-pipeline:current", "renderingLabel": "Living motion",
+      "capabilities": {"continuousMotion": true},
+      "parameters": [{"key": "strength", "title": "Flow energy", "kind": "slider", "range": [0, 1], "step": 0.01, "format": "percent", "default": 1}]
+    },
+    {
+      "id": "peekaboo", "title": "Peekaboo", "subtitle": "Your desktop has an audience.",
+      "detail": "Two glossy, mischievous shutters peek in from the edges. Their googly eyes look around and blink as the soft 3D faces breathe. Open the lid and they slide away. Reduce Motion stills the faces.",
+      "symbol": "eyes", "category": "motion", "tags": ["3D", "Animated", "Humor", "Characters", "Playful"],
+      "cover": "Covers/Peekaboo", "renderer": "metal-pipeline:peekaboo", "renderingLabel": "3D characters",
+      "capabilities": {"continuousMotion": true},
+      "parameters": [{"key": "strength", "title": "Playfulness", "kind": "slider", "range": [0, 1], "step": 0.01, "format": "percent", "default": 1}]
+    }
+  ]
+}

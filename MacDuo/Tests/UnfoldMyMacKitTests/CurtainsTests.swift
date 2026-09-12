@@ -101,7 +101,7 @@ import UnfoldMyMacCore
 
 @Test @MainActor func curtainsRegistrationAndPersistence() throws {
     let registry = EffectRegistry.builtIn()
-    let entry = registry.entry(for: .curtains)
+    let entry = try #require(registry.entry(for: .curtains))
     #expect(entry.descriptor.id == .curtains)
     #expect(!entry.descriptor.requiresCapture)
     #expect(entry.descriptor.parameterTitle == "Fold depth")

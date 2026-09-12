@@ -8,7 +8,9 @@ import UnfoldMyMacCore
 @Test @MainActor func catalogHasCoversCreditsAndSearchableUnifiedImageCategory() throws {
     let registry = EffectRegistry.builtIn()
     #expect(registry.catalogError == nil)
-    #expect(registry.descriptors.count == 13)
+    let manifest = try EffectAssets.manifest(), artworks = try EffectAssets.artworkEntries()
+    #expect(registry.descriptors.count == manifest.effects.count + artworks.count)
+    #expect(registry.diagnostics.isEmpty, "Every catalog entry names a renderer this build has")
     for descriptor in registry.descriptors {
         #expect(!descriptor.author.isEmpty && !descriptor.tags.isEmpty)
         let url = try #require(descriptor.coverURL)
@@ -29,7 +31,7 @@ import UnfoldMyMacCore
     #expect(throws: LibraryError.self) { try registry.register(registry.entries[0]) }
 }
 
-private func imageFixture(in directory: URL) throws -> URL {
+func imageFixture(in directory: URL) throws -> URL {
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     let url = directory.appendingPathComponent("My test art.png")
     let context = try #require(CGContext(data: nil, width: 6, height: 4, bitsPerComponent: 8, bytesPerRow: 24,
@@ -65,18 +67,19 @@ private func imageFixture(in directory: URL) throws -> URL {
     #expect(reloaded.definitions[0].descriptor.matches(query: "Test Artist", tag: "Imported"))
     let registry = EffectRegistry.builtIn()
     try registry.register(.artwork(reloaded.definitions[0]))
-    let renderer = try registry.entry(for: artwork.id).makeRenderer(try TestGPU.context())
+    let renderer = try #require(registry.entry(for: artwork.id)).makeRenderer(try TestGPU.context())
     #expect(!(renderer is any DesktopFrameSink)); renderer.stop()
     var settings = UnfoldMyMacSettings(); settings.effect = artwork.id
     settings.parameters[artwork.id.rawValue] = .init(strength: 0.42, reveal: .straight)
     settings.sanitize()
     let decoded = try JSONDecoder().decode(UnfoldMyMacSettings.self, from: JSONEncoder().encode(settings))
     #expect(decoded.parameters(for: artwork.id).reveal == .straight)
-    #expect(registry.entry(for: decoded.effect).descriptor.id == artwork.id)
+    #expect(registry.entry(for: decoded.effect)?.descriptor.id == artwork.id)
     try reloaded.remove(artwork.id); registry.removeImported(artwork.id)
     #expect(ArtworkLibrary(directory: library.directory).records.isEmpty)
     #expect(!FileManager.default.fileExists(atPath: artwork.imageURL.path))
-    #expect(registry.entry(for: artwork.id).descriptor.id == .frost)
+    let resolved = registry.resolve(artwork.id)
+    #expect(resolved.substituted && resolved.entry.descriptor.id == .veil, "A removed design resolves to the non-capture fallback, never to Frost")
 }
 
 @Test @MainActor func importsRejectInvalidAndOversizedFilesWithoutChangingTheLibrary() async throws {

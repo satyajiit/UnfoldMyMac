@@ -48,7 +48,7 @@ import UnfoldMyMacCore
                 peekaboo.encode(command: $0, pass: $1, size: CGSize(width: width, height: height), context: pose.context)
             }.sha256
         }
-        for artwork in try LibraryAssets.artworks() {
+        for artwork in try EffectAssets.artworks() {
             let art = try ArtRevealPipeline(artwork: artwork, gpu: try TestGPU.context())
             for reveal in ArtRevealMotion.allCases {
                 let context = EffectContext(closure: 0.5, parameters: .init(strength: 1, reveal: reveal))

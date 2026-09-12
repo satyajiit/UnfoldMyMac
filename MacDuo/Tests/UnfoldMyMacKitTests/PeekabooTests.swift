@@ -57,7 +57,7 @@ import UnfoldMyMacCore
     let calm = try harness.render(.init(closure: 0.72, parameters: .init(strength: 0))).pixels
     #expect(try harness.render(.init(closure: 0.72, parameters: .init(strength: 0), time: 100)).pixels == calm)
     let id = EffectID(rawValue: "peekaboo")
-    let entry = EffectRegistry.builtIn().entry(for: id)
+    let entry = try #require(EffectRegistry.builtIn().entry(for: id))
     #expect(entry.descriptor.id == id && entry.descriptor.category == .motion)
     #expect(entry.descriptor.hasContinuousMotion && !entry.descriptor.requiresCapture)
     let renderer = try entry.makeRenderer(try TestGPU.context())

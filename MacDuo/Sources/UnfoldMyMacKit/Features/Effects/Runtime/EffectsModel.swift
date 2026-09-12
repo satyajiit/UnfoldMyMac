@@ -21,7 +21,7 @@ import UnfoldMyMacCore
         let registry = dependencies.registry, artworkLibrary = dependencies.artworkLibrary
         self.registry = registry; self.artworkLibrary = artworkLibrary
         preferences = EffectPreferences(store: dependencies.preferences, registry: registry, artworkLoadFailed: artworkLibrary?.loadError != nil, scheduler: dependencies.persistence)
-        library = EffectLibraryViewModel(message: artworkLibrary?.loadError ?? registry.catalogError)
+        library = EffectLibraryViewModel(message: artworkLibrary?.loadError ?? registry.catalogError ?? preferences.substitutionNotice)
         permissions = PermissionsController(capturePermission: dependencies.capturePermission, workspace: dependencies.workspace)
         importer = ArtworkImportController(library: artworkLibrary, registry: registry, filePicker: dependencies.filePicker)
         runtime = EffectRuntime(session: dependencies.session, registry: registry, preferences: preferences, environment: dependencies.environment,
@@ -34,7 +34,7 @@ import UnfoldMyMacCore
     var settings: UnfoldMyMacSettings { preferences.settings }
     var parameters: EffectParameters { preferences.parameters }
     var completionAngle: Double { preferences.completionAngle }
-    var selectedEffect: EffectDescriptor { registry.entry(for: settings.effect).descriptor }
+    var selectedEffect: EffectDescriptor { registry.resolve(settings.effect).entry.descriptor }
     /// Trying an effect never overwrites the user's chosen design or its parameters.
     var activeEffect: EffectDescriptor { runtime.activeEffect }
     var needsCapture: Bool { activeEffect.requiresCapture && !reduceTransparency }
@@ -74,12 +74,14 @@ import UnfoldMyMacCore
 
     func setEnabled(_ value: Bool) { permissions.clear(); runtime.setEnabled(value) }
     func selectEffect(_ id: EffectID) {
+        guard registry.entry(for: id) != nil else { library.message = "‘\(id.rawValue)’ is not installed."; return }
         if isPreviewing { stopPreview() }
-        guard preferences.select(registry.entry(for: id).descriptor.id) else { return }
+        guard preferences.select(id) else { return }
         permissions.clear(); runtime.effectChanged()
     }
     func setStrength(_ strength: Double) { preferences.setStrength(strength) }
     func setReveal(_ reveal: ArtRevealMotion) { preferences.setReveal(reveal) }
+    func setParameter(_ key: String, _ value: EffectParameterValue) { preferences.setParameter(key, value, spec: selectedEffect.parameter(key)) }
     func setActivation(_ angle: Double) { preferences.setActivation(angle); runtime.tick() }
     func setCompletionFraction(_ fraction: Double) { preferences.setCompletionFraction(fraction) }
     func anchorHere() { if sensorAvailable, let lidAngle { setActivation(lidAngle) } }
@@ -124,10 +126,14 @@ import UnfoldMyMacCore
     @discardableResult func removeArtwork(_ id: EffectID) -> Bool {
         do {
             guard try importer.removeFromLibrary(id) else { return false }
+            let removed = registry.title(for: id)
             if previewEffectID == id { stopPreview() }
-            if settings.effect == id { selectEffect(.reverie) }
-            registry.removeImported(id); preferences.removeParameters(for: id)
             library.message = nil
+            if settings.effect == id {
+                selectEffect(registry.fallback)
+                library.message = "\(removed) was removed. \(registry.title(for: registry.fallback)) is selected instead."
+            }
+            registry.removeImported(id); preferences.removeParameters(for: id)
             return true
         } catch { library.message = error.localizedDescription; return false }
     }

@@ -109,7 +109,7 @@ private actor SlowWallpaperProvider: WallpaperDataProvider {
     let model = WallpaperModel(preferences: UserDefaultsPreferencesStore(defaults: defaults), environment: FakeSystemEnvironment(), displays: FakeDisplay(), surfaces: DesktopSurfaceRegistry(), gpu: try TestGPU.context(), coverDirectory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString))
     model.start(); model.setBrowsing(true)
     model.setPreviewVisible(true)
-    #expect(model.templates.count == 10 && !model.enabled)
+    #expect(model.templates.count == bundledTemplateCount() && !model.enabled)
     #expect(model.previewFPS == 60)
     model.setPreviewVisible(false)
     #expect(model.previewFPS == 0 && model.playback.shouldSample)

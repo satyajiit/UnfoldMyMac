@@ -10,7 +10,7 @@ private func temporaryDirectory() -> URL { FileManager.default.temporaryDirector
 
 @Test func connectorRegistryCoversEverySetupKindAndValidatesConfigurations() throws {
     let registry = WallpaperConnectorRegistry.standard
-    for kind in WallpaperSetupRequirement.Kind.allCases { #expect(registry.connector(kind.rawValue) != nil, Comment(rawValue: kind.rawValue)) }
+    for kind in WallpaperConnectorID.bundled { #expect(registry.connector(kind.rawValue) != nil, Comment(rawValue: kind.rawValue)) }
     #expect(Set(registry.connectors.map(\.id)).count == registry.connectors.count)
     let github = try #require(registry.connector("github-profile"))
     #expect(!github.validate(.init(enabled: true)) && !github.validate(.init(enabled: false, username: "alice")))
@@ -64,22 +64,24 @@ private func temporaryDirectory() -> URL { FileManager.default.temporaryDirector
 @Test @MainActor func coverStoreKeysAreStableAndCachedCoversSkipRendering() async throws {
     let directory = temporaryDirectory()
     defer { try? FileManager.default.removeItem(at: directory) }
-    var template = try #require(bundledTemplates().first { $0.id == "pulse" })
-    template.id = "cover-test"; template.coverImage = nil
+    let shaders = WallpaperShaderCatalog()
+    let registry = try WallpaperTemplateRegistry(shaders: shaders, loadUserTemplates: false)
+    var template = try #require(registry.templates.first { $0.id == "pulse" })
+    template.id = "cover-test"
     #expect(WallpaperCoverStore.cacheKey(for: template) == WallpaperCoverStore.cacheKey(for: template))
     var edited = template; edited.accent ^= 0xFF
     #expect(WallpaperCoverStore.cacheKey(for: edited) != WallpaperCoverStore.cacheKey(for: template), "Any content change produces a new cover")
-    let factory = WallpaperPipelineFactory(gpu: try TestGPU.context(), shaders: WallpaperShaderCatalog())
+    let factory = WallpaperPipelineFactory(gpu: try TestGPU.context(), shaders: shaders)
     let store = WallpaperCoverStore(factory: factory, directory: directory)
     store.request([template, template])
     #expect(store.images.isEmpty && store.rendered == 0, "Nothing is read or rendered before the caller returns")
     try await settle { store.images[template.id] != nil }
     #expect(store.rendered == 1 && FileManager.default.fileExists(atPath: store.cacheURL(for: template).path))
     let warm = WallpaperCoverStore(factory: factory, directory: directory)
-    let bundled = try #require(bundledTemplates().first { $0.coverImage != nil })
-    warm.request([template, bundled])
+    let bundled = try #require(registry.templates.first { registry.assets(for: $0.id).cover(for: $0) != nil })
+    warm.request([template, bundled], assets: registry.assets(for:))
     try await settle { warm.images.count == 2 }
-    #expect(warm.rendered == 0, "Disk-cached and bundled covers never render")
+    #expect(warm.rendered == 0, "Disk-cached and folder covers never render")
     warm.invalidate(template.id)
     #expect(warm.images[template.id] == nil)
 }

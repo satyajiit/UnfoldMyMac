@@ -10,7 +10,7 @@ import Metal
     let policy: Policy
     private let device: MTLDevice
     private var libraries: [String: MTLLibrary] = [:]
-    private var sources: [String: String] = [:]
+    private var sources: [ShaderSource: String] = [:]
     private var keys: [ShaderModule: String] = [:]
     private(set) var compiledFromSource = 0
     private(set) var loadedPrecompiled = 0
@@ -36,7 +36,7 @@ import Metal
     }
     /// The text the unit compiles: its resources joined in order. `script/compile_shaders.sh` builds the same text.
     func source(for module: ShaderModule) throws -> String {
-        try module.resources.map { try source(named: $0, family: module.family) }.joined(separator: "\n")
+        try module.resources.map { try source(of: $0) }.joined(separator: "\n")
     }
     /// SHA-256 of the compiled text plus the math mode; the precompiled file name.
     func unitKey(for module: ShaderModule) throws -> String {
@@ -56,11 +56,10 @@ import Metal
         do { return try device.makeLibrary(URL: url) }
         catch { precompiledProblems[module.id] = error.localizedDescription; return nil }
     }
-    private func source(named name: String, family: BundleResources.ShaderFamily) throws -> String {
-        let path = "\(family.rawValue)/\(name)"
-        if let text = sources[path] { return text }
-        let text = try BundleResources.shaderSource(name, family: family)
-        sources[path] = text
+    private func source(of resource: ShaderSource) throws -> String {
+        if let text = sources[resource] { return text }
+        let text = try resource.load()
+        sources[resource] = text
         return text
     }
 }

@@ -7,13 +7,19 @@ import UnfoldMyMacCore
     private(set) var settings: UnfoldMyMacSettings
     @ObservationIgnored private let store: any PreferencesStore
     @ObservationIgnored private let scheduler: PersistenceScheduler
+    /// Set when the saved effect is not installed and the registry's fallback stands in for it.
+    private(set) var substitutionNotice: String?
 
     /// Loads the settings, resolves an unknown chosen effect and drops parameters for effects that no longer exist,
     /// unless the artwork index failed to load and their owners may come back once it is repaired.
     init(store: any PreferencesStore, registry: EffectRegistry, artworkLoadFailed: Bool, scheduler: PersistenceScheduler) {
         self.store = store; self.scheduler = scheduler
         var loaded = store.load(UnfoldMyMacSettings.key)
-        loaded.effect = registry.entry(for: loaded.effect).descriptor.id
+        let resolved = registry.resolve(loaded.effect)
+        if resolved.substituted {
+            substitutionNotice = "‘\(loaded.effect.rawValue)’ is not installed. \(resolved.entry.descriptor.title) is selected instead."
+            loaded.effect = resolved.entry.descriptor.id
+        }
         if !artworkLoadFailed, loaded.reconcile(effects: registry.descriptors.map(\.id)) { store.save(loaded, for: UnfoldMyMacSettings.key) }
         settings = loaded
     }
@@ -34,6 +40,13 @@ import UnfoldMyMacCore
     func setReveal(_ reveal: ArtRevealMotion) {
         var next = parameters; next.reveal = reveal
         settings.parameters[settings.effect.rawValue] = next; save()
+    }
+    /// Any declared parameter: the spec clamps it, and sliders persist through the scheduler like `setStrength`.
+    func setParameter(_ key: String, _ value: EffectParameterValue, spec: EffectParameterSpec?) {
+        var next = parameters
+        next[key] = spec?.clamp(value) ?? value
+        settings.parameters[settings.effect.rawValue] = next
+        if spec?.kind == .slider { saveLater() } else { save() }
     }
     func setActivation(_ angle: Double) {
         guard angle.isFinite else { return }

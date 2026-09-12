@@ -1,0 +1,134 @@
+{
+  "version": 2,
+  "author": "UnfoldMyMac",
+  "category": "ai",
+  "order": 20,
+  "reactiveScale": 1,
+  "id": "claude-current",
+  "title": "Claude Current",
+  "subtitle": "A little desk companion for big ideas. Sessions, tokens, and signs of life.",
+  "tags": [
+    "3D",
+    "Claude Code",
+    "Live counters"
+  ],
+  "accent": 15176035,
+  "background": 2103575,
+  "reactiveMetric": "claude.energy",
+  "layers": [
+    {
+      "id": "eyebrow",
+      "kind": "text",
+      "content": "CLAUDE / CURRENT",
+      "binding": null,
+      "format": "text",
+      "x": 0.075,
+      "y": 0.12,
+      "width": 0.5,
+      "size": 0.016,
+      "color": 16767941,
+      "rotation": 0
+    },
+    {
+      "id": "headline",
+      "kind": "text",
+      "content": "READY WHEN YOU ARE.",
+      "binding": "claude.status",
+      "format": "text",
+      "x": 0.075,
+      "y": 0.28,
+      "width": 0.43,
+      "size": 0.056,
+      "color": 16774117,
+      "rotation": 0
+    },
+    {
+      "id": "sessions-label",
+      "kind": "text",
+      "content": "LOCAL SESSIONS",
+      "binding": null,
+      "format": "text",
+      "x": 0.08,
+      "y": 0.65,
+      "width": 0.23,
+      "size": 0.013,
+      "color": 14991016,
+      "rotation": 0
+    },
+    {
+      "id": "sessions",
+      "kind": "metric",
+      "content": "—",
+      "binding": "claude.sessions",
+      "format": "integer",
+      "x": 0.075,
+      "y": 0.7,
+      "width": 0.2,
+      "size": 0.045,
+      "color": 16774117,
+      "rotation": 0
+    },
+    {
+      "id": "tokens-label",
+      "kind": "text",
+      "content": "TOKENS · INCL. CACHE",
+      "binding": null,
+      "format": "text",
+      "x": 0.3,
+      "y": 0.65,
+      "width": 0.3,
+      "size": 0.013,
+      "color": 14991016,
+      "rotation": 0
+    },
+    {
+      "id": "tokens",
+      "kind": "metric",
+      "content": "—",
+      "binding": "claude.tokens",
+      "format": "compact",
+      "x": 0.295,
+      "y": 0.7,
+      "width": 0.26,
+      "size": 0.045,
+      "color": 16774117,
+      "rotation": 0
+    },
+    {
+      "id": "sticker",
+      "kind": "sticker",
+      "content": "LET THEM COOK.",
+      "binding": null,
+      "format": "text",
+      "x": 0.65,
+      "y": 0.79,
+      "width": 0.31,
+      "size": 0.016,
+      "color": 16505251,
+      "rotation": -6
+    },
+    {
+      "id": "footer",
+      "kind": "text",
+      "content": "LOCAL DATA. COSMIC IDEAS.",
+      "binding": "claude.scope",
+      "format": "text",
+      "x": 0.08,
+      "y": 0.895,
+      "width": 0.7,
+      "size": 0.012,
+      "color": 14991016,
+      "rotation": 0
+    }
+  ],
+  "setup": [
+    {
+      "kind": "claude-code",
+      "required": true
+    }
+  ],
+  "scene": {
+    "source": "Scene.metal",
+    "fragment": "claudeFragment"
+  }
+}

@@ -34,7 +34,7 @@ enum EffectSessionError: LocalizedError, Equatable {
     var hasRetainedRenderer: Bool { retained != nil }
 
     func start(effect: EffectID, screen: NSScreen, reduceTransparency: Bool) {
-        let actual = reduceTransparency ? EffectID.fade : effect
+        let actual = reduceTransparency ? registry.reduceTransparencyFallback : effect
         let display = displays.displayID(of: screen) ?? 0
         let nextKey = "\(actual.rawValue):\(display):\(screen.frame):\(screen.backingScaleFactor)"
         guard nextKey != key else { return }
@@ -43,7 +43,7 @@ enum EffectSessionError: LocalizedError, Equatable {
         if countedEffect != actual { countedEffect = actual; captureFrames = 0 }
         let token = generation
         do {
-            let entry = registry.entry(for: actual)
+            let entry = registry.resolve(actual).entry
             let next: any EffectRenderer
             if let retained, retained.key == nextKey { next = retained.renderer; self.retained = nil } else { next = try entry.makeRenderer(gpu) }
             next.prepare(size: screen.frame.size, scale: screen.backingScaleFactor)

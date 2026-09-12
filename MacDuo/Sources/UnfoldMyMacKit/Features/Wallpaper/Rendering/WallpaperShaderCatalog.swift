@@ -1,37 +1,32 @@
+import Foundation
 import UnfoldMyMacCore
 
-/// Shader registrations are independent of templates, views, data providers and the GPU.
+/// Scene shaders by id. Every bundled scene registers from its template folder; imported templates may only name
+/// a scene that is already here. Independent of views, data providers and the GPU.
 @MainActor final class WallpaperShaderCatalog {
-    struct Shader { let resource: String; let fragment: String; let dependencies: [String] }
-    private var shaders: [String: Shader]
-    init() { shaders = Self.bundled }
-    /// Every scene shader the app ships, keyed by the id templates name.
-    static let bundled: [String: Shader] = [
-        "vice-countdown": Shader(resource: "ViceCountdown", fragment: "viceCountdownFragment", dependencies: []),
-        "aurora-observatory": Shader(resource: "AuroraObservatory", fragment: "auroraObservatoryFragment", dependencies: []),
-        "pulse": Shader(resource: "Pulse", fragment: "pulseFragment", dependencies: []),
-        "claude": Shader(resource: "Claude", fragment: "claudeFragment", dependencies: []),
-        "daydream": Shader(resource: "Daydream", fragment: "daydreamFragment", dependencies: []),
-        "codex-foundry": Shader(resource: "CodexFoundry", fragment: "codexFoundryFragment", dependencies: []),
-        "grok-horizon": Shader(resource: "GrokHorizon", fragment: "grokHorizonFragment", dependencies: []),
-        "github-city": Shader(resource: "GitHubCity", fragment: "githubCityFragment", dependencies: []),
-        "codex-control": Shader(resource: "CodexControl", fragment: "codexControlFragment", dependencies: []),
-        "lights-out": Shader(resource: "LightsOut", fragment: "lightsOutFragment", dependencies: ["RaceCar", "RaceMaterials"]),
-    ]
-    func register(_ id: String, resource: String, fragment: String, dependencies: [String] = []) {
-        shaders[id] = Shader(resource: resource, fragment: fragment, dependencies: dependencies)
+    struct Scene {
+        let module: ShaderModule
+        let fragment: String
+        let parameters: [WallpaperSceneParameter]
     }
-    func contains(_ id: String) -> Bool { shaders[id] != nil }
-    func shader(for id: String) throws -> Shader {
-        guard let shader = shaders[id] else { throw WallpaperError.missingShader(id) }
-        return shader
+    private var scenes: [String: Scene] = [:]
+    init() {}
+
+    /// Registers a template-owned scene: its `.metal` beside `template.json`, after the shared prelude and modules.
+    func register(_ id: String, scene: WallpaperSceneSource, folder: URL) throws {
+        guard let url = WallpaperAssetResolver(folder: folder).shader(scene.source) else { throw WallpaperError.missingAsset(scene.source) }
+        for module in scene.dependencies ?? [] where BundleResources.shader(module, family: .wallpaper) == nil { throw WallpaperError.missingAsset(module) }
+        let mode = scene.mathMode.flatMap(ShaderMathMode.init(rawValue:)) ?? .fast
+        scenes[id] = Scene(module: .wallpaper(id, source: .file(url), dependencies: scene.dependencies ?? [], mathMode: mode),
+                           fragment: scene.fragment, parameters: scene.params ?? [])
     }
-    func module(for id: String) throws -> ShaderModule {
-        let shader = try shader(for: id)
-        return .wallpaper(id, resource: shader.resource, dependencies: shader.dependencies)
+    func contains(_ id: String) -> Bool { scenes[id] != nil }
+    func scene(for id: String) throws -> Scene {
+        guard let scene = scenes[id] else { throw WallpaperError.missingShader(id) }
+        return scene
     }
+    /// Declared parameter keys by scene id, for lint.
+    var parameterKeys: [String: Set<String>] { scenes.mapValues { Set($0.parameters.map(\.key)) } }
     /// Every registered scene unit plus the emblem pass, for precompilation and diagnostics.
-    var modules: [ShaderModule] {
-        shaders.keys.sorted().compactMap { try? module(for: $0) } + [.wallpaperEmblem]
-    }
+    var modules: [ShaderModule] { scenes.keys.sorted().compactMap { scenes[$0]?.module } + [.wallpaperEmblem] }
 }

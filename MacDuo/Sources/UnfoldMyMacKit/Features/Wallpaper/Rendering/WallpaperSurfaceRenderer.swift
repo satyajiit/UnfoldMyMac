@@ -5,7 +5,7 @@ import UnfoldMyMacCore
 @MainActor final class WallpaperSurfaceRenderer {
     let pipeline: WallpaperPipeline
     private let driver: DisplayLinkFrameDriver<WallpaperPipeline>
-    private var smoother = WallpaperFrameSmoother()
+    private var smoother: WallpaperFrameSmoother
     var surfaceView: MetalSurfaceView { driver.renderer.surfaceView }
     var onStats: ((RenderStats) -> Void)? {
         get { driver.onStats }
@@ -16,6 +16,7 @@ import UnfoldMyMacCore
 
     init(pipeline: WallpaperPipeline) {
         self.pipeline = pipeline
+        smoother = WallpaperFrameSmoother(template: pipeline.template)
         driver = DisplayLinkFrameDriver(renderer: MetalSurfaceRenderer(pipeline: pipeline))
         driver.frameSource = { [unowned self] delta, animating in smoother.advance(delta: delta, animating: animating) }
     }

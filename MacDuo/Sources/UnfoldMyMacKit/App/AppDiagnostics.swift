@@ -25,34 +25,41 @@ import UnfoldMyMacCore
             return mismatched.isEmpty
         } catch { print(error.localizedDescription); return false }
     }
-    /// The compile units `script/compile_shaders.sh` precompiles, as JSON.
+    /// The compile units `script/compile_shaders.sh` precompiles, as JSON; files are bundle-relative.
     static func printShaderUnits() {
-        struct Unit: Encodable { let id: String; let family: String; let resources: [String]; let mathMode: String }
-        let modules = ShaderModule.effects + WallpaperShaderCatalog().modules
-        let units = modules.map { Unit(id: $0.id, family: $0.family.rawValue, resources: $0.resources, mathMode: $0.mathMode.rawValue) }
+        struct Unit: Encodable { let id: String; let files: [String]; let mathMode: String }
+        let shaders = WallpaperShaderCatalog()
+        _ = try? WallpaperTemplateRegistry(shaders: shaders, loadUserTemplates: false)
+        let modules = ShaderModule.effects + shaders.modules
+        let units = modules.map { Unit(id: $0.id, files: $0.resources.map(\.bundlePath), mathMode: $0.mathMode.rawValue) }
         let encoder = JSONEncoder(); encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         if let data = try? encoder.encode(units), let text = String(data: data, encoding: .utf8) { print(text) }
     }
 
+    /// Every registered GPU effect and every bundled scene, so a catalog entry no code can render fails the check.
     private static func renderHashes(_ gpu: GPUContext) throws -> [String: String] {
         var hashes: [String: String] = [:]
         let size = 64
         let pose = EffectContext(closure: 0.5, time: 1.5)
-        let frost = try FrostPipeline(gpu: gpu)
-        frost.receive(try gradientFrame(size: size))
-        hashes["frost"] = try OffscreenRenderer.render(frost, frame: pose, width: size, height: size).sha256
-        hashes["curtains"] = try OffscreenRenderer.render(try CurtainsPipeline(gpu: gpu), frame: pose, width: size, height: size).sha256
-        hashes["current"] = try OffscreenRenderer.render(try CurrentPipeline(gpu: gpu), frame: pose, width: size, height: size).sha256
-        hashes["peekaboo"] = try OffscreenRenderer.render(try PeekabooPipeline(gpu: gpu), frame: pose, width: size, height: size).sha256
-        for artwork in try LibraryAssets.artworks() {
-            hashes["art/\(artwork.id.rawValue)"] = try OffscreenRenderer.render(try ArtRevealPipeline(artwork: artwork, gpu: gpu), frame: pose, width: size, height: size).sha256
+        let registry = EffectRegistry.builtIn()
+        if let problem = registry.catalogError ?? registry.diagnostics.first { throw GPUError.allocationFailed("the effect catalog: \(problem)") }
+        for entry in registry.entries {
+            guard let makePipeline = entry.makePipeline else { continue }
+            let pipeline = try makePipeline(gpu)
+            if let sink = pipeline as? any DesktopFrameSink { sink.receive(try gradientFrame(size: size)) }
+            hashes["effect/\(entry.descriptor.id.rawValue)"] = try render(pipeline, frame: pose, size: size)
         }
         let shaders = WallpaperShaderCatalog()
-        for template in try WallpaperTemplateRegistry(shaders: shaders, loadUserTemplates: false).templates {
-            let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: shaders)
-            hashes["wallpaper/\(template.id)"] = try OffscreenRenderer.render(pipeline, frame: .cover, width: size, height: size).sha256
+        let templates = try WallpaperTemplateRegistry(shaders: shaders, loadUserTemplates: false)
+        if let problem = templates.errors.first { throw GPUError.allocationFailed("the wallpaper collection: \(problem)") }
+        for template in templates.templates {
+            let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: shaders, assets: templates.assets(for: template.id))
+            hashes["wallpaper/\(template.id)"] = try OffscreenRenderer.render(pipeline, frame: WallpaperFrame(pose: template.coverPose), width: size, height: size).sha256
         }
         return hashes
+    }
+    private static func render(_ pipeline: some EffectPipeline, frame: EffectContext, size: Int) throws -> String {
+        try OffscreenRenderer.render(pipeline, frame: frame, width: size, height: size).sha256
     }
     /// A deterministic capture frame, so Frost exercises its real texture path.
     private static func gradientFrame(size: Int) throws -> DesktopFrame {

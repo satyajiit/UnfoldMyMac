@@ -8,10 +8,10 @@ import UnfoldMyMacCore
         case .ready: "Ready"
         case .sleeping: "Paused · sleeping"
         case .blocked(let state): state.rawValue
-        case .preparing(let id): "Preparing \(registry.entry(for: id).descriptor.title)…"
-        case .previewing(let id): "Previewing \(registry.entry(for: id).descriptor.title)"
+        case .preparing(let id): "Preparing \(registry.title(for: id))…"
+        case .previewing(let id): "Previewing \(registry.title(for: id))"
         case .armed(let activation): "Ready · close to \(Int(activation))°"
-        case .active(let id): "\(registry.entry(for: id).descriptor.title) active"
+        case .active(let id): "\(registry.title(for: id)) active"
         case .screenRecordingNeeded: "Screen Recording needed"
         case .unavailable: "Effect unavailable"
         }

@@ -5,27 +5,26 @@ import UnfoldMyMacCore
 /// It cannot be replaced by the personal-background setting.
 @MainActor final class WallpaperEmblemPipeline {
     let placement: WallpaperEmblem
+    let canvas: WallpaperCanvas
     private let texture: MTLTexture
     private let pipeline: MTLRenderPipelineState
 
-    static func url(_ asset: String) -> URL? { BundleResources.wallpaperMark(asset) }
-
-    init(placement: WallpaperEmblem, gpu: GPUContext) throws {
-        guard placement.isValid, let url = Self.url(placement.asset) else {
-            throw WallpaperError.unavailable("The original logo ‘\(placement.asset)’ is not installed.")
-        }
-        self.placement = placement
+    init(placement: WallpaperEmblem, canvas: WallpaperCanvas = .standard, gpu: GPUContext, assets: WallpaperAssetResolver = .shared) throws {
+        guard placement.isValid else { throw WallpaperError.invalidField("emblem") }
+        guard let url = assets.mark(placement.asset) else { throw WallpaperError.missingAsset(placement.asset) }
+        self.placement = placement; self.canvas = canvas
         do { texture = try TextureLoader.premultiplied(url, device: gpu.device) } catch { throw WallpaperError.invalidData }
-        guard placement.y + placement.width * 1.6 * Double(texture.height) / Double(texture.width) <= 1 else {
-            throw WallpaperError.invalidTemplate
+        let aspect = canvas.width / canvas.height
+        guard placement.y + placement.width * aspect * Double(texture.height) / Double(texture.width) <= 1 else {
+            throw WallpaperError.invalidField("emblem")
         }
         pipeline = try gpu.pipeline(.wallpaperEmblem, vertex: "wallpaperVertex", fragment: "emblemFragment", color: .bgra8Unorm, blend: .premultiplied)
     }
     func encode(_ encoder: MTLRenderCommandEncoder, size: CGSize) {
-        let scale = min(size.width / WallpaperCanvas.width, size.height / WallpaperCanvas.height)
-        let width = placement.width * WallpaperCanvas.width * scale
-        encoder.setViewport(MTLViewport(originX: (size.width - WallpaperCanvas.width * scale) / 2 + placement.x * WallpaperCanvas.width * scale,
-            originY: (size.height - WallpaperCanvas.height * scale) / 2 + placement.y * WallpaperCanvas.height * scale,
+        let fit = canvas.fit(width: size.width, height: size.height)
+        let width = placement.width * fit.width
+        encoder.setViewport(MTLViewport(originX: (size.width - fit.width) / 2 + placement.x * fit.width,
+            originY: (size.height - fit.height) / 2 + placement.y * fit.height,
             width: width, height: width * Double(texture.height) / Double(texture.width), znear: 0, zfar: 1))
         encoder.setRenderPipelineState(pipeline)
         encoder.setFragmentTexture(texture, index: 0)

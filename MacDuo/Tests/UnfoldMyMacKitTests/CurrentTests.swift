@@ -42,7 +42,7 @@ import UnfoldMyMacCore
         let closed = try harness.render(.init(closure: EffectMath.calibratedClosure(0.8, completionFraction: 0.8)), width: width, height: height).pixels
         #expect(stride(from: 3, to: closed.count, by: 4).allSatisfy { closed[$0] == 255 })
     }
-    let entry = EffectRegistry.builtIn().entry(for: .current)
+    let entry = try #require(EffectRegistry.builtIn().entry(for: .current))
     #expect(entry.descriptor.hasContinuousMotion && !entry.descriptor.requiresCapture)
     let renderer = try entry.makeRenderer(try TestGPU.context())
     #expect(renderer.animatesWithTime && !(renderer is any DesktopFrameSink)); renderer.stop()

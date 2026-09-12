@@ -13,7 +13,7 @@ import UnfoldMyMacCore
                      "Grok": "3a462c3c2524733c173bb05c431de737812f8219db8fa115b0025d12a347e086"]
     for template in registry.templates where template.emblem != nil {
         let mark = try #require(template.emblem)
-        let url = try #require(WallpaperEmblemPipeline.url(mark.asset))
+        let url = try #require(registry.assets(for: template.id).mark(mark.asset))
         let digest = SHA256.hash(data: try Data(contentsOf: url)).map { String(format: "%02x", $0) }.joined()
         #expect(digest == originals[mark.asset])
         let original = try WallpaperHarness(pipeline: WallpaperPipeline(template: template, gpu: gpu, shaders: catalog))
@@ -45,11 +45,11 @@ import UnfoldMyMacCore
         var invalid = template
         invalid.id = "invalid-mark"
         invalid.emblem?.asset = "../Codex"
-        #expect(throws: WallpaperError.invalidTemplate) { try invalid.validated() }
+        #expect(throws: WallpaperError.invalidField("emblem")) { try invalid.validated() }
         invalid.emblem = mark; invalid.emblem?.y = 0.99
-        #expect(throws: WallpaperError.invalidTemplate) { try WallpaperPipeline(template: invalid, gpu: gpu, shaders: catalog) }
+        #expect(throws: WallpaperError.invalidField("emblem")) { try WallpaperPipeline(template: invalid, gpu: gpu, shaders: catalog) }
         invalid.emblem = mark; invalid.emblem?.asset = "MissingMark"
-        #expect(throws: (any Error).self) { try registry.register(invalid) }
+        #expect(throws: WallpaperError.missingAsset("MissingMark")) { try registry.register(invalid) }
     }
 }
 

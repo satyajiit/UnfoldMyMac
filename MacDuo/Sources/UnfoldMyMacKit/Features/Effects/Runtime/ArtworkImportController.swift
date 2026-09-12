@@ -41,7 +41,7 @@ import UnfoldMyMacCore
     }
     /// Deletes the library's copy; the caller removes the registration once nothing renders it.
     func removeFromLibrary(_ id: EffectID) throws -> Bool {
-        guard registry.entry(for: id).descriptor.isImported, let library else { return false }
+        guard registry.entry(for: id)?.descriptor.isImported == true, let library else { return false }
         try library.remove(id)
         return true
     }

@@ -1,56 +1,99 @@
 import Foundation
 import UnfoldMyMacCore
 
+/// Every template the app can show: the bundled folders, then the user's library. Registration proves the shader,
+/// marks and artwork exist; warnings from lint are kept per template for the gallery to surface.
 @MainActor final class WallpaperTemplateRegistry {
     private(set) var templates: [WallpaperTemplate] = []
     private(set) var errors: [String] = []
+    private(set) var warnings: [String: [WallpaperTemplateWarning]] = [:]
     let shaders: WallpaperShaderCatalog
-    init(shaders: WallpaperShaderCatalog, loadUserTemplates: Bool = true) throws {
-        self.shaders = shaders
+    let collection: WallpaperCollection
+    let library: WallpaperTemplateLibrary?
+    private let connectors: WallpaperConnectorRegistry
+    private var assets: [String: WallpaperAssetResolver] = [:]
+    private var imported: Set<String> = []
+
+    init(shaders: WallpaperShaderCatalog, connectors: WallpaperConnectorRegistry = .standard, library: WallpaperTemplateLibrary? = nil,
+         loadUserTemplates: Bool = true) throws {
+        self.shaders = shaders; self.connectors = connectors
+        self.library = loadUserTemplates ? library ?? WallpaperTemplateLibrary() : library
         guard let bundled = BundleResources.wallpaperTemplates else { throw BundleResourcesError.missing("Resources/Wallpapers") }
-        try load(directory: bundled)
-        if loadUserTemplates, FileManager.default.fileExists(atPath: WallpaperPaths.templates.path) {
-            do { try load(directory: WallpaperPaths.templates) }
-            catch { errors.append("Custom templates: \(error.localizedDescription)") }
+        var collection = WallpaperCollection.standard
+        do { collection = try WallpaperCollection.bundled() } catch { errors.append("Collection.json: \(error.localizedDescription)") }
+        self.collection = collection
+        let loaded = WallpaperTemplateLoader.load(directory: bundled, context: context)
+        for problem in loaded.problems { errors.append("\(problem.name): \(problem.error.localizedDescription)") }
+        for item in loaded.items {
+            do {
+                let template = item.document.template
+                if let scene = template.scene {
+                    guard let folder = item.assets.folder else { throw WallpaperError.invalidField("scene") }
+                    guard !shaders.contains(template.shader) else { throw WallpaperError.duplicateID(template.shader) }
+                    try shaders.register(template.shader, scene: scene, folder: folder)
+                }
+                try register(template, assets: item.assets, warnings: item.document.warnings)
+            } catch { errors.append("\(item.name): \(error.localizedDescription)") }
         }
+        if loadUserTemplates, let library = self.library { loadImported(library) }
     }
-    func register(_ template: WallpaperTemplate) throws {
+    /// What lint may check against: the collection's categories, the connectors and namespaces this build has.
+    var context: WallpaperTemplateSchema.Context {
+        .init(categories: Set(collection.categories.map(\.id)), connectors: Set(connectors.connectors.filter { !$0.implicit }.map(\.id)),
+              namespaces: Set(connectors.connectors.flatMap(\.namespaces)).union(["countdown"]), sceneParameters: shaders.parameterKeys)
+    }
+    func register(_ template: WallpaperTemplate, assets: WallpaperAssetResolver = .shared, warnings: [WallpaperTemplateWarning] = []) throws {
         let checked = try template.validated()
         guard !templates.contains(where: { $0.id == checked.id }) else { throw WallpaperError.duplicateID(checked.id) }
         guard shaders.contains(checked.shader) else { throw WallpaperError.missingShader(checked.shader) }
-        if let emblem = checked.emblem, BundleResources.wallpaperMark(emblem.asset) == nil {
-            throw WallpaperError.unavailable("The original logo ‘\(emblem.asset)’ is not installed.")
-        }
-        if let image = checked.image, BundleResources.artwork(image) == nil {
-            throw WallpaperError.unavailable("The template’s artwork ‘\(image)’ is not installed.")
-        }
+        if let emblem = checked.emblem, assets.mark(emblem.asset) == nil { throw WallpaperError.missingAsset(emblem.asset) }
+        if let image = checked.image, assets.image(image) == nil { throw WallpaperError.missingAsset(image) }
         templates.append(checked)
+        self.assets[checked.id] = assets
+        if !warnings.isEmpty { self.warnings[checked.id] = warnings }
     }
-    /// `validate` builds whatever the caller needs to prove the template renders before it is kept.
+    func assets(for id: String) -> WallpaperAssetResolver { assets[id] ?? .shared }
+    func isImported(_ id: String) -> Bool { imported.contains(id) }
+    /// Keeps the file exactly as given once it decodes, names only a bundled scene and `validate` proves it renders.
     func importTemplate(_ url: URL, validate: (WallpaperTemplate) throws -> Void) throws -> WallpaperTemplate {
-        let template = try decode(url)
-        guard !templates.contains(where: { $0.id == template.id }), shaders.contains(template.shader) else {
-            if templates.contains(where: { $0.id == template.id }) { throw WallpaperError.duplicateID(template.id) }
-            throw WallpaperError.missingShader(template.shader)
-        }
+        guard let library else { throw WallpaperError.unavailable("Imported templates are not available here.") }
+        let data = try WallpaperTemplateLoader.read(url)
+        let document = try WallpaperTemplateSchema.decode(data, context: context)
+        let template = try Self.importable(document.template)
+        guard !templates.contains(where: { $0.id == template.id }) else { throw WallpaperError.duplicateID(template.id) }
+        guard shaders.contains(template.shader) else { throw WallpaperError.missingShader(template.shader) }
         try validate(template)
-        try FileManager.default.createDirectory(at: WallpaperPaths.templates, withIntermediateDirectories: true)
-        let destination = WallpaperPaths.templates.appendingPathComponent(UUID().uuidString + ".json")
-        try JSONEncoder().encode(template).write(to: destination, options: .atomic)
-        try register(template)
+        try library.add(data, template: template)
+        try register(template, warnings: document.warnings)
+        imported.insert(template.id)
         return template
     }
-    private func load(directory: URL) throws {
-        let urls = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
-        for url in urls.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) where url.pathExtension == "json" {
-            do { try register(decode(url)) }
-            catch { errors.append("\(url.lastPathComponent): \(error.localizedDescription)") }
+    func rename(_ id: String, title: String) throws {
+        guard let library, imported.contains(id), let index = templates.firstIndex(where: { $0.id == id }) else { return }
+        guard let record = try library.rename(id, title: title) else { return }
+        templates[index].title = record.title ?? templates[index].title
+    }
+    func remove(_ id: String) throws {
+        guard let library, imported.contains(id) else { return }
+        try library.remove(id)
+        templates.removeAll { $0.id == id }
+        imported.remove(id); assets[id] = nil; warnings[id] = nil
+    }
+    private func loadImported(_ library: WallpaperTemplateLibrary) {
+        if let error = library.loadError { errors.append(error) }
+        for record in library.records {
+            do {
+                let document = try WallpaperTemplateSchema.decode(try library.data(for: record), context: context)
+                var template = try Self.importable(document.template)
+                if let title = record.title { template.title = title }
+                try register(template, warnings: document.warnings)
+                imported.insert(template.id)
+            } catch { errors.append("Custom template \(record.filename): \(error.localizedDescription)") }
         }
     }
-    private func decode(_ url: URL) throws -> WallpaperTemplate {
-        let handle = try FileHandle(forReadingFrom: url); defer { try? handle.close() }
-        let data = try handle.read(upToCount: 131_073) ?? Data()
-        guard data.count <= 131_072 else { throw WallpaperError.invalidTemplate }
-        return try JSONDecoder().decode(WallpaperTemplate.self, from: data).validated()
+    /// Imports may name a bundled scene, never ship their own shader source.
+    private static func importable(_ template: WallpaperTemplate) throws -> WallpaperTemplate {
+        guard template.scene == nil else { throw WallpaperError.invalidField("scene") }
+        return template
     }
 }

@@ -22,7 +22,7 @@ public struct WallpaperLayer: Codable, Identifiable, Equatable, Sendable {
     public var isValid: Bool {
         !id.isEmpty && content.count <= 160 && (binding?.count ?? 0) <= 100 &&
         [x, y, width, size, rotation].allSatisfy(\.isFinite) &&
-        (0...1).contains(x) && (0...1).contains(y) && (0.01...1).contains(width) &&
+        (0...1).contains(x) && (0...1).contains(y) && (0.01...1).contains(width) && x + width <= 1 && color <= 0xFFFFFF &&
         (0.008...0.2).contains(size) && abs(rotation) <= 30 &&
         (phrases == nil || ((1...12).contains(phrases!.count) && phrases!.allSatisfy { !$0.isEmpty && $0.count <= 160 })) &&
         (cycleSeconds == nil || (cycleSeconds!.isFinite && (4...60).contains(cycleSeconds!))) &&

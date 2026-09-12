@@ -7,12 +7,13 @@ struct WallpaperLayers: View {
     let animated: Bool
     var body: some View {
         GeometryReader { geometry in
-            let scale = min(geometry.size.width / WallpaperCanvas.width, geometry.size.height / WallpaperCanvas.height)
-            let size = CGSize(width: WallpaperCanvas.width * scale, height: WallpaperCanvas.height * scale)
+            let fit = template.canvasSize.fit(width: geometry.size.width, height: geometry.size.height)
+            let scale = fit.scale, size = CGSize(width: fit.width, height: fit.height)
+            let style = template.styled(over: WallpaperStyleSheet.bundled)
             let resolved = resolvedSnapshot
             ZStack(alignment: .topLeading) {
                 ForEach(template.layers) { layer in
-                    layerView(layer, value: layer.value(in: resolved, cycles: animated), scale: scale)
+                    layerView(layer, value: layer.value(in: resolved, cycles: animated), scale: scale, style: style)
                         .frame(width: size.width*layer.width, height: layer.height.map { size.height * $0 }, alignment: .topLeading)
                         .rotationEffect(.degrees(layer.rotation))
                         .offset(x: size.width*layer.x, y: size.height*layer.y)
@@ -28,8 +29,8 @@ struct WallpaperLayers: View {
         if let countdown = template.countdown { resolved.sources["countdown"] = countdown.sample(at: .now) }
         return resolved
     }
-    @ViewBuilder private func layerView(_ layer: WallpaperLayer, value: String, scale: CGFloat) -> some View {
-        let style = WallpaperLayerStyle(layer: layer)
+    @ViewBuilder private func layerView(_ layer: WallpaperLayer, value: String, scale: CGFloat, style sheet: WallpaperStyle) -> some View {
+        let style = WallpaperLayerStyle(layer: layer, style: sheet, canvas: template.canvasSize)
         if style.isSticker {
             Text(value)
                 .font(style.font(scale: scale))

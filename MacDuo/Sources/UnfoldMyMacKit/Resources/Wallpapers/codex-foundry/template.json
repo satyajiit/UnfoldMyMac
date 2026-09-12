@@ -1,0 +1,193 @@
+{
+  "version": 2,
+  "id": "codex-foundry",
+  "title": "Codex Foundry",
+  "subtitle": "An assembling 3D accelerator with a sense of humor. Local Codex sessions, tokens and fresh one-liners.",
+  "author": "UnfoldMyMac",
+  "category": "ai",
+  "order": 40,
+  "tags": [
+    "3D",
+    "Codex",
+    "Original logo",
+    "Live counters",
+    "Rotating lines"
+  ],
+  "accent": 9699285,
+  "background": 398352,
+  "reactiveMetric": "codex.energy",
+  "reactiveScale": 1,
+  "channels": [
+    {
+      "metric": "codex.recent",
+      "scale": 10
+    },
+    {
+      "metric": "tool.value",
+      "scale": 100
+    }
+  ],
+  "emblem": {
+    "asset": "Codex",
+    "x": 0.072,
+    "y": 0.102,
+    "width": 0.074
+  },
+  "layers": [
+    {
+      "id": "name",
+      "kind": "text",
+      "content": "CODEX",
+      "binding": null,
+      "format": "text",
+      "x": 0.165,
+      "y": 0.12,
+      "width": 0.35,
+      "size": 0.026,
+      "color": 15859703,
+      "rotation": 0
+    },
+    {
+      "id": "edition",
+      "kind": "text",
+      "content": "F O U N D R Y  /  0 1",
+      "binding": null,
+      "format": "text",
+      "x": 0.167,
+      "y": 0.175,
+      "width": 0.45,
+      "size": 0.009,
+      "color": 9699285,
+      "rotation": 0
+    },
+    {
+      "id": "headline",
+      "kind": "text",
+      "content": "SHIP\nHAPPENS.",
+      "binding": null,
+      "format": "text",
+      "x": 0.08,
+      "y": 0.31,
+      "width": 0.39,
+      "size": 0.047,
+      "color": 15859703,
+      "rotation": 0,
+      "cycleSeconds": 8,
+      "phrases": [
+        "SHIP\nHAPPENS.",
+        "ONE MORE\nTINY FIX.",
+        "IT WORKS.\nDON'T TOUCH IT.",
+        "BRB.\nFIXING REALITY.",
+        "COFFEE IN.\nCOMMITS OUT.",
+        "I HAVE\nA PATCH FOR THAT."
+      ],
+      "height": 0.2,
+      "maxLines": 2
+    },
+    {
+      "id": "caption",
+      "kind": "text",
+      "content": "WAITING FOR THE NEXT SIDE QUEST.",
+      "binding": "codex.activity",
+      "format": "text",
+      "x": 0.084,
+      "y": 0.57,
+      "width": 0.4,
+      "size": 0.013,
+      "color": 10601916,
+      "rotation": 0
+    },
+    {
+      "id": "cpu-label",
+      "kind": "text",
+      "content": "SIDE QUESTS / SESSIONS",
+      "binding": null,
+      "format": "text",
+      "x": 0.084,
+      "y": 0.735,
+      "width": 0.2,
+      "size": 0.01,
+      "color": 10601916,
+      "rotation": 0
+    },
+    {
+      "id": "cpu",
+      "kind": "metric",
+      "content": "—",
+      "binding": "codex.sessions",
+      "format": "compact",
+      "x": 0.08,
+      "y": 0.78,
+      "width": 0.19,
+      "size": 0.036,
+      "color": 15859703,
+      "rotation": 0
+    },
+    {
+      "id": "memory-label",
+      "kind": "text",
+      "content": "TOKENS SNACKED",
+      "binding": null,
+      "format": "text",
+      "x": 0.294,
+      "y": 0.735,
+      "width": 0.2,
+      "size": 0.01,
+      "color": 10601916,
+      "rotation": 0
+    },
+    {
+      "id": "memory",
+      "kind": "metric",
+      "content": "—",
+      "binding": "codex.tokens",
+      "format": "compact",
+      "x": 0.29,
+      "y": 0.78,
+      "width": 0.19,
+      "size": 0.036,
+      "color": 15859703,
+      "rotation": 0
+    },
+    {
+      "id": "signal",
+      "kind": "text",
+      "content": "COMMIT TO THE BIT.",
+      "binding": "tool.status",
+      "format": "text",
+      "x": 0.6,
+      "y": 0.9,
+      "width": 0.35,
+      "size": 0.01,
+      "color": 9699285,
+      "rotation": 0
+    },
+    {
+      "id": "footer",
+      "kind": "text",
+      "content": "LOCAL CODEX HISTORY · NOT BILLING",
+      "binding": "codex.scope",
+      "format": "text",
+      "x": 0.084,
+      "y": 0.915,
+      "width": 0.65,
+      "size": 0.009,
+      "color": 10601916,
+      "rotation": 0
+    }
+  ],
+  "setup": [
+    {
+      "kind": "codex-history",
+      "required": true
+    },
+    {
+      "kind": "tool-file",
+      "required": false
+    }
+  ],
+  "scene": {
+    "source": "Scene.metal",
+    "fragment": "codexFoundryFragment"
+  }
+}

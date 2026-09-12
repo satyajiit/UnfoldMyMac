@@ -35,7 +35,7 @@ if [ -d "$BUILD_DIR/$RESOURCE_BUNDLE" ]; then
   # Local resource notes are not part of the distributed app.
   find "$APP_BUNDLE/Contents/Resources/$RESOURCE_BUNDLE" -type f -name '*.md' -delete
   # Precompiled shader units, when the Metal toolchain is installed; the app falls back to source otherwise.
-  "$PROJECT_DIR/script/compile_shaders.sh" "$BUILD_DIR/$EXECUTABLE" "$APP_BUNDLE/Contents/Resources/$RESOURCE_BUNDLE/Shaders"
+  "$PROJECT_DIR/script/compile_shaders.sh" "$BUILD_DIR/$EXECUTABLE" "$APP_BUNDLE/Contents/Resources/$RESOURCE_BUNDLE"
 fi
 cp "$PROJECT_DIR/../LICENSE" "$PROJECT_DIR/../NOTICE" "$APP_BUNDLE/Contents/Resources/"
 IDENTITY="${UNFOLDMYMAC_SIGN_IDENTITY:-${LUMA_SIGN_IDENTITY:-${MACDUO_SIGN_IDENTITY:-}}}"

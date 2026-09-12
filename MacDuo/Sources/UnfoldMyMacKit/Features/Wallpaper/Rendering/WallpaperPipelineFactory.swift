@@ -13,8 +13,8 @@ import UnfoldMyMacCore
     static func backgroundImage(for template: WallpaperTemplate, customBackground: Bool) -> URL? {
         customBackground && template.image != nil && template.allowsCustomBackground != false ? WallpaperPaths.background : nil
     }
-    func make(_ template: WallpaperTemplate, imageURL: URL? = nil) throws -> WallpaperPipeline {
-        try WallpaperPipeline(template: template, gpu: gpu, shaders: shaders, imageURL: imageURL)
+    func make(_ template: WallpaperTemplate, imageURL: URL? = nil, assets: WallpaperAssetResolver = .shared) throws -> WallpaperPipeline {
+        try WallpaperPipeline(template: template, gpu: gpu, shaders: shaders, imageURL: imageURL, assets: assets)
     }
-    func validate(_ template: WallpaperTemplate) throws { _ = try make(template) }
+    func validate(_ template: WallpaperTemplate, assets: WallpaperAssetResolver = .shared) throws { _ = try make(template, assets: assets) }
 }

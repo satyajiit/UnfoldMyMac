@@ -1,7 +1,7 @@
 #include <metal_stdlib>
 using namespace metal;
 struct WallpaperVertex { float4 position [[position]]; float2 uv; };
-struct WallpaperUniforms { float2 size; float time; float energy; float4 accent; float4 background; float4 channels; };
+struct WallpaperUniforms { float2 size; float time; float energy; float4 accent; float4 background; float4 channels; float4 params[2]; };
 vertex WallpaperVertex wallpaperVertex(uint id [[vertex_id]]) {
     float2 p = float2((id << 1) & 2, id & 2);
     return {float4(p * 2.0 - 1.0, 0, 1), float2(p.x, 1.0-p.y)};

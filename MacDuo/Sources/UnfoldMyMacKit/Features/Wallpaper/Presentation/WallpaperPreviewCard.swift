@@ -23,6 +23,9 @@ struct WallpaperPreviewCard: View {
                     VStack(alignment: .leading, spacing: 5) {
                         Text(model.selected?.title ?? "Loading scene…").font(UnfoldMyMacType.title3)
                         Text(model.selected?.subtitle ?? "").font(UnfoldMyMacType.caption).foregroundStyle(p.secondary).fixedSize(horizontal: false, vertical: true)
+                        if let credit = model.selected?.credit, !credit.isEmpty {
+                            Text(credit).font(UnfoldMyMacType.caption).foregroundStyle(p.secondary).fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                     Spacer(minLength: 0)
                     if let selected = model.selected, !(selected.setup ?? []).isEmpty, model.setup.isReady(selected) {

@@ -80,7 +80,7 @@ import UnfoldMyMacCore
     var template = try #require(registry.templates.first { $0.id == "pulse" })
     #expect(WallpaperSetupController.isReady(template, connections: [:]))
     template.setup = [.init(kind: .githubProfile, required: true), .init(kind: .githubProfile, required: false)]
-    #expect(throws: WallpaperError.invalidTemplate) { try template.validated() }
+    #expect(throws: WallpaperError.invalidField("setup")) { try template.validated() }
     template.setup = [.init(kind: .githubProfile, required: true)]
     #expect(!WallpaperSetupController.isReady(template, connections: ["github-profile": .init(enabled: true, username: "../bad")]))
     template.setup = [.init(kind: .toolFile, required: false)]

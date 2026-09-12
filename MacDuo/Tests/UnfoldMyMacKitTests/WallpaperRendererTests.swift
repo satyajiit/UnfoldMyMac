@@ -25,7 +25,7 @@ import UnfoldMyMacCore
 @Test @MainActor func wallpaperTemplatesRenderReactAndStayWithinFrameBudget() throws {
     let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let registry = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false)
-    #expect(registry.templates.count == 10 && registry.errors.isEmpty)
+    #expect(registry.templates.count == bundledTemplateCount() && registry.errors.isEmpty)
     for template in registry.templates {
         let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog)
         let harness = WallpaperHarness(pipeline: pipeline)
@@ -65,9 +65,9 @@ import UnfoldMyMacCore
     template.id = "extension-example"; template.shader = "missing"
     #expect(throws: WallpaperError.missingShader("missing")) { try registry.register(template) }
     template.shader = "pulse"; template.layers[0].size = .infinity
-    #expect(throws: WallpaperError.invalidTemplate) { try registry.register(template) }
+    #expect(throws: WallpaperError.invalidField("layers[0]")) { try registry.register(template) }
     template.layers[0].size = 0.01; template.layers[0].x = -1
-    #expect(throws: WallpaperError.invalidTemplate) { try registry.register(template) }
+    #expect(throws: WallpaperError.invalidField("layers[0]")) { try registry.register(template) }
 }
 
 @Test @MainActor func wallpaperDesktopCoordinatorStaysBelowIconsAndReleasesItsWindows() throws {

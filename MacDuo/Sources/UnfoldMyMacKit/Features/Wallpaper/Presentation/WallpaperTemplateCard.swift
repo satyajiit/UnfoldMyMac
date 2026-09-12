@@ -6,8 +6,12 @@ struct WallpaperTemplateCard: View {
     let image: NSImage?
     let selected: Bool
     let ready: Bool
+    var imported = false
+    var warnings: [WallpaperTemplateWarning] = []
     let action: () -> Void
     let configure: () -> Void
+    var rename: () -> Void = {}
+    var remove: () -> Void = {}
     @Environment(\.colorScheme) private var scheme
     var body: some View {
         let p = UnfoldMyMacPalette(dark: scheme == .dark)
@@ -17,7 +21,7 @@ struct WallpaperTemplateCard: View {
                 ZStack {
                     if let image { Image(nsImage: image).resizable().scaledToFill() }
                     WallpaperLayers(template: template, snapshot: .init(), animated: false)
-                }.aspectRatio(1.6, contentMode: .fit).clipped()
+                }.aspectRatio(template.canvasSize.width / template.canvasSize.height, contentMode: .fit).clipped()
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text(template.title).font(UnfoldMyMacType.headline)
@@ -33,9 +37,21 @@ struct WallpaperTemplateCard: View {
             HStack {
                 Button(selected ? "Previewing" : "Preview", action: action).buttonStyle(.plain).foregroundStyle(p.accent)
                 Spacer(minLength: 4)
+                if !warnings.isEmpty {
+                    IconGlyph(icon: .warning, size: 13).foregroundStyle(p.secondary)
+                        .help(warnings.map(\.message).joined(separator: "\n")).accessibilityLabel("\(warnings.count) template warnings")
+                }
                 if !(template.setup ?? []).isEmpty {
                     Button(ready ? "Configure" : "Set up", action: configure)
                         .modifier(UnfoldMyMacButtonStyle()).accessibilityIdentifier("wallpaper.configure.\(template.id)")
+                }
+                if imported {
+                    Menu {
+                        Button { rename() } label: { Label("Rename…", icon: .rename) }
+                        Button(role: .destructive) { remove() } label: { Label("Remove", icon: .trash) }
+                    } label: { Label("More", icon: .more) }
+                    .labelStyle(.iconOnly).menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+                    .accessibilityLabel("More actions for \(template.title)").accessibilityIdentifier("wallpaper.more.\(template.id)")
                 }
             }.font(UnfoldMyMacType.caption).padding(.horizontal, 14).padding(.bottom, 14)
         }

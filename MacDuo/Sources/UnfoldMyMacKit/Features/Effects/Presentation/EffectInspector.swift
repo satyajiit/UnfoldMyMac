@@ -31,13 +31,7 @@ struct EffectInspector: View {
                         Text(effect.tags.joined(separator: " · ")).font(UnfoldMyMacType.caption).foregroundStyle(p.accent)
                     }
                     Divider()
-                    if let defaultReveal = effect.defaultReveal {
-                        Picker("Reveal", selection: Binding(get: { model.parameters.reveal ?? defaultReveal }, set: { model.setReveal($0) })) {
-                            ForEach(ArtRevealMotion.allCases) { Text($0.title).tag($0) }
-                        }.pickerStyle(.segmented).accessibilityIdentifier("effect.reveal")
-                    }
-                    ParameterRow(title: effect.parameterTitle, valueLabel: "\(Int(model.parameters.strength * 100))%",
-                        value: Binding(get: { model.parameters.strength }, set: { model.setStrength($0) }))
+                    ForEach(effect.parameters) { spec in parameterControl(spec, palette: p) }
                     if effect.hasContinuousMotion {
                         Text("Play a preview to see the flow. Pause holds the frame for inspection.")
                             .font(UnfoldMyMacType.caption).foregroundStyle(p.secondary)
@@ -80,5 +74,22 @@ struct EffectInspector: View {
             Button("Cancel", role: .cancel) { }
             Button("Remove", role: .destructive) { if model.removeArtwork(effect.id) { dismiss() } }
         } message: { Text("This removes \(AppIdentity.name)’s copy and its saved reveal settings. Your original image is kept.") }
+    }
+    /// Each declared parameter draws the control its kind names; the effect never needs a bespoke view.
+    @ViewBuilder private func parameterControl(_ spec: EffectParameterSpec, palette p: UnfoldMyMacPalette) -> some View {
+        let value = model.parameters[spec.key] ?? spec.default
+        switch spec.kind {
+        case .choice:
+            Picker(spec.title, selection: Binding(get: { value.choice ?? spec.default.choice ?? "" }, set: { model.setParameter(spec.key, .choice($0)) })) {
+                ForEach(spec.choices) { Text($0.title).tag($0.id) }
+            }.pickerStyle(.segmented).accessibilityIdentifier("effect.\(spec.key)")
+        case .toggle:
+            Toggle(spec.title, isOn: Binding(get: { value.flag ?? spec.default.flag ?? false }, set: { model.setParameter(spec.key, .flag($0)) }))
+                .accessibilityIdentifier("effect.\(spec.key)")
+        case .slider:
+            let number = spec.clamp(value).number ?? spec.minimum
+            ParameterRow(title: spec.title, valueLabel: spec.format == .percent ? "\(Int((number * 100).rounded()))%" : number.formatted(.number.precision(.fractionLength(0...2))),
+                value: Binding(get: { number }, set: { model.setParameter(spec.key, .number($0)) }), range: spec.minimum...spec.maximum, step: spec.step)
+        }
     }
 }

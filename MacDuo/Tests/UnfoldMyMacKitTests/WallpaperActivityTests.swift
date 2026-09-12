@@ -42,7 +42,7 @@ import UnfoldMyMacCore
         #expect(!template.dataNamespaces.contains("mac"))
         var invalid = template
         invalid.layers[0].cycleSeconds = 0
-        #expect(throws: WallpaperError.invalidTemplate) { try invalid.validated() }
+        #expect(throws: WallpaperError.invalidField("layers[0]")) { try invalid.validated() }
     }
 }
 

@@ -32,7 +32,7 @@ import UnfoldMyMacCore
     var previewData: WallpaperDataHub { feeds.preview }
     var selected: WallpaperTemplate? { catalog.template(selectedID) }
     var enabled: Bool { prefs.enabled }
-    var previewFPS: Int { browsing && previewVisible ? playback.framesPerSecond : 0 }
+    var previewFPS: Int { browsing && previewVisible ? min(playback.framesPerSecond, selected?.fpsCeiling ?? .max) : 0 }
     var activeTitle: String { catalog.template(preferences.templateID)?.title ?? "Wallpaper" }
     var isSelectedApplied: Bool { enabled && preferences.templateID == selectedID }
     var previewSnapshot: WallpaperSnapshot { isSelectedApplied ? data.snapshot : previewData.snapshot }
@@ -47,7 +47,7 @@ import UnfoldMyMacCore
         let prefs = WallpaperPreferencesController(store: store)
         self.environment = environment; self.systemBackdrop = systemBackdrop; self.factory = factory; self.prefs = prefs
         selectedID = prefs.preferences.templateID
-        catalog = WallpaperCatalog(shaders: shaders)
+        catalog = WallpaperCatalog(shaders: shaders, connectors: connectors)
         covers = WallpaperCoverStore(factory: factory, directory: coverDirectory)
         setup = WallpaperSetupController(preferences: store, registry: connectors)
         feeds = WallpaperDataCoordinator(registry: connectors)
@@ -62,7 +62,7 @@ import UnfoldMyMacCore
             guard factory != nil else { throw GPUError.metalUnavailable }
             try catalog.load()
             if selected == nil { selectedID = templates.first?.id ?? WallpaperPreferences().templateID }
-            covers.request(templates)
+            covers.request(templates, assets: catalog.assets(for:))
             try preparePreview()
             if !catalog.errors.isEmpty { error = catalog.errors.joined(separator: "\n") }
             if enabled, let selected, !setup.isReady(selected) { prefs.disable() }
@@ -109,6 +109,22 @@ import UnfoldMyMacCore
             select(template.id)
         } catch { self.error = error.localizedDescription }
     }
+    func renameTemplate(_ id: String, title: String) {
+        do {
+            try catalog.rename(id, title: title)
+            guard let template = catalog.template(id) else { return }
+            covers.invalidate(id); covers.request([template])
+            if selectedID == id { select(id) }
+        } catch { self.error = error.localizedDescription }
+    }
+    /// Removes an imported template; a desktop showing it stops first and the preview moves to the first scene.
+    func removeTemplate(_ id: String) {
+        do {
+            if enabled, preferences.templateID == id { stopWallpaper() }
+            try catalog.remove(id); covers.invalidate(id)
+            if selectedID == id { previewPipeline = nil; if let first = templates.first?.id { select(first) } }
+        } catch { self.error = error.localizedDescription }
+    }
     func receiveStats(_ value: RenderStats) { previewStats = value }
     func shutdown() {
         browsing = false; systemState.stop(); desktop.stop(); covers.cancel(); activity.setRendering(false)
@@ -120,7 +136,7 @@ import UnfoldMyMacCore
     private func preparePreview() throws {
         guard let selected, let factory else { return }
         let image = WallpaperPipelineFactory.backgroundImage(for: selected, customBackground: preferences.customBackground)
-        previewPipeline = try factory.make(selected, imageURL: image)
+        previewPipeline = try factory.make(selected, imageURL: image, assets: catalog.assets(for: selected.id))
     }
     private func rebuildDesktop() {
         syncSystemBackdrop()
@@ -150,7 +166,7 @@ import UnfoldMyMacCore
         let next = WallpaperPlaybackPolicy.playback(enabled: enabled, browsing: browsing, maximumFPS: preferences.maximumFPS, system: environment.state)
         if next != playback { playback = next }
         activity.setRendering(next.enabled && !next.sleeping && next.animates)
-        desktop.setFramesPerSecond(next.framesPerSecond)
+        desktop.setFramesPerSecond(min(next.framesPerSecond, activePipeline?.template.fpsCeiling ?? .max))
         feeds.update(desktop: enabled ? activePipeline?.template : nil, preview: browsing && !isSelectedApplied ? selected : nil,
                      connections: setup.connections, sampling: next.shouldSample)
     }

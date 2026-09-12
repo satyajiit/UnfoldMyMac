@@ -1,0 +1,8 @@
+{
+  "boldFont": "SpaceGrotesk-Bold",
+  "mediumFont": "SpaceGrotesk-Medium",
+  "boldThreshold": 0.035,
+  "captionThreshold": 0.02,
+  "captionTracking": 2,
+  "displayTracking": -1
+}

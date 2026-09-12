@@ -42,7 +42,7 @@ import UnfoldMyMacCore
 }
 
 @Test @MainActor func artRevealsAreTransparentReversibleAndPremultiplied() throws {
-    for artwork in try LibraryAssets.artworks() {
+    for artwork in try EffectAssets.artworks() {
         let renderer = try OffscreenArt(artwork)
         let open = try renderer.render(0)
         #expect(open.allSatisfy { $0 == 0 })
@@ -70,7 +70,7 @@ import UnfoldMyMacCore
 }
 
 @Test @MainActor func assembledArtworkPreservesOrientationAndSRGBColour() throws {
-    for artwork in try LibraryAssets.artworks() {
+    for artwork in try EffectAssets.artworks() {
         let renderer = try OffscreenArt(artwork)
         let source = renderer.pipeline.artwork
         #expect(source.pixelFormat == .rgba8Unorm_srgb || source.pixelFormat == .bgra8Unorm_srgb)
@@ -94,7 +94,7 @@ import UnfoldMyMacCore
 
 @Test @MainActor func artworkEntersOnTheFirstLiveFrame() throws {
     let onset = EffectMath.liveProgress(lid: 108, activation: 108, completionFraction: 0.8)
-    for artwork in try LibraryAssets.artworks() {
+    for artwork in try EffectAssets.artworks() {
         let renderer = try OffscreenArt(artwork)
         for strength in [0.0, 1.0] {
             let pixels = try renderer.render(onset, strength: strength)
@@ -109,8 +109,8 @@ import UnfoldMyMacCore
 
 @Test @MainActor func artStylesPersistWithoutCaptureCapability() throws {
     let registry = EffectRegistry.builtIn()
-    for artwork in try LibraryAssets.artworks() {
-        let entry = registry.entry(for: artwork.id)
+    for artwork in try EffectAssets.artworks() {
+        let entry = try #require(registry.entry(for: artwork.id))
         #expect(entry.descriptor.id == artwork.id)
         #expect(!entry.descriptor.requiresCapture)
         let renderer = try entry.makeRenderer(try TestGPU.context())
@@ -126,7 +126,7 @@ import UnfoldMyMacCore
 }
 
 @Test @MainActor func anyArtworkCanUseAnyRevealWithoutChangingItsIdentity() throws {
-    let artwork = try #require(LibraryAssets.artworks().first)
+    let artwork = try #require(EffectAssets.artworks().first)
     let renderer = try OffscreenArt(artwork)
     let closed = try renderer.render(1)
     for reveal in ArtRevealMotion.allCases {

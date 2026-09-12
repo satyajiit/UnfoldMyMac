@@ -42,7 +42,7 @@ import UnfoldMyMacCore
         systemState = SystemStateSubscriber(environment: environment)
         lid = LidMonitor(makeSensor: makeSensor); gate = DisplayGate(displays: displays)
     }
-    var activeEffect: EffectDescriptor { registry.entry(for: preview.effectID ?? preferences.settings.effect).descriptor }
+    var activeEffect: EffectDescriptor { registry.resolve(preview.effectID ?? preferences.settings.effect).entry.descriptor }
 
     func start() {
         started = true
@@ -76,7 +76,7 @@ import UnfoldMyMacCore
 
     /// Returns whether a preview began or switched, so the caller can bring the library forward.
     @discardableResult func beginPreview(effect id: EffectID?) -> Bool {
-        let transition = preview.begin(effect: registry.entry(for: id ?? preferences.settings.effect).descriptor.id, enabled: enabled)
+        let transition = preview.begin(effect: registry.resolve(id ?? preferences.settings.effect).entry.descriptor.id, enabled: enabled)
         guard transition != .unchanged else { return false }
         if transition == .started { session.suspend() } else { session.stop(retaining: true) }
         pacing.stopLink()

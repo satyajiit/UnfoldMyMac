@@ -1,10 +1,8 @@
 import SwiftUI
 import UnfoldMyMacCore
 
-/// The typography rules for one layer, in one place instead of inline in the layer view (P20).
+/// The typography rules for one layer, resolved once from the template's style over the shared sheet (P20).
 struct WallpaperLayerStyle: Equatable {
-    static let boldFont = "SpaceGrotesk-Bold"
-    static let mediumFont = "SpaceGrotesk-Medium"
     let fontName: String
     /// Font size as a fraction of the canvas width.
     let size: Double
@@ -13,14 +11,18 @@ struct WallpaperLayerStyle: Equatable {
     let isSticker: Bool
     let numeric: Bool
     let maxLines: Int
+    private let canvasWidth: Double
 
-    init(layer: WallpaperLayer) {
+    init(layer: WallpaperLayer, style: WallpaperStyle = .standard, canvas: WallpaperCanvas = .standard) {
+        let resolved = style.merged(over: .standard), base = WallpaperStyle.standard
         isSticker = layer.kind == .sticker
-        fontName = isSticker || layer.size > 0.035 ? Self.boldFont : Self.mediumFont
+        let bold = resolved.boldFont ?? base.boldFont ?? "", medium = resolved.mediumFont ?? base.mediumFont ?? ""
+        fontName = isSticker || layer.size > (resolved.boldThreshold ?? 0.035) ? bold : medium
         size = layer.size
-        tracking = layer.size < 0.02 ? 2 : -1
+        tracking = layer.size < (resolved.captionThreshold ?? 0.02) ? (resolved.captionTracking ?? 2) : (resolved.displayTracking ?? -1)
         numeric = layer.kind == .metric
         maxLines = layer.maxLines ?? 3
+        canvasWidth = canvas.width
     }
-    func font(scale: CGFloat) -> Font { .custom(fontName, size: size * WallpaperCanvas.width * scale) }
+    func font(scale: CGFloat) -> Font { .custom(fontName, size: size * canvasWidth * scale) }
 }
