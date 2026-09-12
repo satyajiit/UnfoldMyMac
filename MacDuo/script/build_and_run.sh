@@ -15,9 +15,14 @@ BUILD_DIR="$(swift build -c release --show-bin-path)"
 APP_NAME="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleName' "$PROJECT_DIR/Info.plist")"
 EXECUTABLE="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$PROJECT_DIR/Info.plist")"
 BUNDLE_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PROJECT_DIR/Info.plist")"
-APP_BUNDLE="$PROJECT_DIR/dist/$APP_NAME.app"
-# Preserve the bundle directory's identity for existing Finder/Dock references.
-if [ ! -e "$APP_BUNDLE" ] && [ -d "$PROJECT_DIR/dist/Luma.app" ]; then
+# UNFOLDMYMAC_APP_BUNDLE lets the release driver build into its own empty directory, so a
+# notarized image can never inherit a file from an older bundle layout. Unset, this is the
+# developer's usual dist/ bundle and nothing below changes.
+APP_BUNDLE="${UNFOLDMYMAC_APP_BUNDLE:-$PROJECT_DIR/dist/$APP_NAME.app}"
+# Preserve the bundle directory's identity for existing Finder/Dock references. Skipped for a
+# release build: migrating a stale Luma.app into a release directory is exactly what the
+# override exists to prevent.
+if [ -z "${UNFOLDMYMAC_APP_BUNDLE:-}" ] && [ ! -e "$APP_BUNDLE" ] && [ -d "$PROJECT_DIR/dist/Luma.app" ]; then
   mv "$PROJECT_DIR/dist/Luma.app" "$APP_BUNDLE"
 fi
 mkdir -p "$APP_BUNDLE/Contents/MacOS" "$APP_BUNDLE/Contents/Resources"
