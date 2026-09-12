@@ -3,6 +3,7 @@ import UnfoldMyMacCore
 
 struct GitHubProfileClient: Sendable {
     var session: URLSession = HTTPBodyReader.ephemeralSession
+    var cache = HTTPConditionalCache()
 
     static func username(_ input: String) throws -> String {
         var value = input.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -22,19 +23,22 @@ struct GitHubProfileClient: Sendable {
         try await fetch("users/" + Self.username(username) + "/events/public?per_page=100")
     }
     private func fetch<Value: Decodable & Sendable>(_ path: String) async throws -> Value {
-        var request = URLRequest(url: URL(string: "https://api.github.com/" + path)!)
+        guard let url = URL(string: "https://api.github.com/" + path) else { throw WallpaperError.invalidData }
+        var request = URLRequest(url: url)
         request.timeoutInterval = 10
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         request.setValue("2026-03-10", forHTTPHeaderField: "X-GitHub-Api-Version")
         request.setValue("UnfoldMyMac", forHTTPHeaderField: "User-Agent")
+        cache.prepare(&request)
         let (data, http) = try await HTTPBodyReader(session: session).body(for: request, limit: 1_048_576)
         switch http.statusCode {
-        case 200: break
+        case 200, 304: break
         case 404: throw WallpaperError.unavailable("That public GitHub profile was not found.")
         case 403, 429: throw WallpaperError.unavailable("GitHub's public API is rate limited. It will retry in a few minutes.")
         default: throw WallpaperError.unavailable("GitHub is unavailable right now. Your connection will retry.")
         }
+        guard let body = cache.body(for: http, received: data, url: url) else { throw WallpaperError.invalidData }
         let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
-        return try decoder.decode(Value.self, from: data)
+        return try decoder.decode(Value.self, from: body)
     }
 }

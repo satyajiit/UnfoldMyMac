@@ -14,7 +14,7 @@ extension AppDiagnostics {
     }
 }
 
-@MainActor @Observable private final class WallpaperProbeState {
+@MainActor @Observable private final class WallpaperProbeState: WallpaperSnapshotSource {
     var snapshot = WallpaperSnapshot()
     var samples: [RenderStats] = []
     var auroraState: NOAAWeatherState?
@@ -34,19 +34,25 @@ extension AppDiagnostics {
     }
 }
 
-private struct WallpaperProbeSurface: View {
-    let pipeline: WallpaperPipeline
-    let state: WallpaperProbeState
-    var body: some View {
-        WallpaperScene(pipeline: pipeline, snapshot: state.snapshot, fps: 60, onStats: { state.samples.append($0) })
-    }
-}
-
 @MainActor private final class WallpaperPresentationProbe: NSObject, NSApplicationDelegate {
-    private let host = WallpaperDesktopHost(surfaces: DesktopSurfaceRegistry())
+    private let desktop = WallpaperDesktopCoordinator(surfaces: DesktopSurfaceRegistry(), displays: DisplayEnvironment())
     func applicationDidFinishLaunching(_ notification: Notification) {
         UnfoldMyMacType.register()
         Task { await measure() }
+    }
+    /// Every Metal surface in the window must fill it; a partial surface means the desktop shows a seam.
+    private func coversWholeWindow(_ window: NSWindow, template: String) -> Bool {
+        guard let root = window.contentView else { return false }
+        var pending = [root], covered = true
+        while let view = pending.popLast() {
+            if view is MetalSurfaceView {
+                let frame = view.convert(view.bounds, to: root)
+                print("COVERAGE \(template): metal=\(frame), host=\(root.bounds), full=\(frame == root.bounds)")
+                covered = covered && frame == root.bounds
+            }
+            pending.append(contentsOf: view.subviews)
+        }
+        return covered
     }
     private func measure() async {
         do {
@@ -69,29 +75,21 @@ private struct WallpaperProbeSurface: View {
                     state.auroraState = try await .init(forecast: forecast, kp: kp)
                 }
                 state.tick(0)
-                host.show { WallpaperProbeSurface(pipeline: pipeline, state: state) }
+                desktop.show(pipeline: pipeline, source: state, framesPerSecond: 60)
+                let surface = desktop.surface
+                let sampler = Task { for await stats in Observations({ surface.worstStats }) where stats.fps > 0 { state.samples.append(stats) } }
                 for tick in 1...8 { try await Task.sleep(for: .seconds(1)); state.tick(tick) }
+                sampler.cancel()
                 let samples = Array(state.samples.dropFirst())
                 let fps = samples.reduce(0) { $0 + $1.fps } / Double(max(1, samples.count))
                 let p95 = samples.map(\.p95FrameMilliseconds).max() ?? 0
                 print(String(format: "PRESENTED %@: %.1f fps, worst sample p95 %.2f ms (%d samples)", template.id, fps, p95, samples.count))
-                for window in host.windows {
-                    guard let root = window.contentView else { continue }
-                    var pending = [root]
-                    while let view = pending.popLast() {
-                        if view is MetalSurfaceView {
-                            let frame = view.convert(view.bounds, to: root)
-                            print("COVERAGE \(template.id): metal=\(frame), host=\(root.bounds), full=\(frame == root.bounds)")
-                            passed = passed && frame == root.bounds
-                        }
-                        pending.append(contentsOf: view.subviews)
-                    }
-                }
+                for window in desktop.windows { passed = coversWholeWindow(window, template: template.id) && passed }
                 fflush(nil)
                 passed = passed && fps >= 55 && p95 < 26
-                host.stop()
+                desktop.stop()
             }
             exit(passed ? 0 : 2)
-        } catch { host.stop(); print("Wallpaper benchmark: \(error)"); exit(1) }
+        } catch { desktop.stop(); print("Wallpaper benchmark: \(error)"); exit(1) }
     }
 }

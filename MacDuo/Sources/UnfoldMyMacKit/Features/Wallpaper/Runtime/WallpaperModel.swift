@@ -2,135 +2,130 @@ import AppKit
 import Observation
 import UnfoldMyMacCore
 
+/// The wallpaper feature's façade: the state its views read and the commands they send. Loading, covers,
+/// playback, data, desktop windows and preferences each live in a collaborator; this type sequences them.
 @MainActor @Observable final class WallpaperModel {
-    private(set) var preferences: WallpaperPreferences
-    private(set) var templates: [WallpaperTemplate] = []
+    let catalog: WallpaperCatalog
+    let covers: WallpaperCoverStore
+    let setup: WallpaperSetupController
+    let desktop: WallpaperDesktopCoordinator
     private(set) var selectedID: String
     private(set) var previewPipeline: WallpaperPipeline?
     private(set) var activePipeline: WallpaperPipeline?
-    private(set) var thumbnails: [String: NSImage] = [:]
     private(set) var playback = WallpaperPlayback()
-    private(set) var stats = RenderStats()
-    private var previewVisible = false
+    private(set) var previewStats = RenderStats()
     var error: String?
-    let data = WallpaperDataHub()
-    let previewData = WallpaperDataHub()
-    let setup: WallpaperSetupController
-    var previewSnapshot: WallpaperSnapshot { isSelectedApplied ? data.snapshot : previewData.snapshot }
-    @ObservationIgnored private let host: WallpaperDesktopHost
+    @ObservationIgnored private let prefs: WallpaperPreferencesController
+    @ObservationIgnored private let feeds: WallpaperDataCoordinator
+    @ObservationIgnored private let factory: WallpaperPipelineFactory?
     @ObservationIgnored private let environment: any SystemEnvironmentObserving
+    @ObservationIgnored private let systemState: SystemStateSubscriber
     @ObservationIgnored private let activity = RenderingActivity()
-    @ObservationIgnored private var environmentObservation: Task<Void, Never>?
-    @ObservationIgnored private var lastSystemState: SystemState?
-    @ObservationIgnored private let preferencesStore: any PreferencesStore
     @ObservationIgnored private let systemBackdrop: WallpaperSystemBackdrop?
-    @ObservationIgnored private let gpu: GPUContext?
-    @ObservationIgnored private let shaders = WallpaperShaderCatalog()
-    @ObservationIgnored private var registry: WallpaperTemplateRegistry?
-    @ObservationIgnored private var sampling = false
     @ObservationIgnored private var browsing = false
-    var selected: WallpaperTemplate? { templates.first { $0.id == selectedID } }
-    var enabled: Bool { preferences.enabled }
-    var previewFPS: Int { browsing && previewVisible ? playback.framesPerSecond : 0 }
-    var activeTitle: String { templates.first { $0.id == preferences.templateID }?.title ?? "Wallpaper" }
-    var isSelectedApplied: Bool { enabled && preferences.templateID == selectedID }
+    @ObservationIgnored private var previewVisible = false
 
-    init(preferences store: any PreferencesStore, environment: any SystemEnvironmentObserving, surfaces: DesktopSurfaceRegistry, gpu: GPUContext?,
-         systemBackdrop: WallpaperSystemBackdrop? = nil) {
-        preferencesStore = store; self.environment = environment; host = WallpaperDesktopHost(surfaces: surfaces)
-        self.systemBackdrop = systemBackdrop; self.gpu = gpu
-        let saved = store.load(WallpaperPreferences.key)
-        preferences = saved; selectedID = saved.templateID
-        setup = WallpaperSetupController(preferences: store)
+    var templates: [WallpaperTemplate] { catalog.templates }
+    var thumbnails: [String: NSImage] { covers.images }
+    var preferences: WallpaperPreferences { prefs.preferences }
+    var data: WallpaperDataHub { feeds.desktop }
+    var previewData: WallpaperDataHub { feeds.preview }
+    var selected: WallpaperTemplate? { catalog.template(selectedID) }
+    var enabled: Bool { prefs.enabled }
+    var previewFPS: Int { browsing && previewVisible ? playback.framesPerSecond : 0 }
+    var activeTitle: String { catalog.template(preferences.templateID)?.title ?? "Wallpaper" }
+    var isSelectedApplied: Bool { enabled && preferences.templateID == selectedID }
+    var previewSnapshot: WallpaperSnapshot { isSelectedApplied ? data.snapshot : previewData.snapshot }
+    /// The slowest desktop display while applied; the preview card's own surface otherwise.
+    var stats: RenderStats { enabled ? desktop.surface.worstStats : previewStats }
+
+    init(preferences store: any PreferencesStore, environment: any SystemEnvironmentObserving, displays: any DisplayProviding,
+         surfaces: DesktopSurfaceRegistry, gpu: GPUContext?, systemBackdrop: WallpaperSystemBackdrop? = nil,
+         connectors: WallpaperConnectorRegistry = .standard, coverDirectory: URL = WallpaperCoverStore.defaultDirectory) {
+        let shaders = WallpaperShaderCatalog()
+        let factory = gpu.map { WallpaperPipelineFactory(gpu: $0, shaders: shaders) }
+        let prefs = WallpaperPreferencesController(store: store)
+        self.environment = environment; self.systemBackdrop = systemBackdrop; self.factory = factory; self.prefs = prefs
+        selectedID = prefs.preferences.templateID
+        catalog = WallpaperCatalog(shaders: shaders)
+        covers = WallpaperCoverStore(factory: factory, directory: coverDirectory)
+        setup = WallpaperSetupController(preferences: store, registry: connectors)
+        feeds = WallpaperDataCoordinator(registry: connectors)
+        desktop = WallpaperDesktopCoordinator(surfaces: surfaces, displays: displays)
+        systemState = SystemStateSubscriber(environment: environment)
         setup.onChange = { [weak self] in self?.connectionsChanged() }
         setup.onApply = { [weak self] id in self?.select(id); self?.apply() }
     }
+    /// Loads the collection and builds the preview pipeline only; covers arrive afterwards (P17).
     func start() {
         do {
-            guard let gpu else { throw GPUError.metalUnavailable }
-            let registry = try WallpaperTemplateRegistry(shaders: shaders)
-            self.registry = registry; templates = registry.templates
-            for template in templates {
-                let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: shaders)
-                thumbnails[template.id] = try WallpaperCoverRenderer.cover(pipeline: pipeline)
-            }
-            if selected == nil { selectedID = templates.first?.id ?? "pulse" }
+            guard factory != nil else { throw GPUError.metalUnavailable }
+            try catalog.load()
+            if selected == nil { selectedID = templates.first?.id ?? WallpaperPreferences().templateID }
+            covers.request(templates)
             try preparePreview()
-            if !registry.errors.isEmpty { error = registry.errors.joined(separator: "\n") }
-            lastSystemState = environment.state
-            let environment = self.environment
-            environmentObservation = Task { [weak self] in
-                for await state in Observations({ environment.state }) { self?.systemStateChanged(state) }
-            }
-            if preferences.enabled, let selected, !setup.isReady(selected) {
-                preferences.enabled = false; preferencesStore.save(preferences, for: WallpaperPreferences.key)
-            }
-            if preferences.enabled { apply() }
-            else { syncSystemBackdrop() }
-            refreshPlayback()
-        } catch { self.error = error.localizedDescription; preferences.enabled = false }
+            if !catalog.errors.isEmpty { error = catalog.errors.joined(separator: "\n") }
+            if enabled, let selected, !setup.isReady(selected) { prefs.disable() }
+            if enabled { apply() } else { syncSystemBackdrop() }
+            systemState.start { [weak self] event in self?.systemChanged(event) }
+        } catch { self.error = error.localizedDescription; prefs.disable(save: false) }
     }
     func select(_ id: String) {
-        guard templates.contains(where: { $0.id == id }) else { return }
+        guard catalog.template(id) != nil else { return }
         selectedID = id
-        previewData.stop()
+        feeds.resetPreview()
         do { try preparePreview(); error = nil }
         catch { self.error = error.localizedDescription; previewPipeline = nil }
         refreshPlayback()
     }
     func apply() {
         guard let previewPipeline else { return }
-        guard setup.isReady(previewPipeline.template) else {
-            setup.open(previewPipeline.template, applyAfterSetup: true)
-            return
-        }
-        if activePipeline?.template.id != previewPipeline.template.id { data.stop() }
+        guard setup.isReady(previewPipeline.template) else { setup.open(previewPipeline.template, applyAfterSetup: true); return }
+        if activePipeline?.template.id != previewPipeline.template.id { feeds.resetDesktop() }
         activePipeline = previewPipeline
-        preferences.templateID = selectedID; preferences.enabled = true
-        preferencesStore.save(preferences, for: WallpaperPreferences.key); refreshPlayback(); rebuildDesktop()
+        prefs.enable(templateID: selectedID)
+        refreshPlayback(); rebuildDesktop()
     }
     func stopWallpaper() {
-        preferences.enabled = false; preferencesStore.save(preferences, for: WallpaperPreferences.key)
-        host.stop(); activePipeline = nil; stats = .init(); refreshPlayback()
-        syncSystemBackdrop()
+        prefs.disable(); desktop.stop(); activePipeline = nil
+        refreshPlayback(); syncSystemBackdrop()
     }
     func setBrowsing(_ value: Bool) { browsing = value; refreshPlayback() }
     func setPreviewVisible(_ value: Bool) {
         previewVisible = value
-        if !value && !enabled { stats = .init() }
+        if !value { previewStats = .init() }
     }
-    func setMaximumFPS(_ fps: Int) { preferences.maximumFPS = fps == 30 ? 30 : 60; preferencesStore.save(preferences, for: WallpaperPreferences.key); refreshPlayback() }
-    func setCustomBackground(_ enabled: Bool) {
-        preferences.customBackground = enabled; preferencesStore.save(preferences, for: WallpaperPreferences.key)
+    func setMaximumFPS(_ fps: Int) { prefs.setMaximumFPS(fps); refreshPlayback() }
+    func setCustomBackground(_ value: Bool) {
+        prefs.setCustomBackground(value)
         select(selectedID)
         if isSelectedApplied { apply() }
     }
     func importTemplate(_ url: URL) {
         do {
-            guard let registry, let gpu else { return }
-            let template = try registry.importTemplate(url) { _ = try WallpaperPipeline(template: $0, gpu: gpu, shaders: shaders) }
-            templates = registry.templates
-            let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: shaders)
-            thumbnails[template.id] = try WallpaperCoverRenderer.cover(pipeline: pipeline)
+            guard let factory else { return }
+            let template = try catalog.importTemplate(url) { try factory.validate($0) }
+            covers.invalidate(template.id); covers.request([template])
             select(template.id)
         } catch { self.error = error.localizedDescription }
     }
-    func receiveStats(_ value: RenderStats) { stats = value }
+    func receiveStats(_ value: RenderStats) { previewStats = value }
     func shutdown() {
-        browsing = false; host.stop(); environmentObservation?.cancel(); environmentObservation = nil; activity.setRendering(false)
-        data.stop(); previewData.stop(); setup.cancel(); sampling = false
+        browsing = false; systemState.stop(); desktop.stop(); covers.cancel(); activity.setRendering(false)
+        feeds.reset(); setup.cancel()
         do { try systemBackdrop?.restore() } catch { self.error = error.localizedDescription }
         playback = .init(); activePipeline = nil; previewPipeline = nil
     }
+
     private func preparePreview() throws {
-        guard let selected, registry != nil, let gpu else { return }
-        let image = preferences.customBackground && selected.image != nil && selected.allowsCustomBackground != false ? WallpaperPaths.background : nil
-        previewPipeline = try WallpaperPipeline(template: selected, gpu: gpu, shaders: shaders, imageURL: image)
+        guard let selected, let factory else { return }
+        let image = WallpaperPipelineFactory.backgroundImage(for: selected, customBackground: preferences.customBackground)
+        previewPipeline = try factory.make(selected, imageURL: image)
     }
     private func rebuildDesktop() {
         syncSystemBackdrop()
-        guard enabled, activePipeline != nil else { return }
-        host.show { WallpaperDesktopSurface(model: self) }
+        guard enabled, let activePipeline else { return }
+        desktop.show(pipeline: activePipeline, source: feeds.desktop, framesPerSecond: playback.framesPerSecond)
     }
     private func syncSystemBackdrop() {
         do {
@@ -139,51 +134,24 @@ import UnfoldMyMacCore
         } catch { self.error = "System wallpaper background: " + error.localizedDescription }
     }
     private func connectionsChanged() {
-        preferencesStore.save(preferences, for: WallpaperPreferences.key)
-        data.stop(); previewData.stop(); sampling = false
+        feeds.reset()
         if let active = activePipeline?.template, enabled, !setup.isReady(active) { stopWallpaper() }
         refreshPlayback()
     }
-    private func systemStateChanged(_ state: SystemState) {
-        let previous = lastSystemState; lastSystemState = state
+    private func systemChanged(_ event: SystemStateSubscriber.Event) {
         refreshPlayback()
-        if let previous, state.displayGeneration != previous.displayGeneration { rebuildDesktop() }
-        if let previous, state.spaceGeneration != previous.spaceGeneration { syncSystemBackdrop() }
+        switch event {
+        case .displaysChanged: rebuildDesktop()
+        case .spaceChanged: syncSystemBackdrop()
+        case .sleep, .wake, .accessibility: break
+        }
     }
     private func refreshPlayback() {
-        let system = environment.state
-        var next = WallpaperPlayback()
-        // The desktop cannot be seen while the machine or its screens sleep or another user's session is active.
-        next.enabled = enabled; next.preview = browsing; next.sleeping = system.displaysUnavailable || system.sessionInactive
-        next.reducedMotion = system.reduceMotion; next.lowPower = system.lowPower
-        next.thermallyLimited = system.thermallyLimited; next.maximumFPS = preferences.maximumFPS
-        playback = next
+        let next = WallpaperPlaybackPolicy.playback(enabled: enabled, browsing: browsing, maximumFPS: preferences.maximumFPS, system: environment.state)
+        if next != playback { playback = next }
         activity.setRendering(next.enabled && !next.sleeping && next.animates)
-        if next.shouldSample {
-            data.update(enabled ? providers(for: activePipeline?.template) : [])
-            previewData.update(browsing && !isSelectedApplied ? providers(for: selected) : [])
-            sampling = true
-        }
-        if !next.shouldSample && sampling { data.stop(); previewData.stop(); sampling = false }
-    }
-    private func providers(for template: WallpaperTemplate?) -> [any WallpaperDataProvider] {
-        guard let template else { return [] }
-        let needed = template.dataNamespaces
-        let github = setup.configuration(.githubProfile, for: template.id)
-        let activity = setup.configuration(.codexActivity, for: template.id)
-        let codex = setup.configuration(.codexHistory, for: template.id)
-        let claude = setup.configuration(.claudeCode, for: template.id)
-        let tool = setup.configuration(.toolFile, for: template.id)
-        var providers: [any WallpaperDataProvider] = []
-        if let countdown = template.countdown { providers.append(CountdownWallpaperProvider(countdown: countdown)) }
-        if needed.contains("aurora") { providers.append(AuroraWallpaperProvider()) }
-        if needed.contains("mac") { providers.append(MacWallpaperProvider()) }
-        if needed.contains("scene") { providers.append(WallpaperSessionProvider()) }
-        if needed.contains("activity"), activity.enabled { providers.append(CodexActivityProvider()) }
-        if needed.contains("github"), github.enabled, let username = github.username { providers.append(GitHubWallpaperProvider(username: username)) }
-        if needed.contains("codex"), codex.enabled { providers.append(CodexWallpaperProvider()) }
-        if needed.contains("claude"), claude.enabled { providers.append(ClaudeWallpaperProvider(root: URL(fileURLWithPath: claude.path ?? WallpaperPaths.defaultClaudeRoot.path))) }
-        if needed.contains("tool"), tool.enabled, let path = tool.path { providers.append(WallpaperJSONProvider(url: URL(fileURLWithPath: path))) }
-        return providers
+        desktop.setFramesPerSecond(next.framesPerSecond)
+        feeds.update(desktop: enabled ? activePipeline?.template : nil, preview: browsing && !isSelectedApplied ? selected : nil,
+                     connections: setup.connections, sampling: next.shouldSample)
     }
 }

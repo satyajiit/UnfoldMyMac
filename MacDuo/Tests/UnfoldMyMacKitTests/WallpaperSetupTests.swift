@@ -21,7 +21,7 @@ import UnfoldMyMacCore
     setup.draft["github-profile"] = .init(enabled: true, username: "alice")
     #expect(setup.draftReady && !setup.isReady(github))
     setup.cancel()
-    #expect(!setup.isReady(github) && setup.configuration(.githubProfile, for: github.id).username == nil)
+    #expect(!setup.isReady(github) && setup.configuration("github-profile", for: github.id).username == nil)
     setup.open(github, applyAfterSetup: true)
     setup.draft["github-profile"] = .init(enabled: true, username: "alice")
     setup.finish()
@@ -31,8 +31,8 @@ import UnfoldMyMacCore
     setup.draft["github-profile"] = .init(enabled: true, username: "bob")
     setup.finish()
     let restored = WallpaperSetupController(preferences: UserDefaultsPreferencesStore(defaults: defaults))
-    #expect(restored.configuration(.githubProfile, for: github.id).username == "alice")
-    #expect(restored.configuration(.githubProfile, for: second.id).username == "bob")
+    #expect(restored.configuration("github-profile", for: github.id).username == "alice")
+    #expect(restored.configuration("github-profile", for: second.id).username == "bob")
     setup.open(github)
     setup.draft["github-profile"] = .init()
     setup.finish()
@@ -48,16 +48,16 @@ import UnfoldMyMacCore
     object["githubUsername"] = "previous-global-user"
     defaults.set(try JSONSerialization.data(withJSONObject: object), forKey: "unfoldmymac.wallpaper.v1")
     let setup = WallpaperSetupController(preferences: UserDefaultsPreferencesStore(defaults: defaults))
-    #expect(setup.configuration(.githubProfile, for: "github-after-hours").username == nil)
-    #expect(!setup.configuration(.codexActivity, for: "codex-mission-control").enabled)
-    #expect(setup.configuration(.codexHistory, for: "codex-foundry").enabled)
+    #expect(setup.configuration("github-profile", for: "github-after-hours").username == nil)
+    #expect(!setup.configuration("codex-activity", for: "codex-mission-control").enabled)
+    #expect(setup.configuration("codex-history", for: "codex-foundry").enabled)
 }
 
 @Test @MainActor func wallpaperApplyRequestsItsOwnSetupAndLeavesCurrentDesktopRunning() throws {
     let suite = "template-apply-" + UUID().uuidString
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
-    let model = WallpaperModel(preferences: UserDefaultsPreferencesStore(defaults: defaults), environment: FakeSystemEnvironment(), surfaces: DesktopSurfaceRegistry(), gpu: try TestGPU.context())
+    let model = WallpaperModel(preferences: UserDefaultsPreferencesStore(defaults: defaults), environment: FakeSystemEnvironment(), displays: FakeDisplay(), surfaces: DesktopSurfaceRegistry(), gpu: try TestGPU.context(), coverDirectory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString))
     model.start(); model.apply()
     defer { model.shutdown() }
     #expect(model.enabled && model.activePipeline?.template.id == "pulse")

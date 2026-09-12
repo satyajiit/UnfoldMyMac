@@ -19,9 +19,9 @@ import UnfoldMyMacCore
         driver = DisplayLinkFrameDriver(renderer: MetalSurfaceRenderer(pipeline: pipeline))
         driver.frameSource = { [unowned self] delta, animating in smoother.advance(delta: delta, animating: animating) }
     }
-    func configure(energy: Double, fps: Int, channels: SIMD4<Float> = .zero, grid: WallpaperScalarGrid? = nil) {
-        smoother.setTargets(energy: energy, channels: channels, grid: grid)
-        driver.configure(framesPerSecond: fps)
+    func configure(_ pose: WallpaperPose, framesPerSecond: Int) {
+        smoother.setTargets(energy: pose.energy, channels: pose.channels, grid: pose.grid)
+        driver.configure(framesPerSecond: framesPerSecond)
     }
     func stop() { driver.stop() }
 }

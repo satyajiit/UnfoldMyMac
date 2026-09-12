@@ -43,9 +43,12 @@ public struct WallpaperLayer: Codable, Identifiable, Equatable, Sendable {
         switch format {
         case .percent: return String(format: "%.0f%%", number)
         case .gigabytes: return String(format: "%.1f GB", number)
-        case .integer: return number.formatted(.number.precision(.fractionLength(0)))
-        case .compact: return number.formatted(.number.locale(Locale(identifier: "en_US")).notation(.compactName).precision(.fractionLength(0...1)))
+        case .integer: return number.formatted(Self.integerStyle)
+        case .compact: return number.formatted(Self.compactStyle)
         case .text: return content
         }
     }
+    /// Built once; a format style resolved per value was a measurable cost in the layer views (P20).
+    private static let integerStyle = FloatingPointFormatStyle<Double>.number.precision(.fractionLength(0))
+    private static let compactStyle = FloatingPointFormatStyle<Double>.number.locale(Locale(identifier: "en_US")).notation(.compactName).precision(.fractionLength(0...1))
 }

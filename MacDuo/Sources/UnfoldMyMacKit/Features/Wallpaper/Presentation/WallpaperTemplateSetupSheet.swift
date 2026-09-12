@@ -12,15 +12,17 @@ struct WallpaperTemplateSetupSheet: View {
             ScrollView {
               VStack(alignment: .leading, spacing: 22) {
                ForEach(request.template.setup ?? []) { requirement in
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Text(requirement.kind.title).font(UnfoldMyMacType.title3)
-                        Spacer()
-                        Text(requirement.required ? "Required" : "Optional").font(UnfoldMyMacType.caption).modifier(SecondaryTextStyle())
+                if let connector = setup.registry.connector(requirement.id) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Text(connector.title).font(UnfoldMyMacType.title3)
+                            Spacer()
+                            Text(requirement.required ? "Required" : "Optional").font(UnfoldMyMacType.caption).modifier(SecondaryTextStyle())
+                        }
+                        WallpaperConnectorFormView(connector: connector, connection: connection(requirement.id))
                     }
-                    connector(requirement.kind)
+                    Divider()
                 }
-                Divider()
                }
               }.onGeometryChange(for: CGFloat.self, of: { $0.size.height }) { formHeight = $0 }
             }
@@ -37,24 +39,7 @@ struct WallpaperTemplateSetupSheet: View {
         }.padding(28).frame(width: 552).fixedSize(horizontal: false, vertical: true)
             .font(UnfoldMyMacType.body)
     }
-    @ViewBuilder private func connector(_ kind: WallpaperSetupRequirement.Kind) -> some View {
-        let connection = Binding(get: { setup.draft[kind.rawValue] ?? .init() }, set: { setup.draft[kind.rawValue] = $0 })
-        switch kind {
-        case .githubProfile: GitHubProfileSetup(connection: connection)
-        case .codexActivity: CodexActivitySetup(connection: connection)
-        default: WallpaperLocalConnectionSetup(kind: kind, connection: connection)
-        }
-    }
-}
-
-extension WallpaperSetupRequirement.Kind {
-    var title: String {
-        switch self {
-        case .githubProfile: "GitHub profile"
-        case .codexActivity: "Codex live activity"
-        case .codexHistory: "Codex usage"
-        case .claudeCode: "Claude Code"
-        case .toolFile: "Your tool feed"
-        }
+    private func connection(_ id: String) -> Binding<WallpaperConnectionSettings> {
+        Binding(get: { setup.draft[id] ?? .init() }, set: { setup.draft[id] = $0 })
     }
 }

@@ -9,6 +9,7 @@ import UnfoldMyMacCore
     private(set) var connections: [String: [String: WallpaperConnectionSettings]]
     @ObservationIgnored var onChange: (() -> Void)?
     @ObservationIgnored var onApply: ((String) -> Void)?
+    @ObservationIgnored let registry: WallpaperConnectorRegistry
     @ObservationIgnored private let preferences: any PreferencesStore
     /// Per-template connection settings. The first read on a pre-connections install preserves the
     /// previously enabled local adapters; a legacy global GitHub username is deliberately not treated
@@ -29,28 +30,25 @@ import UnfoldMyMacCore
             return connections
         })
 
-    init(preferences: any PreferencesStore) {
-        self.preferences = preferences
+    init(preferences: any PreferencesStore, registry: WallpaperConnectorRegistry = .standard) {
+        self.preferences = preferences; self.registry = registry
         connections = preferences.load(Self.key)
     }
-    func configuration(_ kind: WallpaperSetupRequirement.Kind, for templateID: String) -> WallpaperConnectionSettings {
-        connections[templateID]?[kind.rawValue] ?? .init()
+    func configuration(_ connector: String, for templateID: String) -> WallpaperConnectionSettings {
+        connections[templateID]?[connector] ?? .init()
     }
     func isReady(_ template: WallpaperTemplate) -> Bool {
-        Self.isReady(template, connections: connections[template.id] ?? [:])
+        Self.isReady(template, connections: connections[template.id] ?? [:], registry: registry)
     }
     var draftReady: Bool {
         guard let request else { return false }
-        return Self.isReady(request.template, connections: draft)
+        return Self.isReady(request.template, connections: draft, registry: registry)
     }
-    static func isReady(_ template: WallpaperTemplate, connections: [String: WallpaperConnectionSettings]) -> Bool {
+    /// Every required connector must be known and must accept its configuration.
+    static func isReady(_ template: WallpaperTemplate, connections: [String: WallpaperConnectionSettings],
+                        registry: WallpaperConnectorRegistry = .standard) -> Bool {
         (template.setup ?? []).filter(\.required).allSatisfy { requirement in
-            guard let value = connections[requirement.id], value.enabled else { return false }
-            switch requirement.kind {
-            case .githubProfile: return value.username.flatMap { try? GitHubProfileClient.username($0) } != nil
-            case .toolFile: return value.path?.isEmpty == false
-            default: return true
-            }
+            registry.connector(requirement.id)?.validate(connections[requirement.id] ?? .init()) == true
         }
     }
     func open(_ template: WallpaperTemplate, applyAfterSetup: Bool = false) {

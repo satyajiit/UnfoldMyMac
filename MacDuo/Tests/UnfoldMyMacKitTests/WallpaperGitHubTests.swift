@@ -6,17 +6,21 @@ import UnfoldMyMacCore
 
 private final class GitHubMockProtocol: URLProtocol, @unchecked Sendable {
     static let requests = Mutex<[String: Int]>([:])
+    static let conditionalRequests = Mutex(0)
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
     override func startLoading() {
         let url = request.url!, username = url.pathComponents[2]
         Self.requests.withLock { $0[username, default: 0] += 1 }
         let calls = Self.requests.withLock { $0[username] ?? 0 }
-        let code = username == "missing" ? 404 : username == "limited" ? 429 : username == "flaky" && calls > 2 ? 503 : 200
+        let conditional = username == "etag" && request.value(forHTTPHeaderField: "If-None-Match") == "\"v1\""
+        if conditional { Self.conditionalRequests.withLock { $0 += 1 } }
+        let code = username == "missing" ? 404 : username == "limited" ? 429 : username == "flaky" && calls > 2 ? 503 : conditional ? 304 : 200
         let profile = #"{"login":"satyajiit","public_repos":35,"followers":35,"following":7,"public_gists":2,"created_at":"2016-01-01T00:00:00Z"}"#
         let events = #"[{"id":"1","type":"PushEvent","created_at":"2026-09-01T00:00:00Z"},{"id":"1","type":"PushEvent","created_at":"2026-09-01T00:00:00Z"},{"id":"2","type":"WatchEvent","created_at":"2026-09-01T00:00:00Z"}]"#
-        let body = username == "oversized" ? String(repeating: "x", count: 1_048_577) : url.path.hasSuffix("/public") ? events : profile
-        client?.urlProtocol(self, didReceive: HTTPURLResponse(url: url, statusCode: code, httpVersion: nil, headerFields: nil)!, cacheStoragePolicy: .notAllowed)
+        let body = conditional ? "" : username == "oversized" ? String(repeating: "x", count: 1_048_577) : url.path.hasSuffix("/public") ? events : profile
+        let headers = username == "etag" ? ["ETag": "\"v1\""] : nil
+        client?.urlProtocol(self, didReceive: HTTPURLResponse(url: url, statusCode: code, httpVersion: nil, headerFields: headers)!, cacheStoragePolicy: .notAllowed)
         client?.urlProtocol(self, didLoad: Data(body.utf8))
         client?.urlProtocolDidFinishLoading(self)
     }
@@ -92,4 +96,20 @@ private final class GitHubMockProtocol: URLProtocol, @unchecked Sendable {
     #expect(GitHubMockProtocol.requests.withLock { $0["flaky"] } == 6)
     let never = GitHubWallpaperProvider(username: "missing", client: .init(session: session))
     await #expect(throws: WallpaperError.self) { try await never.sample(at: now) }
+}
+
+// P14: a validator from the last response makes the next refresh conditional; 304 reuses the cached body.
+@Test func githubProviderRevalidatesWithETagsAndDecodesCachedBodiesOn304() async throws {
+    let configuration = URLSessionConfiguration.ephemeral
+    configuration.protocolClasses = [GitHubMockProtocol.self]
+    let session = URLSession(configuration: configuration)
+    defer { session.invalidateAndCancel() }
+    let provider = GitHubWallpaperProvider(username: "etag", client: .init(session: session))
+    let now = Date()
+    let first = try await provider.sample(at: now)
+    #expect(first.numbers["github.repos"] == 35 && GitHubMockProtocol.conditionalRequests.withLock { $0 } == 0)
+    let revalidated = try await provider.sample(at: now.addingTimeInterval(GitHubWallpaperProvider.refreshInterval))
+    #expect(revalidated.numbers["github.repos"] == 35 && revalidated.numbers["github.pushes"] == 1)
+    #expect(GitHubMockProtocol.conditionalRequests.withLock { $0 } == 2, "Profile and events were both revalidated")
+    #expect(revalidated.status.contains("refreshes every 5 min"))
 }

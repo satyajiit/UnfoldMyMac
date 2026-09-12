@@ -8,6 +8,7 @@ actor ClaudeWallpaperProvider: WallpaperDataProvider {
     nonisolated var fingerprint: String { root.path }
     private let activityDirectory: URL
     private var reader: ClaudeLogReader
+    private var activity = ActivityFileCache<ClaudeActivity>(maximumFileBytes: 4096, maximumFiles: 1_000)
     init(root: URL, activityDirectory: URL = WallpaperPaths.claudeActivity) {
         self.root = root; self.activityDirectory = activityDirectory
         reader = ClaudeLogReader(cacheDirectory: WallpaperPaths.root.appendingPathComponent("ClaudeCache-v1", isDirectory: true))
@@ -27,12 +28,6 @@ actor ClaudeWallpaperProvider: WallpaperDataProvider {
             status: reader.cacheError == nil ? (reader.indexing ? "Indexing local history · \(Int(reader.progress*100))% · counts so far" : "Local logs · refreshed every 2s") : "Live · disk cache unavailable")
     }
     private func activities(at date: Date) -> [String] {
-        guard let urls = try? FileManager.default.contentsOfDirectory(at: activityDirectory, includingPropertiesForKeys: [.fileSizeKey]) else { return [] }
-        return urls.prefix(1_000).compactMap { url in
-            guard url.pathExtension == "json", let size = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize,
-                  size < 4096, let data = try? Data(contentsOf: url),
-                  let activity = try? JSONDecoder().decode(ClaudeActivity.self, from: data) else { return nil }
-            return activity.state(at: date)
-        }
+        activity.records(in: activityDirectory, at: date).compactMap { $0.state(at: date) }
     }
 }

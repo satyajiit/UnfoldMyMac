@@ -3,7 +3,7 @@ import Observation
 /// Observes a `SystemEnvironmentObserving` and delivers the events a feature reacts to, diffing successive
 /// states so the feature keeps no history itself. The current state is delivered on start.
 @MainActor final class SystemStateSubscriber {
-    enum Event: Equatable, Sendable { case sleep, wake, displaysChanged, accessibility(reduceTransparency: Bool, reduceMotion: Bool) }
+    enum Event: Equatable, Sendable { case sleep, wake, displaysChanged, spaceChanged, accessibility(reduceTransparency: Bool, reduceMotion: Bool) }
     private let environment: any SystemEnvironmentObserving
     private var last: SystemState?
     private var observation: Task<Void, Never>?
@@ -22,12 +22,14 @@ import Observation
     isolated deinit { stop() }
 
     /// Sleep and wake follow display availability, never the login session; the first state never wakes.
+    /// Every state yields at least the accessibility event, so a handler that re-reads the state runs on each change.
     nonisolated static func events(from previous: SystemState?, to state: SystemState) -> [Event] {
         var events: [Event] = []
         if state.displaysUnavailable != previous?.displaysUnavailable {
             if state.displaysUnavailable { events.append(.sleep) } else if previous != nil { events.append(.wake) }
         }
         if let previous, state.displayGeneration != previous.displayGeneration { events.append(.displaysChanged) }
+        if let previous, state.spaceGeneration != previous.spaceGeneration { events.append(.spaceChanged) }
         events.append(.accessibility(reduceTransparency: state.reduceTransparency, reduceMotion: state.reduceMotion))
         return events
     }

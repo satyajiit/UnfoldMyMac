@@ -70,29 +70,34 @@ import UnfoldMyMacCore
     #expect(throws: WallpaperError.invalidTemplate) { try registry.register(template) }
 }
 
-@Test @MainActor func wallpaperDesktopHostStaysBelowIconsAndRestoresByClosing() {
-    let host = WallpaperDesktopHost(surfaces: DesktopSurfaceRegistry())
-    host.show { SwiftUI.Color.black }
-    #expect(host.windows.count == NSScreen.screens.count)
-    for window in host.windows {
+@Test @MainActor func wallpaperDesktopCoordinatorStaysBelowIconsAndReleasesItsWindows() throws {
+    let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
+    let template = try #require(WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false).templates.first)
+    let coordinator = WallpaperDesktopCoordinator(surfaces: DesktopSurfaceRegistry(), displays: FakeDisplay())
+    coordinator.show(pipeline: try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog), source: WallpaperDataHub(), framesPerSecond: 60)
+    #expect(coordinator.windows.count == NSScreen.screens.count)
+    for window in coordinator.windows {
         let screen = window.screen!
         print("Wallpaper geometry: screen=\(screen.frame), window=\(window.frame), content=\(window.contentView!.frame), safe=\(window.contentView!.safeAreaInsets)")
         #expect(window.frame == screen.frame)
         #expect(window.level.rawValue > Int(CGWindowLevelForKey(.desktopWindow)))
         #expect(window.level.rawValue < Int(CGWindowLevelForKey(.desktopIconWindow)))
         #expect(window.ignoresMouseEvents && !window.canBecomeKey)
+        #expect(window.contentView?.subviews.contains { $0 is MetalSurfaceView } == true)
     }
-    host.stop()
-    #expect(host.windows.isEmpty)
+    weak let controller = coordinator.controllers.first
+    coordinator.stop()
+    // The controller owns the display link, so it must go at once (P2); AppKit releases the closed window on its own schedule.
+    #expect(coordinator.windows.isEmpty && controller == nil)
 }
 
 @Test @MainActor func wallpaperRendererPausesAndReleasesDelegate() throws {
     let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let template = try #require(WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false).templates.first)
     let renderer = WallpaperSurfaceRenderer(pipeline: try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog))
-    renderer.configure(energy: 0.5, fps: 60)
+    renderer.configure(WallpaperPose(energy: 0.5), framesPerSecond: 60)
     #expect(!renderer.isPaused && renderer.framesPerSecond == 60)
-    renderer.configure(energy: 0.5, fps: 0)
+    renderer.configure(WallpaperPose(energy: 0.5), framesPerSecond: 0)
     #expect(renderer.isPaused)
     renderer.stop()
     #expect(renderer.isPaused && renderer.surfaceView.onLayout == nil)

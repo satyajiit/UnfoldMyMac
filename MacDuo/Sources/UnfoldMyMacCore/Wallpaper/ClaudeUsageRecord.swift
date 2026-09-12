@@ -11,8 +11,9 @@ public struct ClaudeUsageRecord: Codable, Equatable, Sendable {
     public var cacheWrite: Double
     public var total: Double { input + output + cacheRead + cacheWrite }
 
+    private static let decoder = JSONDecoder()
     public static func decode(_ data: Data) -> Self? {
-        guard let row = try? JSONDecoder().decode(Row.self, from: data), row.type == "assistant",
+        guard let row = try? decoder.decode(Row.self, from: data), row.type == "assistant",
               let message = row.message, let usage = message.usage,
               let session = row.sessionId, let id = message.id,
               let date = WallpaperJSONDate.parse(row.timestamp) else { return nil }

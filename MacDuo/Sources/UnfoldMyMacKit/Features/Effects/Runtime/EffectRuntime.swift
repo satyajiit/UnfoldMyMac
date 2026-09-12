@@ -160,19 +160,18 @@ import UnfoldMyMacCore
 
     // MARK: System state
 
-    /// System or screen sleep suspends live rendering; an inactive login session does not, so the effect is
-    /// ready the moment the user's session resumes on the built-in display.
+    /// System or screen sleep suspends rendering; an inactive login session does not, so the effect is ready on resume.
     private func systemStateChanged(_ event: SystemStateSubscriber.Event) {
         switch event {
         case .sleep: sleep()
         case .wake: wake()
         case .displaysChanged: displaysChanged()
+        case .spaceChanged: break
         case .accessibility(let transparency, let motion): accessibilityChanged(reduceTransparency: transparency, reduceMotion: motion)
         }
     }
     private func sleep() {
-        suspended = true
-        if preview.isPreviewing { stopPreview() }
+        suspended = true; if preview.isPreviewing { stopPreview() }
         tearDown(); publish(\.status, enabled ? .sleeping : .off); applyPolling()
     }
     private func wake() { suspended = false; lid.reopen(); gate.reset(); applyPolling() }

@@ -5,24 +5,11 @@ actor CodexActivityProvider: WallpaperDataProvider {
     nonisolated let id = "activity"
     nonisolated let interval: TimeInterval = 1
     private let directory: URL
-    private var cache: [URL: (modified: Date, record: CodexHookActivity)] = [:]
+    private var cache = ActivityFileCache<CodexHookActivity>(maximumFileBytes: 65_536, maximumFiles: 2048)
     init(directory: URL = WallpaperPaths.codexActivity) { self.directory = directory }
 
     func sample(at date: Date) async throws -> WallpaperDataSample {
-        let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.contentModificationDateKey, .fileSizeKey])) ?? []
-        let candidates = files.filter { $0.pathExtension == "json" }.compactMap { url -> (URL, Date)? in
-            guard let info = try? url.resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey]),
-                  let modified = info.contentModificationDate, (info.fileSize ?? 0) <= 65_536,
-                  date.timeIntervalSince(modified) < 86_400 else { return nil }
-            return (url, modified)
-        }.sorted { $0.1 > $1.1 }.prefix(2048)
-        let retained = Set(candidates.map(\.0))
-        cache = cache.filter { retained.contains($0.key) }
-        for (url, modified) in candidates where cache[url]?.modified != modified {
-            guard let data = try? Data(contentsOf: url), let record = try? JSONDecoder().decode(CodexHookActivity.self, from: data) else { continue }
-            cache[url] = (modified, record)
-        }
-        return Self.snapshot(records: cache.values.map(\.record), at: date)
+        Self.snapshot(records: cache.records(in: directory, at: date), at: date)
     }
     static func snapshot(records: [CodexHookActivity], at date: Date) -> WallpaperDataSample {
         let states = records.map { $0.state(at: date) }

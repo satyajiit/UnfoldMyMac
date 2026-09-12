@@ -8,14 +8,13 @@ actor GitHubWallpaperProvider: WallpaperDataProvider {
     nonisolated var fingerprint: String { username }
     private let client: GitHubProfileClient
     private var cached: WallpaperDataSample?
-    private var nextFetch = Date.distantPast
-    private var failure: String?
+    private var schedule = RefreshSchedule(refreshInterval: GitHubWallpaperProvider.refreshInterval, retryInterval: GitHubWallpaperProvider.retryInterval)
     init(username: String, client: GitHubProfileClient = .init()) { self.username = username; self.client = client }
 
     /// A transient failure keeps the last good profile on screen and retries sooner than the normal
     /// refresh; cancellation is never recorded as a failure.
     func sample(at date: Date) async throws -> WallpaperDataSample {
-        if date >= nextFetch {
+        if schedule.isDue(at: date) {
             do {
                 async let profile = client.profile(username)
                 async let events = client.events(username)
@@ -25,19 +24,19 @@ actor GitHubWallpaperProvider: WallpaperDataProvider {
                 catch is CancellationError { throw CancellationError() }
                 catch { fetchedEvents = nil }
                 cached = Self.snapshot(profile: fetchedProfile, events: fetchedEvents, at: date)
-                failure = nil; nextFetch = date.addingTimeInterval(Self.refreshInterval)
+                schedule.succeeded(at: date)
             } catch is CancellationError {
                 throw CancellationError()
             } catch {
-                failure = error.localizedDescription; nextFetch = date.addingTimeInterval(Self.retryInterval)
+                schedule.failed(error.localizedDescription, at: date)
             }
         }
         guard var sample = cached else {
-            throw WallpaperError.unavailable(failure ?? "Connect a public GitHub profile to bring this city to life.")
+            throw WallpaperError.unavailable(schedule.failure ?? "Connect a public GitHub profile to bring this city to life.")
         }
         // Heartbeat keeps cached public values visible between deliberately slow API polls.
         sample.timestamp = date
-        if let failure { sample.status = "Showing the last fetched profile · \(failure) · retrying in 1 min" }
+        if let failure = schedule.failure { sample.status = "Showing the last fetched profile · \(failure) · retrying in 1 min" }
         return sample
     }
     static let refreshInterval: TimeInterval = 300
