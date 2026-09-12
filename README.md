@@ -13,10 +13,10 @@ Desktop effects that follow your lid. Live wallpapers with something going on.
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-2563EB?style=for-the-badge" alt="Apache 2.0 license"></a>
 </p>
 <p>
-  <a href="https://forthebadge.com"><img src="https://raw.githubusercontent.com/andrewsbarbaro/for-the-badge/master/public/badges/fuck-it-ship-it.svg" height="28" alt="Fuck it, ship it"></a>
-  <a href="https://forthebadge.com"><img src="https://raw.githubusercontent.com/andrewsbarbaro/for-the-badge/master/public/badges/works-on-my-machine.svg" height="28" alt="Works on my machine"></a>
-  <a href="https://forthebadge.com"><img src="https://raw.githubusercontent.com/andrewsbarbaro/for-the-badge/master/public/badges/powered-by-coffee.svg" height="28" alt="Powered by coffee"></a>
-  <a href="https://forthebadge.com"><img src="https://raw.githubusercontent.com/andrewsbarbaro/for-the-badge/master/public/badges/it-works-why.svg" height="28" alt="It works. Why?"></a>
+  <a href="https://forthebadge.com"><img src=".github/media/badges/fuck-it-ship-it.svg" height="28" alt="Fuck it, ship it"></a>
+  <a href="https://forthebadge.com"><img src=".github/media/badges/works-on-my-machine.svg" height="28" alt="Works on my machine"></a>
+  <a href="https://forthebadge.com"><img src=".github/media/badges/powered-by-coffee.svg" height="28" alt="Powered by coffee"></a>
+  <a href="https://forthebadge.com"><img src=".github/media/badges/it-works-why.svg" height="28" alt="It works. Why?"></a>
 </p>
 <p>
   <a href="#how-it-started"><img src="https://img.shields.io/badge/Scope-out_of_control-F97316?style=for-the-badge&amp;labelColor=172554" alt="Scope: out of control"></a>
@@ -44,26 +44,28 @@ Leave the laptop open and the wallpapers take over: a chrome sculpture reacts to
 A café table. A moving lid. A desktop with a little character. These real-life films sit alongside the full rendered preview collection below.
 
 <p align="center">
-  <a href="https://unfoldmymac.com/showcase/#real-reel"><img src=".github/media/real-life/reel.jpg" width="1000" alt="Watch Lid down. Drama up. — a 24-second UnfoldMyMac film shot on a real MacBook"></a><br>
-  <strong>Lid down. Drama up.</strong> · 24 seconds · 1080p / 60 fps<br>
-  <a href="https://unfoldmymac.com/showcase/#real-reel">Watch the film ↗</a> · <a href="website/public/media/real-life/reel.mp4">Open MP4 on GitHub</a>
+  <a href="https://youtu.be/3wAaLwu-msc"><img src=".github/media/real-life/reel.jpg" width="1000" alt="UnfoldMyMac — an app for your MacBook. Move the lid and your desktop reacts."></a><br>
+  <strong>Give Your Mac a New Look.</strong> · 2 min 30 sec · 4K / 60 fps · HDR on YouTube<br>
+  <a href="https://youtu.be/3wAaLwu-msc">Watch on YouTube ↗</a> · <a href="https://unfoldmymac.com/showcase/#real-reel">View on the website</a>
 </p>
 
 <table>
   <tr>
-    <td width="50%" align="center"><a href="https://unfoldmymac.com/showcase/#real-lights-out"><img src=".github/media/real-life/lights-out.jpg" width="480" alt="Lights Out filmed on a MacBook — Your desk. Pole position."></a><br><strong>Lights Out</strong><br><sub>Your desk. Pole position.</sub><br><a href="website/public/media/real-life/lights-out.mp4">Watch MP4 · 8s</a></td>
-    <td width="50%" align="center"><a href="https://unfoldmymac.com/showcase/#real-codex-foundry"><img src=".github/media/real-life/codex-foundry.jpg" width="480" alt="Codex Foundry filmed on a MacBook — Coffee in. Commits out."></a><br><strong>Codex Foundry</strong><br><sub>Coffee in. Commits out.</sub><br><a href="website/public/media/real-life/codex-foundry.mp4">Watch MP4 · 8s</a></td>
+    <td width="50%" align="center"><a href="https://www.youtube.com/watch?v=uXgEo_o9gIg"><img src=".github/media/real-life/lights-out.jpg" width="480" alt="Lights Out filmed on a MacBook — A race circuit on the desktop."></a><br><strong>Lights Out</strong><br><sub>A race circuit on the desktop.</sub><br><a href="https://www.youtube.com/watch?v=uXgEo_o9gIg">Watch on YouTube · 14.7s</a> · <a href="https://unfoldmymac.com/showcase/#real-lights-out">Website</a></td>
+    <td width="50%" align="center"><a href="https://www.youtube.com/watch?v=K8EdaVhhuBc"><img src=".github/media/real-life/codex-foundry.jpg" width="480" alt="Codex Foundry filmed on a MacBook — Local Codex activity powers a tiny factory."></a><br><strong>Codex Foundry</strong><br><sub>Local Codex activity powers a tiny factory.</sub><br><a href="https://www.youtube.com/watch?v=K8EdaVhhuBc">Watch on YouTube · 21.9s</a> · <a href="https://unfoldmymac.com/showcase/#real-codex-foundry">Website</a></td>
   </tr>
   <tr>
-    <td width="50%" align="center"><a href="https://unfoldmymac.com/showcase/#real-claude-has-notes"><img src=".github/media/real-life/claude-has-notes.jpg" width="480" alt="Claude Has Notes follows the physical MacBook lid — Just one small change."></a><br><strong>Claude Has Notes</strong><br><sub>Just one small change.</sub><br><a href="website/public/media/real-life/claude-has-notes.mp4">Watch MP4 · 8s</a></td>
-    <td width="50%" align="center"><a href="https://unfoldmymac.com/showcase/#real-frost"><img src=".github/media/real-life/frost.jpg" width="480" alt="Frost blurs the screen as the real MacBook lid moves — Close the lid. Lose the noise."></a><br><strong>Frost</strong><br><sub>Close the lid. Lose the noise.</sub><br><a href="website/public/media/real-life/frost.mp4">Watch MP4 · 8s</a></td>
+    <td width="50%" align="center"><a href="https://www.youtube.com/watch?v=nDbIJivsbAc"><img src=".github/media/real-life/claude-has-notes.jpg" width="480" alt="Claude Has Notes follows the physical MacBook lid — Claude takes over as the lid closes."></a><br><strong>Claude Has Notes</strong><br><sub>Claude takes over as the lid closes.</sub><br><a href="https://www.youtube.com/watch?v=nDbIJivsbAc">Watch on YouTube · 10.5s</a> · <a href="https://unfoldmymac.com/showcase/#real-claude-has-notes">Website</a></td>
+    <td width="50%" align="center"><a href="https://www.youtube.com/watch?v=23SEy6OLJyg"><img src=".github/media/real-life/frost.jpg" width="480" alt="Frost blurs the screen as the real MacBook lid moves — Lid angle controls the blur."></a><br><strong>Frost</strong><br><sub>Lid angle controls the blur.</sub><br><a href="https://www.youtube.com/watch?v=23SEy6OLJyg">Watch on YouTube · 18.3s</a> · <a href="https://unfoldmymac.com/showcase/#real-frost">Website</a></td>
   </tr>
   <tr>
-    <td colspan="2" align="center"><a href="https://unfoldmymac.com/showcase/#real-neon-coast"><img src=".github/media/real-life/neon-coast.jpg" width="480" alt="Neon Coast artwork reveals with the MacBook lid — Out of office. Into the neon."></a><br><strong>Neon Coast</strong><br><sub>Out of office. Into the neon.</sub><br><a href="website/public/media/real-life/neon-coast.mp4">Watch MP4 · 8s</a></td>
+    <td colspan="2" align="center"><a href="https://www.youtube.com/watch?v=RdcjgygF0Vg"><img src=".github/media/real-life/neon-coast.jpg" width="480" alt="Neon Coast artwork reveals with the MacBook lid — Artwork revealed by the lid."></a><br><strong>Neon Coast</strong><br><sub>Artwork revealed by the lid.</sub><br><a href="https://www.youtube.com/watch?v=RdcjgygF0Vg">Watch on YouTube · 20.5s</a> · <a href="https://unfoldmymac.com/showcase/#real-neon-coast">Website</a></td>
   </tr>
 </table>
 
-All six films include an original instrumental soundtrack. Website playback starts muted. Prefer the app-rendered previews? The complete effects and wallpaper collection follows.
+UnfoldMyMac makes your desktop react when you move your MacBook’s lid, and adds live wallpapers behind your windows. Start with the **00:00 origin and app introduction**, explore the **00:44 collection**, then watch the **01:22 café recordings at 1.5×**. All 23 templates appear in three scenes: an overview mosaic, a moving grid of 13 effects, and a moving grid of 10 wallpapers. [Browse every scene in the interactive carousel ↗](https://unfoldmymac.com/showcase/#every-preview)
+
+All five recordings play from beginning to end: **1.5× in the full film**, **original speed in the individual clips**. Each has a one-second transition before and after. All six films include a spoken voiceover, an original funk score, and a 4K 60 fps HDR upload on YouTube. The playful coffee bubbles, icon stickers, and UnfoldMyMac badge are back; large caption panels stay off the footage. Press play on the website to watch with sound. The complete effects and wallpaper collection follows.
 
 ## The effects
 
@@ -208,7 +210,7 @@ The GIFs below use the app's Metal shaders and SwiftUI text layers with **sample
   <tr>
     <td width="50%" align="center">
       <a href=".github/media/wallpapers/gta-vi-countdown.gif"><img src=".github/media/wallpapers/gta-vi-countdown.gif" width="480" alt="GTA VI — Vice City Countdown: native animated preview with a sample day count"></a><br>
-      <strong>GTA VI — Vice City Countdown</strong><br><sub>Official Rockstar artwork and a calendar-day countdown to the announced console release. Artwork © Rockstar Games.</sub>
+      <strong>GTA VI — Vice City Countdown</strong><br><sub>Rockstar's own promotional artwork and a calendar-day countdown to the announced console release. Artwork © Rockstar Games, excluded from this project's licence; not affiliated with or endorsed by Rockstar Games or Take-Two. Rights holders: <a href="mailto:admin@matterwardlabs.com">admin@matterwardlabs.com</a>. See <a href="NOTICE">NOTICE</a>.</sub>
     </td>
     <td width="50%" align="center">
       <a href=".github/media/wallpapers/aurora-observatory.gif"><img src=".github/media/wallpapers/aurora-observatory.gif" width="480" alt="Aurora Observatory: a rotating 3D Earth with auroral curtains and sample space-weather data"></a><br>
@@ -295,28 +297,7 @@ Artwork imports are stored in `~/Library/Application Support/UnfoldMyMac/Artwork
 
 ## Contributing
 
-[Bug reports](https://github.com/satyajiit/UnfoldMyMac/issues/new/choose), hardware compatibility reports, new effects, wallpapers, and fixes are welcome. For a bug, include your Mac model, macOS version, steps to reproduce, and what you expected. For a rendering change, include a short recording or before-and-after images.
-
-Run these from `MacDuo/` before sending a pull request:
-
-```sh
-swift test
-./script/build_and_run.sh --build
-./script/build_and_run.sh --shader-check
-./script/build_and_run.sh --probe
-```
-
-Metal rendering checks need a Mac with an available GPU. The GitHub workflow runs core tests and builds the app and test targets on macOS 26; hardware checks run locally.
-
-| Area | Start here |
-| --- | --- |
-| Models, calibration, preferences | [`UnfoldMyMacCore`](MacDuo/Sources/UnfoldMyMacCore) |
-| Native and procedural effects | [`BuiltInEffects.swift`](MacDuo/Sources/UnfoldMyMacKit/Effects/BuiltInEffects.swift) and [`Effects`](MacDuo/Sources/UnfoldMyMacKit/Effects) |
-| Bundled image designs | [`Artworks.json`](MacDuo/Sources/UnfoldMyMacKit/Resources/Library/Artworks.json) and [`Artwork`](MacDuo/Sources/UnfoldMyMacKit/Resources/Artwork) |
-| Wallpaper templates and rendering | [`Wallpapers`](MacDuo/Sources/UnfoldMyMacKit/Resources/Wallpapers) and [`Wallpaper`](MacDuo/Sources/UnfoldMyMacKit/Wallpaper) |
-| App entry point | [`main.swift`](MacDuo/Sources/UnfoldMyMac/main.swift) |
-
-Keep changes focused. Include the checks you ran, and use artwork you have permission to contribute. Contributions are accepted under the project's Apache 2.0 license.
+[Bug reports](https://github.com/satyajiit/UnfoldMyMac/issues/new/choose), hardware compatibility reports, new effects, wallpapers, artwork, and fixes are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) has the four checks to run before a pull request, the file map, and the rules on dependencies and artwork rights. [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) applies here. Security problems go through [SECURITY.md](SECURITY.md) rather than the issue tracker.
 
 ## Contributors
 
