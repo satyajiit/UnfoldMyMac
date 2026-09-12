@@ -50,10 +50,11 @@ export function useLidGestures(move: (angle: number, animated?: boolean) => void
     if (!event.isPrimary || event.button !== 0) return;
     stop(); event.currentTarget.setPointerCapture(event.pointerId);
     move(getAngle() + direction * 5);
-    let previous = performance.now();
+    const start = performance.now(), from = getAngle();
     const tick = (now: number) => {
-      move(getAngle() + direction * Math.min(now - previous, 32) * 0.075);
-      previous = now;
+      // Elapsed time since the press, not a per-frame delta clamped to 32ms: a page that only
+      // gets a frame every 140ms would otherwise move the lid at a fifth of 75 degrees a second.
+      move(from + direction * (now - start) * 0.075);
       if (getAngle() > lidAngles.min && getAngle() < lidAngles.max) holdFrame.current = requestAnimationFrame(tick);
     };
     holdFrame.current = requestAnimationFrame(tick);
