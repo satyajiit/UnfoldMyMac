@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or idea
+    url: https://github.com/satyajiit/UnfoldMyMac/discussions
+    about: Ask about setup, hardware support or an effect you would like to see.
+  - name: Security report
+    url: https://github.com/satyajiit/UnfoldMyMac/security/policy
+    about: Report a vulnerability privately. Do not open a public issue.
