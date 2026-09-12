@@ -7,7 +7,7 @@ import UnfoldMyMacCore
 /// a renamed shader, a missing cover or a template naming an asset that was never added.
 @Test @MainActor func everyDeclaredResourceResolves() throws {
     for weight in ["Regular", "Medium", "Bold"] { #expect(BundleResources.font("SpaceGrotesk-\(weight)") != nil, "font \(weight)") }
-    #expect(BundleResources.brandLogo != nil)
+    #expect(BundleResources.brandLogo != nil && BundleResources.brandMark != nil)
     #expect(BundleResources.artworkManifest != nil)
     for effect in ["Frost", "Curtains", "ArtReveal", "Current", "Peekaboo"] {
         #expect(throws: Never.self, "effect shader \(effect)") { try BundleResources.shaderSource(effect, family: .effects) }
@@ -39,7 +39,7 @@ import UnfoldMyMacCore
         if let image = template.image { #expect(item.assets.image(image) != nil, "\(template.id) image \(image)") }
         #expect(template.category != nil && template.order != nil, "\(template.id) is placed in the collection")
     }
-    #expect(WallpaperStyleSheet.bundled == .standard)
+    #expect(try WallpaperStyleSheet.bundled() == .standard)
 }
 
 @Test func bundleResourcesReportMissingFilesByPath() {

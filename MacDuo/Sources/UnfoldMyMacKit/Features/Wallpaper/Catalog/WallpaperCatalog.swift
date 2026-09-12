@@ -15,6 +15,7 @@ import UnfoldMyMacCore
     init(shaders: WallpaperShaderCatalog, connectors: WallpaperConnectorRegistry = .standard) { self.shaders = shaders; self.connectors = connectors }
 
     var collection: WallpaperCollection { registry?.collection ?? .standard }
+    var style: WallpaperStyle { registry?.style ?? .standard }
     func load() throws {
         registry = try WallpaperTemplateRegistry(shaders: shaders, connectors: connectors)
         sync()

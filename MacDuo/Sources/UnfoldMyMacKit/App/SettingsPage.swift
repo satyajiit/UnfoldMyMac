@@ -3,7 +3,7 @@ import UnfoldMyMacCore
 
 /// Preferences shared by every feature belong here.
 struct SettingsPage: View {
-    @Bindable var model: UnfoldMyMacModel
+    @Bindable var model: EffectsModel
     @Environment(\.appInfo) private var appInfo
     var body: some View {
         FeaturePage(title: "Settings") {

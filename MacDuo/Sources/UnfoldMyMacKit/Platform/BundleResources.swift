@@ -50,6 +50,7 @@ enum BundleResources {
         bundle.url(forResource: name, withExtension: "ttf", subdirectory: "Resources/Fonts")
     }
     static var brandLogo: URL? { image("UnfoldMyMacLogo", folder: "Brand") }
+    static var brandMark: URL? { image("UnfoldMyMacMark", folder: "Brand") }
     static var effectsManifest: URL? {
         bundle.url(forResource: "Effects", withExtension: "json", subdirectory: "Resources/Effects")
     }

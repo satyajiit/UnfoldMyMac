@@ -18,10 +18,10 @@ import UnfoldMyMacCore
     var isShowing: Bool { !controllers.isEmpty }
 
     /// Rebuilds the windows for `pipeline` and follows `source` until `stop()`.
-    func show(pipeline: WallpaperPipeline, source: any WallpaperSnapshotSource, framesPerSecond: Int) {
+    func show(pipeline: WallpaperPipeline, source: any WallpaperSnapshotSource, framesPerSecond: Int, styleSheet: WallpaperStyle = .standard) {
         close()
         self.pipeline = pipeline; self.framesPerSecond = framesPerSecond
-        surface.reset(template: pipeline.template); surface.setAnimated(framesPerSecond > 1)
+        surface.reset(template: pipeline.template, styleSheet: styleSheet); surface.setAnimated(framesPerSecond > 1)
         for screen in NSScreen.screens {
             controllers.append(WallpaperDesktopWindowController(screen: screen, displayID: displays.displayID(of: screen) ?? 0, pipeline: pipeline, surface: surface))
         }

@@ -61,7 +61,7 @@ private func temporaryDirectory() -> URL { FileManager.default.temporaryDirector
     #expect(!WallpaperPlaybackPolicy.playback(enabled: false, browsing: false, maximumFPS: 60, system: system).shouldSample)
 }
 
-@Test @MainActor func coverStoreKeysAreStableAndCachedCoversSkipRendering() async throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func coverStoreKeysAreStableAndCachedCoversSkipRendering() async throws {
     let directory = temporaryDirectory()
     defer { try? FileManager.default.removeItem(at: directory) }
     let shaders = WallpaperShaderCatalog()
@@ -86,7 +86,7 @@ private func temporaryDirectory() -> URL { FileManager.default.temporaryDirector
     #expect(warm.images[template.id] == nil)
 }
 
-@Test @MainActor func wallpaperModelStartsWithoutRenderingCoversAndReleasesAfterShutdown() async throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func wallpaperModelStartsWithoutRenderingCoversAndReleasesAfterShutdown() async throws {
     let suite = "wallpaper-runtime-" + UUID().uuidString
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
@@ -127,7 +127,7 @@ private func temporaryDirectory() -> URL { FileManager.default.temporaryDirector
     #expect(coordinator.desktop.snapshot.sources.isEmpty)
 }
 
-@Test @MainActor func wallpaperApplyStopAndPreviewCyclesReleaseEveryPipelineAndWindow() async throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func wallpaperApplyStopAndPreviewCyclesReleaseEveryPipelineAndWindow() async throws {
     let suite = "wallpaper-cycle-" + UUID().uuidString
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }

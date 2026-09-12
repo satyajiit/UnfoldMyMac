@@ -3,7 +3,7 @@ import Testing
 import UnfoldMyMacCore
 @testable import UnfoldMyMacKit
 
-@Test @MainActor func nativeEffectsNeverCreateCaptureAndSwitchStopsFrost() async throws {
+@Test(.requiresWindowServer, .tags(.window)) @MainActor func nativeEffectsNeverCreateCaptureAndSwitchStopsFrost() async throws {
     let screen = try #require(NSScreen.screens.first)
     var captures: [FakeCapture] = []
     let registry = makeRegistry()
@@ -28,7 +28,7 @@ import UnfoldMyMacCore
     session.stop()
     #expect(!host.shown)
 }
-@Test @MainActor func staleCaptureCallbacksCannotAffectNewEffect() async throws {
+@Test(.requiresWindowServer, .tags(.window)) @MainActor func staleCaptureCallbacksCannotAffectNewEffect() async throws {
     let screen = try #require(NSScreen.screens.first)
     let capture = FakeCapture()
     var renderers: [FakeRenderer] = []
@@ -49,7 +49,7 @@ import UnfoldMyMacCore
     #expect(session.renderer != nil)
     session.stop()
 }
-@Test @MainActor func reducedTransparencyAvoidsCaptureAndZeroProgressHides() throws {
+@Test(.requiresWindowServer, .tags(.window)) @MainActor func reducedTransparencyAvoidsCaptureAndZeroProgressHides() throws {
     let screen = try #require(NSScreen.screens.first)
     let host = FakeHost()
     var captures = 0
@@ -254,7 +254,7 @@ import UnfoldMyMacCore
     #expect(!model.isPreviewing && model.enabled && model.activeEffect.id == .fade)
 }
 
-@Test @MainActor func captureStartupFailureStopsSession() async throws {
+@Test(.requiresWindowServer, .tags(.window)) @MainActor func captureStartupFailureStopsSession() async throws {
     let screen = try #require(NSScreen.screens.first)
     let capture = FakeCapture(); capture.failure = CaptureFailure.exclusionUnavailable
     let session = EffectSession(registry: makeRegistry(), host: FakeHost(), displays: FakeDisplay(), gpu: nil, makeCapture: { capture })

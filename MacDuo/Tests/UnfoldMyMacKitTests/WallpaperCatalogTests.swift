@@ -132,7 +132,7 @@ private func temporaryDirectory() -> URL { FileManager.default.temporaryDirector
     #expect(WallpaperFrame(pose: .init(time: 3, energy: 0.4, channels: [0.5])) == WallpaperFrame(time: 3, energy: 0.4, channels: SIMD4(0.5, 0, 0, 0)))
 }
 
-@Test @MainActor func folderCoversSkipRenderingAndFPSCeilingsCapPlayback() async throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func folderCoversSkipRenderingAndFPSCeilingsCapPlayback() async throws {
     let registry = try WallpaperTemplateRegistry(shaders: WallpaperShaderCatalog(), loadUserTemplates: false)
     let covered = registry.templates.filter { registry.assets(for: $0.id).cover(for: $0) != nil }
     #expect(Set(covered.map(\.id)) == ["aurora-observatory", "gta-vi-countdown"])

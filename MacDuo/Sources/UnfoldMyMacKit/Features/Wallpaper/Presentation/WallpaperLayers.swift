@@ -5,11 +5,13 @@ struct WallpaperLayers: View {
     let template: WallpaperTemplate
     let snapshot: WallpaperSnapshot
     let animated: Bool
+    /// The typography the template's own `style` merges over; the catalog supplies the bundled sheet.
+    var styleSheet: WallpaperStyle = .standard
     var body: some View {
         GeometryReader { geometry in
             let fit = template.canvasSize.fit(width: geometry.size.width, height: geometry.size.height)
             let scale = fit.scale, size = CGSize(width: fit.width, height: fit.height)
-            let style = template.styled(over: WallpaperStyleSheet.bundled)
+            let style = template.styled(over: styleSheet)
             let resolved = resolvedSnapshot
             ZStack(alignment: .topLeading) {
                 ForEach(template.layers) { layer in

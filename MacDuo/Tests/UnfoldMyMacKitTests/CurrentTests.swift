@@ -23,7 +23,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func currentFlowsButRespectsClearCoveragePauseAndReducedMotion() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func currentFlowsButRespectsClearCoveragePauseAndReducedMotion() throws {
     let harness = try CurrentHarness()
     #expect(try harness.render(.init(closure: 0, time: 10)).pixels.allSatisfy { $0 == 0 })
     let onset = try harness.render(.init(closure: 0.004)).pixels

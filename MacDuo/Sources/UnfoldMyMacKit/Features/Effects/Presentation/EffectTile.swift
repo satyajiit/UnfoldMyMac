@@ -10,10 +10,9 @@ struct EffectTile: View {
     var select: () -> Void
     var preview: () -> Void
     var adjust: () -> Void
-    @Environment(\.colorScheme) private var scheme
+    @Palette private var palette
     @Environment(\.colorSchemeContrast) private var contrast
     var body: some View {
-        let p = UnfoldMyMacPalette(dark: scheme == .dark)
         VStack(alignment: .leading, spacing: 0) {
             Button(action: select) {
                 VStack(alignment: .leading, spacing: 0) {
@@ -21,13 +20,13 @@ struct EffectTile: View {
                         .aspectRatio(3.0 / 2.0, contentMode: .fit).clipped()
                     VStack(alignment: .leading, spacing: 5) {
                         HStack(spacing: 6) {
-                            Text(effect.title).font(UnfoldMyMacType.headline).foregroundStyle(p.ink).lineLimit(1)
+                            Text(effect.title).font(UnfoldMyMacType.headline).foregroundStyle(palette.ink).lineLimit(1)
                             Spacer(minLength: 0)
                             if selected {
-                                IconGlyph(icon: .selected, size: 14).foregroundStyle(p.accent)
+                                IconGlyph(icon: .selected, size: 14).foregroundStyle(palette.accent)
                             }
                         }
-                        Text("By \(effect.author)").font(UnfoldMyMacType.caption).foregroundStyle(p.secondary).lineLimit(1)
+                        Text("By \(effect.author)").font(UnfoldMyMacType.caption).foregroundStyle(palette.secondary).lineLimit(1)
                     }
                     .padding(12).frame(maxWidth: .infinity, alignment: .leading)
                 }.contentShape(.rect)
@@ -58,10 +57,10 @@ struct EffectTile: View {
                     .help("Adjust \(effect.title)")
             }.padding(.horizontal, 12).padding(.bottom, 12)
         }
-        .background(p.card).clipShape(.rect(cornerRadius: 14))
+        .background(palette.card).clipShape(.rect(cornerRadius: 14))
         .overlay {
             RoundedRectangle(cornerRadius: 14)
-                .strokeBorder(selected ? p.accent : p.ink.opacity(contrast == .increased ? 0.55 : 0.15), lineWidth: selected ? 2 : 1)
+                .strokeBorder(selected ? palette.accent : palette.ink.opacity(contrast == .increased ? 0.55 : 0.15), lineWidth: selected ? 2 : 1)
                 .allowsHitTesting(false)
         }
         .accessibilityElement(children: .contain)

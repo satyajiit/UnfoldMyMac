@@ -4,9 +4,9 @@ import UnfoldMyMacCore
 
 /// Applies the appearance preference process-wide.
 @MainActor final class AppearanceController {
-    private let model: UnfoldMyMacModel
+    private let model: EffectsModel
     private var observation: Task<Void, Never>?
-    init(model: UnfoldMyMacModel) { self.model = model }
+    init(model: EffectsModel) { self.model = model }
     func start() {
         let model = self.model
         observation = Task { for await appearance in Observations({ model.settings.appearance }) { Self.apply(appearance) } }

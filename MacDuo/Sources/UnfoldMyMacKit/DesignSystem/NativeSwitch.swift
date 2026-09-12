@@ -1,11 +1,13 @@
 import AppKit
 import SwiftUI
 
-/// A plain hosting view keeps the toolbar from promoting NSSwitch to its large
-/// control size. The switch draws and lays out at the same native dimensions.
-struct EffectEnableSwitch: NSViewRepresentable {
+/// An `NSSwitch` at its native small size. A plain hosting view keeps the toolbar from promoting the control to
+/// its large size; the switch draws and lays out at the same dimensions everywhere.
+struct NativeSwitch: NSViewRepresentable {
     @Binding var isOn: Bool
     var label: String
+    /// The accessibility identifier UI tests and scripts address the control by.
+    var identifier: String
     func makeCoordinator() -> Coordinator { Coordinator(isOn: $isOn) }
     func makeNSView(context: Context) -> SwitchHost {
         let host = SwitchHost()
@@ -21,7 +23,7 @@ struct EffectEnableSwitch: NSViewRepresentable {
         context.coordinator.isOn = $isOn
         control.state = isOn ? .on : .off
         control.setAccessibilityLabel(label)
-        control.setAccessibilityIdentifier("effect.enable")
+        control.setAccessibilityIdentifier(identifier)
         control.toolTip = label
     }
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: SwitchHost, context: Context) -> CGSize? {
@@ -35,7 +37,7 @@ struct EffectEnableSwitch: NSViewRepresentable {
             addSubview(control)
         }
         convenience init() { self.init(frame: .zero) }
-        required init?(coder: NSCoder) { nil }
+        @available(*, unavailable) required init?(coder: NSCoder) { nil }
         override var intrinsicContentSize: NSSize { control.intrinsicContentSize }
         override func layout() {
             super.layout()

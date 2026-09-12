@@ -13,10 +13,10 @@ import Observation
         didSet { if !effectsPath.isEmpty { effects.stopPreview() } }
     }
     private(set) var windowVisible = false
-    @ObservationIgnored private let effects: UnfoldMyMacModel
+    @ObservationIgnored private let effects: EffectsModel
     @ObservationIgnored private let wallpaper: any WallpaperBrowsing
 
-    init(effects: UnfoldMyMacModel, wallpaper: any WallpaperBrowsing) {
+    init(effects: EffectsModel, wallpaper: any WallpaperBrowsing) {
         self.effects = effects; self.wallpaper = wallpaper
         effects.navigator = self
     }

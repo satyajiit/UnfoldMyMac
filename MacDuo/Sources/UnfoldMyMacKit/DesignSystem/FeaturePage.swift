@@ -5,21 +5,20 @@ import SwiftUI
 struct FeaturePage<Header: View, Content: View>: View {
     let title: String
     var onScroll: ((CGFloat) -> Void)? = nil
-    @Environment(\.colorScheme) private var scheme
+    @Palette private var palette
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var titleIsCollapsed = false
     @ViewBuilder var header: () -> Header
     @ViewBuilder var content: () -> Content
 
     var body: some View {
-        let p = UnfoldMyMacPalette(dark: scheme == .dark)
         ScrollView {
             VStack(spacing: 0) {
                 header()
                     .padding(.horizontal, 28).padding(.top, 8).padding(.bottom, 20)
                     .frame(maxWidth: 940, alignment: .leading)
                     .frame(maxWidth: .infinity)
-                Divider().overlay(p.ink.opacity(0.04))
+                Divider().overlay(palette.ink.opacity(0.04))
                 content()
                     .padding(.horizontal, 28).padding(.vertical, 24)
                     .frame(maxWidth: 940, alignment: .leading)
@@ -35,14 +34,14 @@ struct FeaturePage<Header: View, Content: View>: View {
         }
         .scrollEdgeEffectHidden(true, for: .top)
         .clipped()
-        .background(p.canvas)
-        .foregroundStyle(p.ink)
+        .background(palette.canvas)
+        .foregroundStyle(palette.ink)
         .toolbarBackgroundVisibility(titleIsCollapsed ? .visible : .hidden, for: .windowToolbar)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text(title)
                     .font(UnfoldMyMacType.headline)
-                    .foregroundStyle(p.ink)
+                    .foregroundStyle(palette.ink)
                     .opacity(titleIsCollapsed ? 1 : 0)
                     .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: titleIsCollapsed)
                     .accessibilityHidden(!titleIsCollapsed)

@@ -2,10 +2,9 @@ import SwiftUI
 import UnfoldMyMacCore
 
 struct PreviewControls: View {
-    @Bindable var model: UnfoldMyMacModel
-    @Environment(\.colorScheme) private var scheme
+    @Bindable var model: EffectsModel
+    @Palette private var palette
     var body: some View {
-        let p = UnfoldMyMacPalette(dark: scheme == .dark)
         VStack(spacing: 16) {
             HStack {
                 Label("\(model.activeEffect.title) preview", systemImage: model.activeEffect.symbol).font(UnfoldMyMacType.headline)
@@ -26,7 +25,7 @@ struct PreviewControls: View {
                 }
                 Spacer()
                 Text("Closed").font(UnfoldMyMacType.caption)
-            }.foregroundStyle(p.secondary)
-        }.font(UnfoldMyMacType.body).padding(20).frame(width: 380).background(p.card).foregroundStyle(p.ink).tint(p.controlAccent)
+            }.foregroundStyle(palette.secondary)
+        }.font(UnfoldMyMacType.body).padding(20).frame(width: 380).background(palette.card).foregroundStyle(palette.ink).tint(palette.controlAccent)
     }
 }

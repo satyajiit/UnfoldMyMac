@@ -47,7 +47,7 @@ func imageFixture(in directory: URL) throws -> URL {
     return url
 }
 
-@Test @MainActor func importedImagesSurviveOriginalRemovalAndPersistCreditsAndReveal() async throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func importedImagesSurviveOriginalRemovalAndPersistCreditsAndReveal() async throws {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: root) }
     let source = try imageFixture(in: root)

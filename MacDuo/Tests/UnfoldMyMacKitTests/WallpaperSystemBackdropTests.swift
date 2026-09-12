@@ -19,7 +19,7 @@ import Testing
     }
 }
 
-@Test @MainActor func systemBackdropPersistsOriginalAcrossTemplateChangesAndRestart() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func systemBackdropPersistsOriginalAcrossTemplateChangesAndRestart() throws {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: root) }
     let access = FakeDesktopImages(), original = access.images["display"]
@@ -44,7 +44,7 @@ import Testing
     #expect(access.images["display"] == original)
 }
 
-@Test @MainActor func systemBackdropPreservesLaterUserChoicesAndRestoresReconnectedDisplays() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func systemBackdropPreservesLaterUserChoicesAndRestoresReconnectedDisplays() throws {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: root) }
     let access = FakeDesktopImages(), original = access.images["display"]
@@ -65,7 +65,7 @@ import Testing
     #expect(access.images["display"] == original)
 }
 
-@Test @MainActor func systemBackdropJournalsBeforeMutationAndRejectsCorruptRecovery() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func systemBackdropJournalsBeforeMutationAndRejectsCorruptRecovery() throws {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: root) }
     let access = FakeDesktopImages(), original = access.images["display"]
@@ -91,7 +91,7 @@ import Testing
 }
 
 /// Explicit device check only; the ordinary suite never changes desktop preferences.
-@Test @MainActor func nativeSystemBackdropAndCodexMetadataIntegration() async throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func nativeSystemBackdropAndCodexMetadataIntegration() async throws {
     guard ProcessInfo.processInfo.environment["UNFOLDMYMAC_NATIVE_BACKDROP_TEST"] == "1" else { return }
     let root = FileManager.default.temporaryDirectory.appendingPathComponent("UnfoldBackdropCheck-" + UUID().uuidString)
     let access = SystemWallpaperDesktopImages()
@@ -127,7 +127,7 @@ import Testing
 }
 
 // W4: the backdrop remembers what it installed by identity, never by holding the pipeline.
-@Test @MainActor func systemBackdropDoesNotRetainPipelines() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func systemBackdropDoesNotRetainPipelines() throws {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: root) }
     let access = FakeDesktopImages()

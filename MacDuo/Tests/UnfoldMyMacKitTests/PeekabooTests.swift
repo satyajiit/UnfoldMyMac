@@ -47,7 +47,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func peekabooMovesBlinksAndHonorsPauseAndReducedMotion() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func peekabooMovesBlinksAndHonorsPauseAndReducedMotion() throws {
     let harness = try PeekabooHarness()
     let pose = try harness.render(.init(closure: 0.72, time: 0)).pixels
     #expect(try harness.render(.init(closure: 0.72, time: 0)).pixels == pose)

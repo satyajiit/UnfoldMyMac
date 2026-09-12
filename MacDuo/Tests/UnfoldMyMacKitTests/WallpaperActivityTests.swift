@@ -29,7 +29,7 @@ import UnfoldMyMacCore
     #expect(try await provider.sample(at: .now).numbers["codex.tokens"] == 2200)
 }
 
-@Test @MainActor func rotatingWallpaperLinesAreDeterministicAndHonorReducedMotion() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func rotatingWallpaperLinesAreDeterministicAndHonorReducedMotion() throws {
     let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let templates = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false).templates
     for template in templates where template.id == "codex-foundry" || template.id == "grok-horizon" {

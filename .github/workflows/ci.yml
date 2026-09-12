@@ -34,9 +34,14 @@ jobs:
           swift --version
       - name: Build all test targets
         run: swift build --build-tests
-      # GPU, capture, and lid-sensor checks run on physical Macs.
-      - name: Test core models
-        run: swift test --skip-build --filter UnfoldMyMacCoreTests
+      # Tests that need a Metal device or a window server carry `.requiresGPU` / `.requiresWindowServer`
+      # and skip themselves when CI=true; everything else runs here.
+      - name: Run tests
+        run: |
+          set -o pipefail
+          swift test --skip-build 2>&1 | tee test.log
+      - name: Show tests skipped on this runner
+        run: grep -E 'skipped' test.log || echo "no tests were skipped"
       - name: Build app bundle
         run: ./script/build_and_run.sh --build
       - name: Verify signature and bundled notices

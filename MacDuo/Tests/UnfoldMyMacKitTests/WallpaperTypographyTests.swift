@@ -4,7 +4,7 @@ import Testing
 import UnfoldMyMacCore
 @testable import UnfoldMyMacKit
 
-@Test @MainActor func wallpaperConnectionSheetsRenderInBothAppearances() throws {
+@Test(.requiresWindowServer, .tags(.window)) @MainActor func wallpaperConnectionSheetsRenderInBothAppearances() throws {
     guard let path = ProcessInfo.processInfo.environment["UNFOLDMYMAC_WALLPAPER_ARTIFACTS"] else { return }
     try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
     UnfoldMyMacType.register()
@@ -28,7 +28,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func everyWallpaperHeadlineRendersInsideItsReservedArea() throws {
+@Test(.requiresWindowServer, .tags(.window)) @MainActor func everyWallpaperHeadlineRendersInsideItsReservedArea() throws {
     UnfoldMyMacType.register()
     let templates = try WallpaperTemplateRegistry(shaders: WallpaperShaderCatalog(), loadUserTemplates: false).templates
     for original in templates {

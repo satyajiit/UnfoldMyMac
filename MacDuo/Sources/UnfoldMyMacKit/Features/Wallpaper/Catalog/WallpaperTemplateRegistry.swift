@@ -9,6 +9,8 @@ import UnfoldMyMacCore
     private(set) var warnings: [String: [WallpaperTemplateWarning]] = [:]
     let shaders: WallpaperShaderCatalog
     let collection: WallpaperCollection
+    /// `Style.json`: the typography every template's own `style` merges over.
+    let style: WallpaperStyle
     let library: WallpaperTemplateLibrary?
     private let connectors: WallpaperConnectorRegistry
     private var assets: [String: WallpaperAssetResolver] = [:]
@@ -22,6 +24,9 @@ import UnfoldMyMacCore
         var collection = WallpaperCollection.standard
         do { collection = try WallpaperCollection.bundled() } catch { errors.append("Collection.json: \(error.localizedDescription)") }
         self.collection = collection
+        var style = WallpaperStyle.standard
+        do { style = try WallpaperStyleSheet.bundled() } catch { errors.append("Style.json: \(error.localizedDescription)") }
+        self.style = style
         let loaded = WallpaperTemplateLoader.load(directory: bundled, context: context)
         for problem in loaded.problems { errors.append("\(problem.name): \(problem.error.localizedDescription)") }
         for item in loaded.items {

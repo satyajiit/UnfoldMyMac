@@ -6,6 +6,7 @@ struct CodexActivitySetup: View {
     @State private var receiving = false
     @State private var error: String?
     @Environment(\.appInfo) private var appInfo
+    @Environment(\.workspace) private var workspace
     private var executable: String { appInfo.executablePath }
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -20,8 +21,8 @@ struct CodexActivitySetup: View {
                     Button(installed ? "Reinstall hooks" : "Install hooks", action: install)
                         .modifier(UnfoldMyMacButtonStyle(prominent: !installed)).accessibilityIdentifier("wallpaper.codex.installHooks")
                     Button("Copy configuration") {
-                        if let data = try? CodexHookSetup.configuration(existing: nil, executable: executable), let text = String(data: data, encoding: .utf8) {
-                            NSPasteboard.general.clearContents(); NSPasteboard.general.setString(text, forType: .string)
+                        if let data = try? CodexHookSetup.configuration(existing: nil, executable: executable) {
+                            workspace.copyToPasteboard(String(decoding: data, as: UTF8.self))
                         }
                     }.modifier(UnfoldMyMacButtonStyle())
                 }

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct WallpaperSettingsPage: View {
     @Bindable var model: WallpaperModel
+    @Environment(\.filePicker) private var filePicker
     var body: some View {
         FeaturePage(title: "Playback settings") {
             PageHeading(title: "Playback settings", subtitle: "Motion and artwork shared by your wallpapers.")
@@ -26,7 +27,7 @@ struct WallpaperSettingsPage: View {
                         Text("Give image-based scenes a new background. Daydream adds motion, floating glass and stickers to your image.")
                             .modifier(SecondaryTextStyle())
                         HStack {
-                            Button("Choose image…") { WallpaperFileActions.chooseBackground(model) }.modifier(UnfoldMyMacButtonStyle())
+                            Button("Choose image…") { filePicker.pick(WallpaperFileRequests.background) { url in if let url { model.importBackground(url) } } }.modifier(UnfoldMyMacButtonStyle())
                             if model.preferences.customBackground {
                                 Button("Use original art") { model.setCustomBackground(false) }.modifier(UnfoldMyMacButtonStyle())
                             }

@@ -102,7 +102,7 @@ private actor SlowWallpaperProvider: WallpaperDataProvider {
     #expect(restored.ledger.tokens == 34 && !restored.indexing)
 }
 
-@Test @MainActor func wallpaperModelSeparatesPreviewFromApplyAndStopsCleanly() async throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func wallpaperModelSeparatesPreviewFromApplyAndStopsCleanly() async throws {
     let suite = "wallpaper-tests-" + UUID().uuidString
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }

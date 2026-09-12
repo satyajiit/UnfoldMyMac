@@ -14,3 +14,9 @@ struct UnfoldMyMacPalette {
     var controlAccent: Color { Color(hex: dark ? UnfoldMyMacColors.darkControlAccent : UnfoldMyMacColors.lightAccent) }
     var accent: Color { Color(hex: dark ? UnfoldMyMacColors.darkAccent : UnfoldMyMacColors.lightAccent) }
 }
+
+/// The palette for the view's colour scheme: `@Palette private var palette` replaces building one in every body.
+@propertyWrapper struct Palette: DynamicProperty {
+    @Environment(\.colorScheme) private var scheme
+    var wrappedValue: UnfoldMyMacPalette { UnfoldMyMacPalette(dark: scheme == .dark) }
+}

@@ -6,11 +6,12 @@ struct WallpaperScene: View {
     let pipeline: WallpaperPipeline
     let snapshot: WallpaperSnapshot
     let fps: Int
+    var styleSheet: WallpaperStyle = .standard
     var onStats: ((RenderStats) -> Void)?
     var body: some View {
         ZStack {
             WallpaperMetalView(pipeline: pipeline, pose: WallpaperPose(template: pipeline.template, snapshot: snapshot), fps: fps, onStats: onStats)
-            WallpaperLayers(template: pipeline.template, snapshot: snapshot, animated: fps > 1)
+            WallpaperLayers(template: pipeline.template, snapshot: snapshot, animated: fps > 1, styleSheet: styleSheet)
         }
         .background(Color(hex: pipeline.template.background))
         .ignoresSafeArea()

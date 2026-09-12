@@ -73,7 +73,7 @@ import UnfoldMyMacCore
 }
 
 // L12: capture telemetry survives restarts of the same effect and resets for a new one.
-@Test @MainActor func captureFramesResetOnlyWhenTheEffectChanges() throws {
+@Test(.requiresWindowServer, .tags(.window)) @MainActor func captureFramesResetOnlyWhenTheEffectChanges() throws {
     let screen = try #require(NSScreen.screens.first)
     let capture = FakeCapture()
     let session = EffectSession(registry: makeRegistry(), host: FakeHost(), displays: FakeDisplay(), gpu: nil, makeCapture: { capture })
@@ -121,7 +121,7 @@ import UnfoldMyMacCore
 }
 
 // P3: a new capture only starts once the previous one has finished stopping.
-@Test @MainActor func aNewCaptureWaitsForThePreviousTeardown() async throws {
+@Test(.requiresWindowServer, .tags(.window)) @MainActor func aNewCaptureWaitsForThePreviousTeardown() async throws {
     let screen = try #require(NSScreen.screens.first)
     var trace: [String] = []
     let session = EffectSession(registry: makeRegistry(), host: FakeHost(), displays: FakeDisplay(), gpu: nil, makeCapture: {

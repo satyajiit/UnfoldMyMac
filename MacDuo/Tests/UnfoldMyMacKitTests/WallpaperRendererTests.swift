@@ -22,7 +22,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func wallpaperTemplatesRenderReactAndStayWithinFrameBudget() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func wallpaperTemplatesRenderReactAndStayWithinFrameBudget() throws {
     let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let registry = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false)
     #expect(registry.templates.count == bundledTemplateCount() && registry.errors.isEmpty)
@@ -57,7 +57,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func wallpaperRegistryRejectsDuplicateUnknownShaderAndInvalidLayers() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func wallpaperRegistryRejectsDuplicateUnknownShaderAndInvalidLayers() throws {
     let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let registry = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false)
     var template = try #require(registry.templates.first)
@@ -70,7 +70,7 @@ import UnfoldMyMacCore
     #expect(throws: WallpaperError.invalidField("layers[0]")) { try registry.register(template) }
 }
 
-@Test @MainActor func wallpaperDesktopCoordinatorStaysBelowIconsAndReleasesItsWindows() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func wallpaperDesktopCoordinatorStaysBelowIconsAndReleasesItsWindows() throws {
     let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let template = try #require(WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false).templates.first)
     let coordinator = WallpaperDesktopCoordinator(surfaces: DesktopSurfaceRegistry(), displays: FakeDisplay())
@@ -91,7 +91,7 @@ import UnfoldMyMacCore
     #expect(coordinator.windows.isEmpty && controller == nil)
 }
 
-@Test @MainActor func wallpaperRendererPausesAndReleasesDelegate() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func wallpaperRendererPausesAndReleasesDelegate() throws {
     let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let template = try #require(WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false).templates.first)
     let renderer = WallpaperSurfaceRenderer(pipeline: try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog))

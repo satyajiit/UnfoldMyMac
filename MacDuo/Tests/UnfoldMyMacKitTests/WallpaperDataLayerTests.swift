@@ -88,7 +88,7 @@ private func temporaryDirectory() throws -> URL {
     func set(_ image: WallpaperDesktopImage, on screen: String) throws { images[screen] = image }
 }
 
-@Test @MainActor func systemBackdropReusesJournalledStillsAndPrunesOldOnes() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func systemBackdropReusesJournalledStillsAndPrunesOldOnes() throws {
     let root = try temporaryDirectory()
     defer { try? FileManager.default.removeItem(at: root) }
     let access = PruningDesktopImages(), originals = access.images

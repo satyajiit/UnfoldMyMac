@@ -66,7 +66,8 @@ import UnfoldMyMacCore
             try preparePreview()
             if !catalog.errors.isEmpty { error = catalog.errors.joined(separator: "\n") }
             if enabled, let selected, !setup.isReady(selected) { prefs.disable() }
-            if enabled { apply() } else { syncSystemBackdrop() }
+            // Off: a still left behind by a crash is restored once the window is up; NSWorkspace round trips cost ~100 ms.
+            if enabled { apply() } else { Task { [weak self] in self?.syncSystemBackdrop() } }
             systemState.start { [weak self] event in self?.systemChanged(event) }
         } catch { self.error = error.localizedDescription; prefs.disable(save: false) }
     }
@@ -100,6 +101,13 @@ import UnfoldMyMacCore
         prefs.setCustomBackground(value)
         select(selectedID)
         if isSelectedApplied { apply() }
+    }
+    /// Copies `url` in as the shared custom background and switches image-based scenes to it.
+    func importBackground(_ url: URL) {
+        Task { [weak self] in
+            do { try await WallpaperBackgroundImporter.save(url); self?.setCustomBackground(true) }
+            catch { self?.error = error.localizedDescription }
+        }
     }
     func importTemplate(_ url: URL) {
         do {
@@ -141,7 +149,7 @@ import UnfoldMyMacCore
     private func rebuildDesktop() {
         syncSystemBackdrop()
         guard enabled, let activePipeline else { return }
-        desktop.show(pipeline: activePipeline, source: feeds.desktop, framesPerSecond: playback.framesPerSecond)
+        desktop.show(pipeline: activePipeline, source: feeds.desktop, framesPerSecond: playback.framesPerSecond, styleSheet: catalog.style)
     }
     private func syncSystemBackdrop() {
         do {

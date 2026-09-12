@@ -107,7 +107,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func artStylesPersistWithoutCaptureCapability() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func artStylesPersistWithoutCaptureCapability() throws {
     let registry = EffectRegistry.builtIn()
     for artwork in try EffectAssets.artworks() {
         let entry = try #require(registry.entry(for: artwork.id))

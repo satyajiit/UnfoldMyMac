@@ -38,9 +38,11 @@ struct WallpaperCollection: Decodable, Sendable {
 
 /// `Resources/Wallpapers/Style.json`: the typography every template starts from.
 enum WallpaperStyleSheet {
-    static let bundled: WallpaperStyle = {
-        guard let url = BundleResources.wallpaperStyle, let data = try? Data(contentsOf: url),
-              let style = try? JSONDecoder().decode(WallpaperStyle.self, from: data), style.isValid else { return .standard }
+    /// The sheet merged over `WallpaperStyle.standard`; a missing file is the standard sheet, a broken one throws.
+    static func bundled() throws -> WallpaperStyle {
+        guard let url = BundleResources.wallpaperStyle else { return .standard }
+        let style = try JSONDecoder().decode(WallpaperStyle.self, from: Data(contentsOf: url))
+        guard style.isValid else { throw WallpaperError.invalidField("style") }
         return style.merged(over: .standard)
-    }()
+    }
 }

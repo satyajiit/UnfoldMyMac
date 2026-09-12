@@ -3,6 +3,7 @@ import AppKit
 /// Process entry point: command-line modes run and exit; otherwise the app launches.
 @MainActor public enum UnfoldMyMacApp {
     public static func main(_ arguments: [String] = CommandLine.arguments) -> Never {
+        LaunchTimeline.processStart = .now
         if arguments.contains("--wallpaper-claude-hook") { exit(WallpaperClaudeHook.run()) }
         if arguments.contains("--wallpaper-codex-hook") { exit(WallpaperCodexHook.run()) }
         if arguments.contains("--probe") { exit(AppDiagnostics.probe() ? 0 : 1) }

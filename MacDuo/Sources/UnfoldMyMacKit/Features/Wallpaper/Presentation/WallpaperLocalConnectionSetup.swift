@@ -5,6 +5,8 @@ import UnfoldMyMacCore
 struct WallpaperLocalConnectionSetup: View {
     let connector: WallpaperConnectorDescriptor
     @Binding var connection: WallpaperConnectionSettings
+    @Environment(\.filePicker) private var filePicker
+    @Environment(\.workspace) private var workspace
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text(connector.description).modifier(SecondaryTextStyle()).fixedSize(horizontal: false, vertical: true)
@@ -16,9 +18,9 @@ struct WallpaperLocalConnectionSetup: View {
                 }
                 HStack {
                     Button("Choose data file…") {
-                        WallpaperFileActions.chooseToolFile { url in connection = .init(enabled: true, path: url.path) }
+                        filePicker.pick(WallpaperFileRequests.toolFile) { url in if let url { connection = .init(enabled: true, path: url.path) } }
                     }.modifier(UnfoldMyMacButtonStyle())
-                    Button("Copy example") { WallpaperFileActions.copyToolExample() }.modifier(UnfoldMyMacButtonStyle())
+                    Button("Copy example") { workspace.copyToPasteboard(WallpaperHookConfiguration.toolExample()) }.modifier(UnfoldMyMacButtonStyle())
                     if connection.path != nil { Button("Disconnect") { connection = .init() }.buttonStyle(.plain) }
                 }
             case .url:

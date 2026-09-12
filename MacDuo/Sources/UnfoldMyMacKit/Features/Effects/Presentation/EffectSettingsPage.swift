@@ -2,7 +2,7 @@ import SwiftUI
 import UnfoldMyMacCore
 
 struct EffectSettingsPage: View {
-    @Bindable var model: UnfoldMyMacModel
+    @Bindable var model: EffectsModel
     var body: some View {
         FeaturePage(title: "Effect settings") {
             PageHeading(title: "Effect settings", subtitle: "Lid timing, menu bar and permissions for every design.")

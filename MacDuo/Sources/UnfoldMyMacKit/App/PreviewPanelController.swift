@@ -5,12 +5,12 @@ import UnfoldMyMacCore
 
 /// A floating transport for the running preview, shown at the bottom of the built-in display.
 @MainActor final class PreviewPanelController {
-    private let model: UnfoldMyMacModel
+    private let model: EffectsModel
     private let displays: any DisplayProviding
     private var panel: NSPanel?
     private var observation: Task<Void, Never>?
 
-    init(model: UnfoldMyMacModel, displays: any DisplayProviding) { self.model = model; self.displays = displays }
+    init(model: EffectsModel, displays: any DisplayProviding) { self.model = model; self.displays = displays }
     func start() {
         let model = self.model
         observation = Task { [weak self] in

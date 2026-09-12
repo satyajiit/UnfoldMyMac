@@ -5,14 +5,14 @@ import UnfoldMyMacCore
 /// The menu-bar item: a live angle readout and the quick menu.
 @MainActor final class StatusMenuController: NSObject {
     private final class ActionBox { let action: QuickMenu.Action; init(_ action: QuickMenu.Action) { self.action = action } }
-    private let effects: UnfoldMyMacModel
+    private let effects: EffectsModel
     private let wallpaper: WallpaperModel
     private let shell: AppShellModel
     private let window: MainWindowController
     private var item: NSStatusItem?
     private var observation: Task<Void, Never>?
 
-    init(effects: UnfoldMyMacModel, wallpaper: WallpaperModel, shell: AppShellModel, window: MainWindowController) {
+    init(effects: EffectsModel, wallpaper: WallpaperModel, shell: AppShellModel, window: MainWindowController) {
         self.effects = effects; self.wallpaper = wallpaper; self.shell = shell; self.window = window
     }
     func install() {

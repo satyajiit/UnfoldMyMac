@@ -76,7 +76,9 @@ extension InMemoryPreferencesStore {
 }
 @MainActor final class FakeWorkspace: WorkspaceOpening {
     var opened: [URL] = []
+    var copied: [String] = []
     func open(_ url: URL) { opened.append(url) }
+    func copyToPasteboard(_ text: String) { copied.append(text) }
 }
 @MainActor final class FakeCapturePermission: ScreenCapturePermissionChecking {
     var hasAccess = true
@@ -86,8 +88,8 @@ extension InMemoryPreferencesStore {
                           displays: any DisplayProviding = FakeDisplay(), session: EffectSession, environment: any SystemEnvironmentObserving = FakeSystemEnvironment(),
                           filePicker: any FilePicking = FakeFilePicker(), workspace: any WorkspaceOpening = FakeWorkspace(),
                           capturePermission: any ScreenCapturePermissionChecking = FakeCapturePermission(), artworkLibrary: ArtworkLibrary? = nil,
-                          clock: @escaping () -> TimeInterval = { 0 }) -> UnfoldMyMacModel {
-    UnfoldMyMacModel(dependencies: EffectsDependencies(preferences: store, registry: registry, makeSensor: sensorFactory, displays: displays, session: session,
+                          clock: @escaping () -> TimeInterval = { 0 }) -> EffectsModel {
+    EffectsModel(dependencies: EffectsDependencies(preferences: store, registry: registry, makeSensor: sensorFactory, displays: displays, session: session,
         environment: environment, filePicker: filePicker, workspace: workspace, capturePermission: capturePermission, artworkLibrary: artworkLibrary, clock: clock,
         persistence: PersistenceScheduler(delay: .zero)))
 }

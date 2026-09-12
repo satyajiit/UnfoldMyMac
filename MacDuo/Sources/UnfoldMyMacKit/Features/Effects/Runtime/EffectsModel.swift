@@ -26,7 +26,7 @@ import UnfoldMyMacCore
         importer = ArtworkImportController(library: artworkLibrary, registry: registry, filePicker: dependencies.filePicker)
         runtime = EffectRuntime(session: dependencies.session, registry: registry, preferences: preferences, environment: dependencies.environment,
                                 displays: dependencies.displays, makeSensor: dependencies.makeSensor, clock: dependencies.clock)
-        dependencies.session.onError = { [weak self] error in self?.failed(error) }
+        dependencies.session.onError = { [weak self] error in self?.handleFailure(error) }
     }
 
     // MARK: State
@@ -138,7 +138,7 @@ import UnfoldMyMacCore
         } catch { library.message = error.localizedDescription; return false }
     }
 
-    private func failed(_ error: Error) {
+    private func handleFailure(_ error: Error) {
         let needsPermission = permissions.report(error, requestedCapture: needsCapture)
         runtime.effectFailed(needsPermission: needsPermission)
     }

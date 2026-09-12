@@ -5,7 +5,7 @@ import Testing
 import UnfoldMyMacCore
 @testable import UnfoldMyMacKit
 
-@Test @MainActor func wallpaperOriginalMarksSurviveBackgroundChangesAndRejectInvalidPlacement() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func wallpaperOriginalMarksSurviveBackgroundChangesAndRejectInvalidPlacement() throws {
     let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let registry = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false)
     let originals = ["GTAVI": "f1a4e777835a98fa0386106ef5a948e8fd590121ee0cd72daa191997ed979616", "F1": "1fdcb92bab1a08d50bdf784fcf59d4c32da72cbce70cf941da9a509a257dfe2d",
@@ -53,7 +53,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func newWallpapersRespondToToolSignalsAndRenderCompleteCompositions() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func newWallpapersRespondToToolSignalsAndRenderCompleteCompositions() throws {
     let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let registry = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false)
     UnfoldMyMacType.register()

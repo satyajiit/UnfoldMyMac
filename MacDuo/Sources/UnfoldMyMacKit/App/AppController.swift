@@ -5,7 +5,7 @@ import UnfoldMyMacCore
 /// The application delegate: builds both features from one set of dependencies and owns the AppKit chrome.
 @MainActor final class AppController: NSObject, NSApplicationDelegate {
     private let dependencies: AppDependencies
-    private let effects: UnfoldMyMacModel
+    private let effects: EffectsModel
     private let wallpaper: WallpaperModel
     private let shell: AppShellModel
     private let window: MainWindowController
@@ -22,7 +22,8 @@ import UnfoldMyMacCore
         let covers = CoverImageStore()
         let window = MainWindowController(shell: shell) {
             NSHostingView(rootView: UnfoldMyMacView(shell: shell, effects: effects, wallpaper: wallpaper)
-                .environment(\.workspace, dependencies.workspace).environment(\.appInfo, .live).environment(\.coverImages, covers))
+                .environment(\.workspace, dependencies.workspace).environment(\.filePicker, dependencies.filePicker)
+                .environment(\.appInfo, .live).environment(\.coverImages, covers))
         }
         self.effects = effects; self.wallpaper = wallpaper; self.shell = shell; self.window = window
         menu = MainMenuController(showSettings: { shell.show(.settings); window.show() })
@@ -32,20 +33,16 @@ import UnfoldMyMacCore
         super.init()
     }
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let launchStart = ContinuousClock.now
-        defer {
-            if ProcessInfo.processInfo.environment["UNFOLDMYMAC_LAUNCH_TIMING"] == "1" {
-                let shaders = dependencies.gpu.map { "\($0.libraries.compiledFromSource) shader units compiled from source, \($0.libraries.loadedPrecompiled) precompiled, \($0.pipelines.builtCount) pipeline states" } ?? "no GPU"
-                print("LAUNCH applicationDidFinishLaunching→showWindow: \(launchStart.duration(to: .now)); \(shaders)"); fflush(nil)
-            }
-        }
-        UnfoldMyMacType.register()
-        if let logo = BrandAssets.logo { NSApp.applicationIconImage = logo }
-        menu.install(); statusMenu.install()
-        dependencies.environment.start()
-        effects.start(); wallpaper.start()
-        appearance.start(); previewPanel.start()
-        window.show()
+        var timeline = LaunchTimeline()
+        UnfoldMyMacType.register(); timeline.mark("fonts")
+        menu.install(); statusMenu.install(); timeline.mark("menus")
+        dependencies.environment.start(); timeline.mark("environment")
+        effects.start(); timeline.mark("effects")
+        wallpaper.start(); timeline.mark("wallpaper")
+        appearance.start(); previewPanel.start(); timeline.mark("appearance")
+        window.show(); timeline.mark("window")
+        timeline.report(gpu: dependencies.gpu)
+        BrandAssets.installDockIconIfUnbundled()
     }
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         window.show()

@@ -53,7 +53,7 @@ import UnfoldMyMacCore
     #expect(setup.configuration("codex-history", for: "codex-foundry").enabled)
 }
 
-@Test @MainActor func wallpaperApplyRequestsItsOwnSetupAndLeavesCurrentDesktopRunning() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func wallpaperApplyRequestsItsOwnSetupAndLeavesCurrentDesktopRunning() throws {
     let suite = "template-apply-" + UUID().uuidString
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }

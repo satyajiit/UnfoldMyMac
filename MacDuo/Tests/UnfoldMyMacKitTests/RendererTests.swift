@@ -59,7 +59,7 @@ import UnfoldMyMacCore
     let black = try renderer.render(input, width: width, height: height, closure: 1)
     #expect(black.enumerated().allSatisfy { $0.offset % 4 == 3 ? $0.element == 255 : $0.element == 0 })
 }
-@Test @MainActor func captureBufferCanBeWrappedAndStopped() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func captureBufferCanBeWrappedAndStopped() throws {
     var buffer: CVPixelBuffer?
     let attributes = [kCVPixelBufferMetalCompatibilityKey: true, kCVPixelBufferIOSurfacePropertiesKey: [:]] as CFDictionary
     #expect(CVPixelBufferCreate(nil, 257, 193, kCVPixelFormatType_32BGRA, attributes, &buffer) == kCVReturnSuccess)
@@ -98,7 +98,7 @@ import UnfoldMyMacCore
         renderer.stop()
     }
 }
-@Test @MainActor func frostUsesLatestSourceAfterBlurAndIdentity() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func frostUsesLatestSourceAfterBlurAndIdentity() throws {
     let pipeline = try FrostPipeline(gpu: try TestGPU.context())
     let h = try OffscreenFrost()
     let source = try h.texture(width: 131, height: 97)
@@ -118,7 +118,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func nativeResolutionGPUFrameBudget() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func nativeResolutionGPUFrameBudget() throws {
     let pipeline = try FrostPipeline(gpu: try TestGPU.context())
     let desc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm_srgb, width: 3024, height: 1964, mipmapped: false)
     desc.storageMode = .private; desc.usage = [.shaderRead, .renderTarget]

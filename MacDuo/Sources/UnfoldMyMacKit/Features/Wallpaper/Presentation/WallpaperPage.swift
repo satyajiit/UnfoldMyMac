@@ -6,6 +6,7 @@ struct WallpaperPage: View {
     @State private var renaming: WallpaperTemplate?
     @State private var removing: WallpaperTemplate?
     @State private var newTitle = ""
+    @Environment(\.filePicker) private var filePicker
     var body: some View {
         ScrollViewReader { scroll in
         FeaturePage(title: "Wallpaper") {
@@ -14,7 +15,7 @@ struct WallpaperPage: View {
                 Spacer(minLength: 0)
                 NavigationLink { WallpaperSettingsPage(model: model) } label: {
                     Label("Playback settings", icon: .settings)
-                }.modifier(UnfoldMyMacButtonStyle()).fixedSize().accessibilityIdentifier("wallpaper.settings")
+                }.modifier(UnfoldMyMacButtonStyle()).fixedSize().accessibilityLabel("Playback settings").accessibilityIdentifier("wallpaper.settings")
             }
         } content: {
             VStack(alignment: .leading, spacing: 24) {
@@ -25,8 +26,8 @@ struct WallpaperPage: View {
                         Text("Real-time scenes. Real data. Your kind of energy.").modifier(SecondaryTextStyle())
                     }
                     Spacer()
-                    Button { WallpaperFileActions.importTemplate(model) } label: { Label("Import template", icon: .folder) }
-                        .modifier(UnfoldMyMacButtonStyle()).accessibilityIdentifier("wallpaper.import")
+                    Button { filePicker.pick(WallpaperFileRequests.template) { url in if let url { model.importTemplate(url) } } } label: { Label("Import template", icon: .folder) }
+                        .modifier(UnfoldMyMacButtonStyle()).accessibilityLabel("Import template").accessibilityIdentifier("wallpaper.import")
                 }
                 ForEach(model.catalog.collection.sections(model.templates)) { section in
                     VStack(alignment: .leading, spacing: 12) {
@@ -36,7 +37,7 @@ struct WallpaperPage: View {
                         }
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), spacing: 14)], spacing: 14) {
                             ForEach(section.templates) { template in
-                                WallpaperTemplateCard(template: template, image: model.thumbnails[template.id], selected: model.selectedID == template.id,
+                                WallpaperTemplateCard(template: template, image: model.thumbnails[template.id], styleSheet: model.catalog.style, selected: model.selectedID == template.id,
                                     ready: model.setup.isReady(template), imported: model.catalog.isImported(template.id),
                                     warnings: model.catalog.warnings[template.id] ?? [],
                                     action: { model.select(template.id) },

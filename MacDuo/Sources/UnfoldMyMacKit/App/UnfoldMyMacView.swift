@@ -3,12 +3,11 @@ import UnfoldMyMacCore
 
 struct UnfoldMyMacView: View {
     @Bindable var shell: AppShellModel
-    let effects: UnfoldMyMacModel
+    let effects: EffectsModel
     let wallpaper: WallpaperModel
-    @Environment(\.colorScheme) private var scheme
+    @Palette private var palette
 
     var body: some View {
-        let p = UnfoldMyMacPalette(dark: scheme == .dark)
         NavigationSplitView {
             List(selection: $shell.route) {
                 Section("Features") {
@@ -25,7 +24,7 @@ struct UnfoldMyMacView: View {
                     Text(AppIdentity.name)
                         .font(UnfoldMyMacType.title3)
                         .lineLimit(1).minimumScaleFactor(0.8)
-                        .foregroundStyle(p.ink)
+                        .foregroundStyle(palette.ink)
                         .accessibilityAddTraits(.isHeader)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -39,8 +38,8 @@ struct UnfoldMyMacView: View {
                         .contentShape(.rect(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(p.ink)
-                .background(shell.route == .settings ? p.ink.opacity(0.1) : .clear, in: .rect(cornerRadius: 8))
+                .foregroundStyle(palette.ink)
+                .background(shell.route == .settings ? palette.ink.opacity(0.1) : .clear, in: .rect(cornerRadius: 8))
                 .accessibilityAddTraits(shell.route == .settings ? [.isSelected] : [])
                 .accessibilityIdentifier("route.settings")
                 .padding(12)
@@ -56,7 +55,7 @@ struct UnfoldMyMacView: View {
             }
         }
         .font(UnfoldMyMacType.body)
-        .tint(p.controlAccent)
+        .tint(palette.controlAccent)
         .frame(minWidth: 800, minHeight: 580)
         .onExitCommand { effects.stopPreview() }
     }

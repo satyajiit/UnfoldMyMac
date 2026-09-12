@@ -5,6 +5,7 @@ struct ClaudeCodeSetup: View {
     let connector: WallpaperConnectorDescriptor
     @Binding var connection: WallpaperConnectionSettings
     @State private var showHooks = false
+    @Environment(\.filePicker) private var filePicker
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text(connector.description).modifier(SecondaryTextStyle()).fixedSize(horizontal: false, vertical: true)
@@ -13,7 +14,8 @@ struct ClaudeCodeSetup: View {
                 .modifier(SecondaryTextStyle()).lineLimit(2)
             HStack {
                 Button("Choose log folder…") {
-                    WallpaperFileActions.chooseClaudeFolder(current: connection.path) { url in
+                    filePicker.pick(WallpaperFileRequests.claudeFolder(current: connection.path)) { url in
+                        guard let url else { return }
                         connection.path = url.path; connection.enabled = true
                     }
                 }.modifier(UnfoldMyMacButtonStyle())

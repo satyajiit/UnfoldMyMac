@@ -94,7 +94,7 @@ private actor NOAAFixtureServer {
     do { _ = try await task.value; Issue.record("Cancelled reader returned data") } catch is CancellationError {} catch { Issue.record(error) }
 }
 
-@Test @MainActor func scalarGridUploadsOnlyNewRevisionsAndMissingDataClearsBinding() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func scalarGridUploadsOnlyNewRevisionsAndMissingDataClearsBinding() throws {
     let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context(), texture = try WallpaperGridTexture(device: gpu.device)
     let grid = WallpaperScalarGrid(revision: "one", width: 2, height: 2, values: [0, 0.5, 1, 0])
     let first = texture.texture(for: grid)
@@ -104,7 +104,7 @@ private actor NOAAFixtureServer {
     #expect(texture.texture(for: replacement) !== first && texture.uploadCount == 2)
 }
 
-@Test @MainActor func newPublicWallpapersRenderForecastAndExportCompositions() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func newPublicWallpapersRenderForecastAndExportCompositions() throws {
     UnfoldMyMacType.register()
     let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let templates = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false).templates

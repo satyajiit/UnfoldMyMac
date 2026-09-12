@@ -3,7 +3,7 @@ import UnfoldMyMacCore
 
 /// Each feature owns its destinations instead of expanding global preferences.
 struct EffectsFeatureView: View {
-    let model: UnfoldMyMacModel
+    let model: EffectsModel
     @Bindable var shell: AppShellModel
     var body: some View {
         NavigationStack(path: $shell.effectsPath) {

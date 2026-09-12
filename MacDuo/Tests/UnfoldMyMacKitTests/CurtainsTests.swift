@@ -99,7 +99,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func curtainsRegistrationAndPersistence() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func curtainsRegistrationAndPersistence() throws {
     let registry = EffectRegistry.builtIn()
     let entry = try #require(registry.entry(for: .curtains))
     #expect(entry.descriptor.id == .curtains)

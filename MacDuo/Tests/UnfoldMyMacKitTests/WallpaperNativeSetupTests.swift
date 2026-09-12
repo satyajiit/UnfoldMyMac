@@ -5,7 +5,7 @@ import UnfoldMyMacCore
 @testable import UnfoldMyMacKit
 
 /// Render native controls through AppKit; ImageRenderer substitutes placeholders for them.
-@Test @MainActor func templateSetupNativeControlsRenderWithoutImageRendererPlaceholders() async throws {
+@Test(.requiresWindowServer, .tags(.window)) @MainActor func templateSetupNativeControlsRenderWithoutImageRendererPlaceholders() async throws {
     guard let path = ProcessInfo.processInfo.environment["UNFOLDMYMAC_WALLPAPER_ARTIFACTS"] else { return }
     try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
     UnfoldMyMacType.register()
