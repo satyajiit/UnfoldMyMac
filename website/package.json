@@ -14,6 +14,7 @@
     "typecheck": "node node_modules/next/dist/bin/next typegen && node node_modules/@typescript/native/bin/tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
     "test:browser": "node node_modules/@playwright/test/cli.js test",
+  "verify": "npm run lint && npm run typecheck && npm run build && npm test && npm run test:browser",
     "check:release": "node --import tsx scripts/check-release.ts",
     "prepare:assets": "node --import tsx scripts/prepare-assets.ts",
     "prepare:media": "bash scripts/render-media.sh && node --import tsx scripts/finish-media.ts",

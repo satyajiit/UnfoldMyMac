@@ -1,10 +1,32 @@
 name: macOS build
 
+# macOS runners bill at ten times the rate of Linux, so this workflow stays deliberately small:
+# build the test targets and run the suite. Nothing else. The heavier checks that used to live
+# here run locally instead, and are listed in CONTRIBUTING.md:
+#
+#   ./script/build_and_run.sh --build          bundle layout, shader compilation, notices
+#   ./script/build_and_run.sh --shader-check   precompiled metallibs match the source
+#   ./script/build_and_run.sh --probe          the lid-angle sensor on real hardware
+#
+# script/sign_release.sh re-asserts every bundle-shape rule before a release is signed, which is
+# the point where it actually matters.
+
 on:
   push:
     branches: [main]
+    paths:
+      - 'MacDuo/**'
+      - '.github/workflows/ci.yml'
   pull_request:
+    paths:
+      - 'MacDuo/**'
+      - '.github/workflows/ci.yml'
   workflow_dispatch:
+    inputs:
+      bundle:
+        description: 'Also build the app bundle and verify its shape (a few more minutes on a 10x runner)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -15,9 +37,9 @@ concurrency:
 
 jobs:
   build:
-    name: Build app and test core
+    name: Build and test core
     runs-on: macos-26
-    timeout-minutes: 20
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: MacDuo
@@ -28,23 +50,19 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - name: Show toolchain
-        run: |
-          xcodebuild -version
-          swift --version
       - name: Build all test targets
         run: swift build --build-tests
       # Tests that need a Metal device or a window server carry `.requiresGPU` / `.requiresWindowServer`
       # and skip themselves when CI=true; everything else runs here.
       - name: Run tests
-        run: |
-          set -o pipefail
-          swift test --skip-build 2>&1 | tee test.log
-      - name: Show tests skipped on this runner
-        run: grep -E 'skipped' test.log || echo "no tests were skipped"
+        run: swift test --skip-build
+
+      # Opt-in only. Run `gh workflow run ci.yml -f bundle=true` when the packaging path changed.
       - name: Build app bundle
+        if: ${{ inputs.bundle }}
         run: ./script/build_and_run.sh --build
-      - name: Verify signature and bundled notices
+      - name: Verify bundle shape
+        if: ${{ inputs.bundle }}
         run: |
           codesign --verify --strict dist/UnfoldMyMac.app
           cmp ../LICENSE dist/UnfoldMyMac.app/Contents/Resources/LICENSE

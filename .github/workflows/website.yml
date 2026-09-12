@@ -1,5 +1,9 @@
 name: Website
 
+# The Playwright sweep is three browser engines over four projects and takes about six minutes
+# of runner time per push, install included, for checks that are just as good run locally. It is
+# opt-in here. `npm run test:browser` before you push is the real gate; see CONTRIBUTING.md.
+
 on:
   push:
     branches: [main]
@@ -7,6 +11,11 @@ on:
   pull_request:
     paths: ['website/**', '.github/workflows/website.yml']
   workflow_dispatch:
+    inputs:
+      browsers:
+        description: 'Also run the Playwright suite (adds roughly six minutes)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -18,7 +27,7 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: website
@@ -36,8 +45,12 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
       - run: npm test
-      - run: node node_modules/@playwright/test/cli.js install --with-deps chromium firefox webkit
-      - run: npm run test:browser
+
+      # Opt-in only. Run `gh workflow run website.yml -f browsers=true` for the full sweep.
+      - if: ${{ inputs.browsers }}
+        run: node node_modules/@playwright/test/cli.js install --with-deps chromium firefox webkit
+      - if: ${{ inputs.browsers }}
+        run: npm run test:browser
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:

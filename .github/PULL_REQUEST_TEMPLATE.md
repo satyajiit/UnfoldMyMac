@@ -13,6 +13,9 @@ Run from `MacDuo/`. Tick what you ran and paste the output in a collapsed block.
 
 `--shader-check` and `--probe` need a real Mac. If you could not run them, say so.
 
+For a website change, `npm run verify` from `website/` instead. CI does not run the browser
+suite, so that run is the only thing standing between a regression and the live site.
+
 **Mac model and macOS version:**
 
 ## Rendering changes
