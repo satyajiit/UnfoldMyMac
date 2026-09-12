@@ -28,8 +28,14 @@ import UnfoldMyMacCore
     var started = false
     var stopped = false
     var failure: Error?
-    func start(displayID: CGDirectDisplayID) async throws { started = true; if let failure { throw failure } }
-    func stop() async { stopped = true }
+    /// Records "start"/"stop" so tests can check ordering across captures; `stopYields` makes teardown slow.
+    var trace: ((String) -> Void)?
+    var stopYields = 0
+    func start(displayID: CGDirectDisplayID) async throws { started = true; trace?("start"); if let failure { throw failure } }
+    func stop() async {
+        for _ in 0..<stopYields { await Task.yield() }
+        stopped = true; trace?("stop")
+    }
 }
 @MainActor final class FakeSensor: LidReading {
     var angle: Double? = 125
@@ -82,7 +88,8 @@ extension InMemoryPreferencesStore {
                           capturePermission: any ScreenCapturePermissionChecking = FakeCapturePermission(), artworkLibrary: ArtworkLibrary? = nil,
                           clock: @escaping () -> TimeInterval = { 0 }) -> UnfoldMyMacModel {
     UnfoldMyMacModel(dependencies: EffectsDependencies(preferences: store, registry: registry, makeSensor: sensorFactory, displays: displays, session: session,
-        environment: environment, filePicker: filePicker, workspace: workspace, capturePermission: capturePermission, artworkLibrary: artworkLibrary, clock: clock))
+        environment: environment, filePicker: filePicker, workspace: workspace, capturePermission: capturePermission, artworkLibrary: artworkLibrary, clock: clock,
+        persistence: PersistenceScheduler(delay: .zero)))
 }
 
 @MainActor final class FakeWallpaperBrowsing: WallpaperBrowsing {

@@ -23,7 +23,7 @@ import Observation
     func show(_ route: AppRoute) { self.route = route }
     func showEffectSettings() { route = .effects; effectsPath = [.settings] }
     func showEffectsLibrary() { route = .effects; effectsPath = [] }
-    func windowDidShow() { windowVisible = true; syncBrowsing() }
-    func windowDidHide() { windowVisible = false; effects.stopPreview(); syncBrowsing() }
+    func windowDidShow() { windowVisible = true; effects.setWindowVisible(true); syncBrowsing() }
+    func windowDidHide() { windowVisible = false; effects.stopPreview(); effects.setWindowVisible(false); syncBrowsing() }
     private func syncBrowsing() { wallpaper.setBrowsing(windowVisible && route == .wallpaper) }
 }

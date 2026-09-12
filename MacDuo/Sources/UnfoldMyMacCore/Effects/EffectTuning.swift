@@ -12,4 +12,10 @@ public enum EffectTuning {
     /// A missing lid sensor is reopened after this delay, doubling on each failure up to the ceiling.
     public static let sensorReconnectDelay: TimeInterval = 2
     public static let sensorReconnectCeiling: TimeInterval = 60
+    /// A reading older than this marks the sensor unavailable.
+    public static let sensorStaleAfter: TimeInterval = 1
+    /// Capture-frame and GPU-time readouts refresh at this rate; they are diagnostics, not animation.
+    public static let telemetryInterval: TimeInterval = 0.25
+    /// Frame deltas are clamped so a stalled display link cannot jump the animation clock.
+    public static let frameDeltaRange: ClosedRange<TimeInterval> = (1.0 / 240)...0.05
 }

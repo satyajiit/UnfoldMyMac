@@ -2,6 +2,8 @@ import UnfoldMyMacCore
 
 /// Composition root of the lid-effects feature.
 @MainActor enum EffectsFeature {
+    /// How long a slider may keep moving before its value is written.
+    static let persistenceDelay: Duration = .milliseconds(250)
     static func make(dependencies: AppDependencies) -> UnfoldMyMacModel {
         let registry = EffectRegistry.builtIn()
         AppSupportPaths.migrateLegacyArtwork()
@@ -12,6 +14,7 @@ import UnfoldMyMacCore
         return UnfoldMyMacModel(dependencies: EffectsDependencies(
             preferences: dependencies.preferences, registry: registry, makeSensor: { LidSensor() }, displays: dependencies.displays,
             session: session, environment: dependencies.environment, filePicker: dependencies.filePicker, workspace: dependencies.workspace,
-            capturePermission: dependencies.capturePermission, artworkLibrary: library, clock: dependencies.clock))
+            capturePermission: dependencies.capturePermission, artworkLibrary: library, clock: dependencies.clock,
+            persistence: PersistenceScheduler(delay: EffectsFeature.persistenceDelay)))
     }
 }

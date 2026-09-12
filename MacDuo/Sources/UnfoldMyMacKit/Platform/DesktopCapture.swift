@@ -13,14 +13,20 @@ enum CaptureFailure: LocalizedError {
     }
 }
 
+/// Captures the built-in display through ScreenCaptureKit, excluding the app's own desktop windows. Frames are
+/// delivered on a private queue and only the newest one crosses to the main actor per hop (P3).
 @MainActor final class DesktopCapture: NSObject, DesktopCapturing, SCStreamOutput, SCStreamDelegate {
+    private static let filterRetryDelay: Duration = .seconds(1)
+    private nonisolated let queue = DispatchQueue(label: "\(AppIdentity.bundleIdentifier).capture", qos: .userInteractive)
+    private nonisolated let latest = LatestFrameBox()
     private var stream: SCStream?
     private var cancelled = false
     private let includedWindows: () -> Set<CGWindowID>
     private var filteredWindows: Set<CGWindowID> = []
     private var displayID: CGDirectDisplayID?
     private var windowObserver: NSObjectProtocol?
-    private var filterTask: Task<Void, Never>?
+    private var refreshPending = false
+    private var refreshTask: Task<Void, Never>?
     var onFrame: ((DesktopFrame) -> Void)?
     var onError: ((Error) -> Void)?
 
@@ -50,15 +56,16 @@ enum CaptureFailure: LocalizedError {
         config.capturesAudio = false
         config.colorSpaceName = CGColorSpace.sRGB
         let next = SCStream(filter: filter, configuration: config, delegate: self)
-        try next.addStreamOutput(self, type: .screen, sampleHandlerQueue: .main)
+        try next.addStreamOutput(self, type: .screen, sampleHandlerQueue: queue)
         stream = next
+        // Registered before capture starts so a registry change during startup is not missed (L13).
+        windowObserver = NotificationCenter.default.addObserver(forName: .desktopContentWindowsChanged, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.refreshFilter() }
+        }
         try await next.startCapture()
         if cancelled || Task.isCancelled {
             try? await next.stopCapture()
             throw CancellationError()
-        }
-        windowObserver = NotificationCenter.default.addObserver(forName: .desktopContentWindowsChanged, object: nil, queue: .main) { [weak self] _ in
-            Task { @MainActor in self?.refreshFilter() }
         }
         refreshFilter()
     }
@@ -66,30 +73,47 @@ enum CaptureFailure: LocalizedError {
     func stop() async {
         cancelled = true
         onFrame = nil; onError = nil
-        filterTask?.cancel(); filterTask = nil
+        refreshTask?.cancel(); refreshTask = nil; refreshPending = false
         if let windowObserver { NotificationCenter.default.removeObserver(windowObserver); self.windowObserver = nil }
         let old = stream
         stream = nil
-        try? await old?.stopCapture()
+        latest.clear()
+        guard let old else { return }
+        try? old.removeStreamOutput(self, type: .screen)
+        try? await old.stopCapture()
     }
 
+    /// Reapplies the window filter after a registry change. Overlapping requests fold into one pass that runs
+    /// again if the wanted set moved meanwhile; a failure gets one retry a second later before it is reported.
     private func refreshFilter() {
-        let wanted = includedWindows()
-        guard !cancelled, wanted != filteredWindows, filterTask == nil, let stream, let displayID else { return }
-        filterTask = Task { [weak self] in
-            guard let self else { return }
+        refreshPending = true
+        guard refreshTask == nil else { return }
+        refreshTask = Task { [weak self] in
+            await self?.applyPendingFilters()
+            self?.refreshTask = nil
+        }
+    }
+    private func applyPendingFilters() async {
+        var retried = false
+        while refreshPending, !cancelled, let stream, let displayID {
+            refreshPending = false
+            let wanted = includedWindows()
+            guard wanted != filteredWindows else { continue }
             do {
                 let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
                 try Task.checkCancellation()
                 guard self.stream === stream, !cancelled else { return }
-                let filter = try DesktopCaptureFilter.make(content: content, displayID: displayID, including: wanted)
-                try await stream.updateContentFilter(filter)
-                filteredWindows = wanted
+                try await stream.updateContentFilter(try DesktopCaptureFilter.make(content: content, displayID: displayID, including: wanted))
+                filteredWindows = wanted; retried = false
+            } catch is CancellationError {
+                return
             } catch {
-                if !Task.isCancelled && !cancelled { onError?(error) }
+                guard !cancelled else { return }
+                if retried { onError?(error); return }
+                retried = true; refreshPending = true
+                try? await Task.sleep(for: Self.filterRetryDelay)
+                if Task.isCancelled { return }
             }
-            filterTask = nil
-            if !cancelled && filteredWindows == wanted { refreshFilter() }
         }
     }
 
@@ -98,12 +122,14 @@ enum CaptureFailure: LocalizedError {
               let info = (CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false) as? [[SCStreamFrameInfo: Any]])?.first,
               let status = info[.status] as? Int, status == SCFrameStatus.complete.rawValue,
               let buffer = sampleBuffer.imageBuffer else { return }
-        let frame = DesktopFrame(buffer)
+        guard latest.offer(DesktopFrame(buffer)) else { return }
         let streamID = ObjectIdentifier(stream)
-        // This callback is explicitly delivered on .main by addStreamOutput.
-        MainActor.assumeIsolated {
-            guard self.stream.map(ObjectIdentifier.init) == streamID, !cancelled else { return }
-            onFrame?(frame)
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let frame = latest.take() else { return }
+            MainActor.assumeIsolated {
+                guard self.stream.map(ObjectIdentifier.init) == streamID, !cancelled else { return }
+                onFrame?(frame)
+            }
         }
     }
 

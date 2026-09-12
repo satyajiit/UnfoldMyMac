@@ -12,4 +12,13 @@ struct AppInfo: Sendable {
 extension EnvironmentValues {
     @Entry var appInfo = AppInfo.live
     @Entry var workspace: any WorkspaceOpening = SystemWorkspace()
+    /// Environment defaults are read while SwiftUI evaluates bodies on the main thread.
+    var coverImages: CoverImageStore {
+        get { self[CoverImagesKey.self] }
+        set { self[CoverImagesKey.self] = newValue }
+    }
+}
+
+private struct CoverImagesKey: EnvironmentKey {
+    static var defaultValue: CoverImageStore { MainActor.assumeIsolated { CoverImageStore.fallback } }
 }

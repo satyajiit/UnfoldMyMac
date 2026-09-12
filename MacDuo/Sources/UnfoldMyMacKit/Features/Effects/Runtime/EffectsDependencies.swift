@@ -14,4 +14,6 @@ import UnfoldMyMacCore
     let capturePermission: any ScreenCapturePermissionChecking
     let artworkLibrary: ArtworkLibrary?
     let clock: () -> TimeInterval
+    /// Coalesces slider writes; a zero delay keeps persistence synchronous.
+    let persistence: PersistenceScheduler
 }

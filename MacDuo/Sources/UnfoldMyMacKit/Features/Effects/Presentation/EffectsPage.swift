@@ -9,12 +9,8 @@ struct EffectsPage: View {
     @State private var previewAfterInspector: EffectID?
     @State private var categoriesPinned = false
     @State private var categoriesOrigin: CGFloat = 0
-    private var availableTags: [String] {
-        Array(Set(model.registry.descriptors.filter { model.libraryCategory == nil || $0.category == model.libraryCategory }.flatMap(\.tags))).sorted()
-    }
-    private var filtered: [EffectDescriptor] {
-        model.registry.descriptors.filter { $0.matches(query: model.libraryQuery, category: model.libraryCategory, tag: model.libraryTag) }
-    }
+    private var availableTags: [String] { model.library.availableTags(in: model.registry.descriptors) }
+    private var filtered: [EffectDescriptor] { model.library.filtered(model.registry.descriptors) }
     var body: some View {
         GeometryReader { viewport in
             ScrollViewReader { scroll in

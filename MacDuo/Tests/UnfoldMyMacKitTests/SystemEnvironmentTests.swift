@@ -71,3 +71,17 @@ import UnfoldMyMacCore
     try await settle { now += 0.6; model.tick(); return session.renderer != nil }
     #expect(session.renderer != nil)
 }
+
+@Test func systemStateEventsFollowDisplaysNotSessions() {
+    var state = SystemState()
+    let accessibility = SystemStateSubscriber.Event.accessibility(reduceTransparency: false, reduceMotion: false)
+    #expect(SystemStateSubscriber.events(from: nil, to: state) == [accessibility], "The first state never wakes")
+    var previous = state; state.sessionInactive = true
+    #expect(SystemStateSubscriber.events(from: previous, to: state) == [accessibility], "Session switches are not sleep")
+    previous = state; state.screensAsleep = true
+    #expect(SystemStateSubscriber.events(from: previous, to: state) == [.sleep, accessibility])
+    previous = state; state.systemAsleep = true
+    #expect(SystemStateSubscriber.events(from: previous, to: state) == [accessibility], "Already asleep")
+    previous = state; state.systemAsleep = false; state.screensAsleep = false; state.displayGeneration += 1; state.reduceMotion = true
+    #expect(SystemStateSubscriber.events(from: previous, to: state) == [.wake, .displaysChanged, .accessibility(reduceTransparency: false, reduceMotion: true)])
+}

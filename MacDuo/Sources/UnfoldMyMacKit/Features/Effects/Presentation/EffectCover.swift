@@ -1,13 +1,10 @@
 import SwiftUI
 import UnfoldMyMacCore
 
-@MainActor private enum CoverCache {
-    static let images = NSCache<NSURL, NSImage>()
-}
-
 struct EffectCover: View {
     let url: URL?
     var contentMode: ContentMode = .fill
+    @Environment(\.coverImages) private var covers
     @State private var image: NSImage?
     var body: some View {
         GeometryReader { geometry in
@@ -21,15 +18,11 @@ struct EffectCover: View {
         }
         .accessibilityHidden(true)
         .task(id: url) {
-            image = nil
-            guard let url else { return }
-            CoverCache.images.countLimit = 80
-            if let cached = CoverCache.images.object(forKey: url as NSURL) { image = cached; return }
-            let thumbnail = await Task.detached(priority: .utility) { ImageFiles.thumbnail(at: url) }.value
-            guard !Task.isCancelled, let thumbnail else { return }
-            let result = NSImage(cgImage: thumbnail, size: .zero)
-            CoverCache.images.setObject(result, forKey: url as NSURL)
-            image = result
+            guard let url else { image = nil; return }
+            image = covers.cached(url)
+            guard image == nil else { return }
+            let loaded = await covers.image(for: url)
+            if !Task.isCancelled { image = loaded }
         }
     }
 }

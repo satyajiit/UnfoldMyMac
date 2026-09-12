@@ -39,8 +39,9 @@ import QuartzCore
         surfaceView.onLayout = { [weak self] in self?.layoutDrawable() }
     }
 
-    /// Sizes the view and its drawable before the view has a window.
+    /// Sizes the view and its drawable before the view has a window. A stopped renderer can be prepared again.
     func prepare(size: CGSize, scale: CGFloat) {
+        surfaceView.onLayout = { [weak self] in self?.layoutDrawable() }
         surfaceView.frame = CGRect(origin: .zero, size: size)
         layer.contentsScale = scale
         setDrawableSize(Self.drawableSize(points: size, scale: scale, cap: pipeline.surface.maximumDimension))

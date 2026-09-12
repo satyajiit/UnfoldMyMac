@@ -30,12 +30,24 @@ public enum EffectMath {
         return x * x * (3 - 2 * x)
     }
     public static func blurRadius(edge: Double, context: EffectContext) -> Double {
-        72 * context.motion * pow(min(1, max(0, edge)), 1.35) * context.strength
+        72 * veilCoverage(edge: edge, coverage: context.motion * context.strength)
     }
     public static func darkening(edge: Double, context: EffectContext) -> Double {
+        darkening(edge: edge, coverage: context.motion * context.strength, finalFade: context.finalFade)
+    }
+    /// The dim-only treatment from its two inputs: `coverage` is motion × strength, so callers can quantise it.
+    public static func darkening(edge: Double, coverage: Double, finalFade: Double) -> Double {
         let gradient = min(1, max(0, (edge - 0.2) / 0.8))
-        let local = min(1, context.motion * pow(gradient, 1.35) * 2 * context.strength)
-        return 1 - (1 - local) * (1 - context.finalFade)
+        let local = min(1, coverage * pow(gradient, 1.35) * 2)
+        return 1 - (1 - local) * (1 - finalFade)
+    }
+    /// Veil's material coverage at `edge`: the alpha of its mask and the base of its shade.
+    public static func veilCoverage(edge: Double, coverage: Double) -> Double {
+        coverage * pow(min(1, max(0, edge)), 1.35)
+    }
+    /// Inverse of `playClosure` on its closing ramp: the clock position that resumes playback from `closure`.
+    public static func playSeconds(closure: Double) -> Double {
+        1.2 + acos(1 - 2 * min(1, max(0, closure.isFinite ? closure : 0))) / .pi * 3.1
     }
     public static func playClosure(seconds: Double) -> Double {
         let t = seconds.truncatingRemainder(dividingBy: 8.6)

@@ -19,9 +19,10 @@ import UnfoldMyMacCore
         let effects = EffectsFeature.make(dependencies: dependencies)
         let wallpaper = WallpaperFeature.make(dependencies: dependencies)
         let shell = AppShellModel(effects: effects, wallpaper: wallpaper)
+        let covers = CoverImageStore()
         let window = MainWindowController(shell: shell) {
             NSHostingView(rootView: UnfoldMyMacView(shell: shell, effects: effects, wallpaper: wallpaper)
-                .environment(\.workspace, dependencies.workspace).environment(\.appInfo, .live))
+                .environment(\.workspace, dependencies.workspace).environment(\.appInfo, .live).environment(\.coverImages, covers))
         }
         self.effects = effects; self.wallpaper = wallpaper; self.shell = shell; self.window = window
         menu = MainMenuController(showSettings: { shell.show(.settings); window.show() })
