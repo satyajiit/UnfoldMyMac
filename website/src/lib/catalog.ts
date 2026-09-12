@@ -12,7 +12,7 @@ export const catalog: ShowcaseItem[] = [
   effect("curtains", "Curtains", "Motion & 3D", "Velvet folds and stage lighting. A curtain call for your tabs."),
   effect("peekaboo", "Peekaboo", "Motion & 3D", "Blinking, curious characters. Your desktop has acquired witnesses."),
   effect("current", "Current", "Motion & 3D", "Mint and coral ribbons that keep moving while the lid holds still."),
-  effect("frost", "Frost", "Glass & Light", "A live blur of your desktop, drawn in as you close the lid."),
+  effect("frost", "Frost", "Glass & Light", "The original iPhone Duo-inspired effect. A live blur of your desktop, drawn in as you close the lid."),
   effect("veil", "Veil", "Glass & Light", "A soft, native translucent material over your desktop."),
   effect("fade", "Fade", "Glass & Light", "A quiet dimming effect. Sometimes less is plenty."),
   effect("reverie", "Reverie", "Image Art", "Celestial paper art opens along a curved, moonlit seam."),

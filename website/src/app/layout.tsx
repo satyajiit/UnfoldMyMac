@@ -12,7 +12,8 @@ const space = localFont({ src: [
 ], display: "swap", variable: "--font-space" });
 export const metadata: Metadata = {
   metadataBase: new URL(site.url), title: { default: site.name, template: "%s | UnfoldMyMac" },
-  description: site.description, icons: { icon: "/media/icon.png", apple: "/media/apple-icon.png" },
+  description: site.description, keywords: [...site.keywords],
+  icons: { icon: "/media/icon.png", apple: "/media/apple-icon.png" },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
