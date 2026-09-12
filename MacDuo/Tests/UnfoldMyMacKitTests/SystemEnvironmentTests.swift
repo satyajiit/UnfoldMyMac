@@ -50,7 +50,7 @@ import UnfoldMyMacCore
 @Test @MainActor func effectsPauseForSleepNotForSessionSwitchesAndRebuildOnDisplayChanges() async throws {
     let environment = FakeSystemEnvironment(), display = FakeDisplay(), sensor = FakeSensor(), store = InMemoryPreferencesStore()
     let registry = makeRegistry()
-    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), gpu: nil, makeCapture: { FakeCapture() })
     var now = 0.0
     let model = makeModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, environment: environment, clock: { now })
     model.start(); defer { model.shutdown() }

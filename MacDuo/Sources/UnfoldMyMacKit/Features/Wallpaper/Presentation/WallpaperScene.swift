@@ -6,7 +6,7 @@ struct WallpaperScene: View {
     let pipeline: WallpaperPipeline
     let snapshot: WallpaperSnapshot
     let fps: Int
-    var onStats: ((WallpaperRenderStats) -> Void)?
+    var onStats: ((RenderStats) -> Void)?
     var body: some View {
         ZStack {
             WallpaperMetalView(pipeline: pipeline,

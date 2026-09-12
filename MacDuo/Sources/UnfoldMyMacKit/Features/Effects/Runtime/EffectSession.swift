@@ -10,6 +10,7 @@ enum EffectSessionError: LocalizedError, Equatable {
     private let registry: EffectRegistry
     private let host: any EffectHosting
     private let displays: any DisplayProviding
+    private let gpu: GPUContext?
     private let makeCapture: () -> any DesktopCapturing
     private var capture: (any DesktopCapturing)?
     private var generation = 0
@@ -18,8 +19,8 @@ enum EffectSessionError: LocalizedError, Equatable {
     private(set) var captureFrames = 0
     var onError: ((Error) -> Void)?
 
-    init(registry: EffectRegistry, host: any EffectHosting, displays: any DisplayProviding, makeCapture: @escaping () -> any DesktopCapturing) {
-        self.registry = registry; self.host = host; self.displays = displays; self.makeCapture = makeCapture
+    init(registry: EffectRegistry, host: any EffectHosting, displays: any DisplayProviding, gpu: GPUContext?, makeCapture: @escaping () -> any DesktopCapturing) {
+        self.registry = registry; self.host = host; self.displays = displays; self.gpu = gpu; self.makeCapture = makeCapture
     }
     func start(effect: EffectID, screen: NSScreen, reduceTransparency: Bool) {
         let actual = reduceTransparency ? EffectID.fade : effect
@@ -31,12 +32,12 @@ enum EffectSessionError: LocalizedError, Equatable {
         let token = generation
         do {
             let entry = registry.entry(for: actual)
-            let next = try entry.makeRenderer()
+            let next = try entry.makeRenderer(gpu)
             next.prepare(size: screen.frame.size, scale: screen.backingScaleFactor)
             host.install(next.view, on: screen)
             renderer = next
             if entry.descriptor.requiresCapture {
-                guard let consumer = next as? any DesktopFrameConsuming else {
+                guard let consumer = next as? any DesktopFrameSink else {
                     throw EffectSessionError.captureUnsupported
                 }
                 let capture = makeCapture()

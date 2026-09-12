@@ -9,7 +9,7 @@ import UnfoldMyMacCore
     func show() { shown = true }
     func hide() { shown = false }
 }
-@MainActor final class FakeRenderer: DesktopFrameConsuming {
+@MainActor final class FakeRenderer: EffectRenderer, DesktopFrameSink {
     let view = NSView()
     var ready = true
     var animatesWithTime = false
@@ -51,7 +51,7 @@ extension InMemoryPreferencesStore {
 }
 @MainActor func makeRegistry(_ created: @escaping (EffectID, FakeRenderer) -> Void = { _, _ in }) -> EffectRegistry {
     EffectRegistry(entries: [EffectID.frost, .veil, .fade, .curtains, .reverie, .neonCoast, .rise, .current].map { id in
-        .init(descriptor: .init(id: id, title: id.rawValue, subtitle: "", detail: "", symbol: "circle", requiresCapture: id == .frost), makeRenderer: {
+        .init(descriptor: .init(id: id, title: id.rawValue, subtitle: "", detail: "", symbol: "circle", requiresCapture: id == .frost), makeRenderer: { _ in
             let renderer = FakeRenderer(); renderer.animatesWithTime = id == .current; created(id, renderer); return renderer
         })
     })

@@ -34,7 +34,8 @@ import UnfoldMyMacCore
         let launchStart = ContinuousClock.now
         defer {
             if ProcessInfo.processInfo.environment["UNFOLDMYMAC_LAUNCH_TIMING"] == "1" {
-                print("LAUNCH applicationDidFinishLaunching→showWindow: \(launchStart.duration(to: .now))"); fflush(nil)
+                let shaders = dependencies.gpu.map { "\($0.libraries.compiledFromSource) shader units compiled from source, \($0.libraries.loadedPrecompiled) precompiled, \($0.pipelines.builtCount) pipeline states" } ?? "no GPU"
+                print("LAUNCH applicationDidFinishLaunching→showWindow: \(launchStart.duration(to: .now)); \(shaders)"); fflush(nil)
             }
         }
         UnfoldMyMacType.register()

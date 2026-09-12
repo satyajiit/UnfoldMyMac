@@ -3,7 +3,7 @@ import SwiftUI
 import Observation
 import UnfoldMyMacCore
 
-extension UnfoldMyMacDiagnostics {
+extension AppDiagnostics {
     /// Opt-in, on-screen benchmark. Uses temporary surfaces and never changes saved settings.
     static func benchmarkWallpaper() {
         let app = NSApplication.shared
@@ -16,7 +16,7 @@ extension UnfoldMyMacDiagnostics {
 
 @MainActor @Observable private final class WallpaperProbeState {
     var snapshot = WallpaperSnapshot()
-    var samples: [WallpaperRenderStats] = []
+    var samples: [RenderStats] = []
     var auroraState: NOAAWeatherState?
     var countdown: WallpaperCountdown?
     func tick(_ tick: Int) {
@@ -50,7 +50,8 @@ private struct WallpaperProbeSurface: View {
     }
     private func measure() async {
         do {
-            let catalog = try WallpaperShaderCatalog()
+            let gpu = try GPUContext()
+            let catalog = WallpaperShaderCatalog()
             let templates = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false).templates
             let requested = ProcessInfo.processInfo.environment["UNFOLDMYMAC_BENCHMARK_TEMPLATE"]
             guard requested == nil || templates.contains(where: { $0.id == requested }) else {
@@ -58,7 +59,7 @@ private struct WallpaperProbeSurface: View {
             }
             var passed = true
             for template in templates where requested == nil || template.id == requested {
-                let pipeline = try WallpaperPipeline(template: template, catalog: catalog)
+                let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog)
                 let state = WallpaperProbeState()
                 state.countdown = template.countdown
                 if template.gridBinding == "aurora.oval" {
@@ -78,7 +79,7 @@ private struct WallpaperProbeSurface: View {
                     guard let root = window.contentView else { continue }
                     var pending = [root]
                     while let view = pending.popLast() {
-                        if view is WallpaperMetalSurface {
+                        if view is MetalSurfaceView {
                             let frame = view.convert(view.bounds, to: root)
                             print("COVERAGE \(template.id): metal=\(frame), host=\(root.bounds), full=\(frame == root.bounds)")
                             passed = passed && frame == root.bounds

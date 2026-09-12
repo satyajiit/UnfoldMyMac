@@ -10,10 +10,10 @@ import UnfoldMyMacCore
     func render(time: Double, energy: Double, width: Int = 640, height: Int = 400, channels: SIMD4<Float> = .zero, grid: WallpaperScalarGrid? = nil) throws -> (pixels: [UInt8], gpu: Double) {
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: width, height: height, mipmapped: false)
         descriptor.storageMode = .shared; descriptor.usage = [.renderTarget]
-        let texture = try #require(pipeline.catalog.gpu.makeTexture(descriptor: descriptor))
+        let texture = try #require(pipeline.gpu.device.makeTexture(descriptor: descriptor))
         let pass = MTLRenderPassDescriptor()
         pass.colorAttachments[0].texture = texture; pass.colorAttachments[0].loadAction = .clear; pass.colorAttachments[0].storeAction = .store
-        let command = try #require(pipeline.catalog.queue.makeCommandBuffer())
+        let command = try #require(pipeline.gpu.queue.makeCommandBuffer())
         #expect(pipeline.encode(command: command, pass: pass, size: CGSize(width: width,height: height), time: time, energy: energy, channels: channels, grid: grid))
         command.commit(); command.waitUntilCompleted(); #expect(command.error == nil)
         var bytes = [UInt8](repeating: 0, count: width*height*4)
@@ -23,11 +23,11 @@ import UnfoldMyMacCore
 }
 
 @Test @MainActor func wallpaperTemplatesRenderReactAndStayWithinFrameBudget() throws {
-    let catalog = try WallpaperShaderCatalog()
+    let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let registry = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false)
     #expect(registry.templates.count == 10 && registry.errors.isEmpty)
     for template in registry.templates {
-        let pipeline = try WallpaperPipeline(template: template, catalog: catalog)
+        let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog)
         let harness = WallpaperHarness(pipeline: pipeline)
         let initial = try harness.render(time: 2, energy: 0.2).pixels
         #expect(stride(from: 3, to: initial.count, by: 4).allSatisfy { initial[$0] == 255 })
@@ -50,7 +50,7 @@ import UnfoldMyMacCore
         if let path = ProcessInfo.processInfo.environment["UNFOLDMYMAC_WALLPAPER_ARTIFACTS"] {
             let directory = URL(fileURLWithPath: path)
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            let image = try WallpaperThumbnailRenderer.image(pipeline: pipeline)
+            let image = try WallpaperCoverRenderer.image(pipeline: pipeline)
             let data = try #require(image.tiffRepresentation)
             try NSBitmapImageRep(data: data)?.representation(using: .png, properties: [:])?.write(to: directory.appendingPathComponent(template.id + ".png"))
         }
@@ -58,7 +58,7 @@ import UnfoldMyMacCore
 }
 
 @Test @MainActor func wallpaperRegistryRejectsDuplicateUnknownShaderAndInvalidLayers() throws {
-    let catalog = try WallpaperShaderCatalog()
+    let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let registry = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false)
     var template = try #require(registry.templates.first)
     #expect(throws: WallpaperError.duplicateID(template.id)) { try registry.register(template) }
@@ -87,13 +87,13 @@ import UnfoldMyMacCore
 }
 
 @Test @MainActor func wallpaperRendererPausesAndReleasesDelegate() throws {
-    let catalog = try WallpaperShaderCatalog()
+    let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let template = try #require(WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false).templates.first)
-    let renderer = WallpaperMetalRenderer(pipeline: try WallpaperPipeline(template: template, catalog: catalog))
+    let renderer = WallpaperSurfaceRenderer(pipeline: try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog))
     renderer.configure(energy: 0.5, fps: 60)
     #expect(!renderer.isPaused && renderer.framesPerSecond == 60)
     renderer.configure(energy: 0.5, fps: 0)
     #expect(renderer.isPaused)
     renderer.stop()
-    #expect(renderer.isPaused && renderer.view.onLayout == nil)
+    #expect(renderer.isPaused && renderer.surfaceView.onLayout == nil)
 }

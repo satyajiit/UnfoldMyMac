@@ -30,7 +30,7 @@ import UnfoldMyMacCore
 }
 
 @Test @MainActor func rotatingWallpaperLinesAreDeterministicAndHonorReducedMotion() throws {
-    let catalog = try WallpaperShaderCatalog()
+    let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let templates = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false).templates
     for template in templates where template.id == "codex-foundry" || template.id == "grok-horizon" {
         let headline = try #require(template.layers.first { $0.phrases != nil })
@@ -47,8 +47,8 @@ import UnfoldMyMacCore
 }
 
 @Test func wallpaperMetricsMeasurePresentationGapsRatherThanGPUCompletions() {
-    let metrics = WallpaperFrameMetrics()
-    for _ in 0..<100 { metrics.completed(gpuSeconds: 0.002) }
+    let metrics = FrameMetrics()
+    for _ in 0..<100 { metrics.completed(gpuSeconds: 0.002, succeeded: true) }
     #expect(metrics.sample(width: 1920, height: 1200).fps == 0)
     metrics.presented(at: 1); metrics.presented(at: 1 + 1.0/60); metrics.presented(at: 1.05)
     let stats = metrics.sample(width: 1920, height: 1200)

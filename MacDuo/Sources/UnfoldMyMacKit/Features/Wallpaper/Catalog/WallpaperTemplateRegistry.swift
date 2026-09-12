@@ -18,7 +18,7 @@ import UnfoldMyMacCore
         let checked = try template.validated()
         guard !templates.contains(where: { $0.id == checked.id }) else { throw WallpaperError.duplicateID(checked.id) }
         guard shaders.contains(checked.shader) else { throw WallpaperError.missingShader(checked.shader) }
-        if let emblem = checked.emblem, WallpaperEmblemPipeline.url(emblem.asset) == nil {
+        if let emblem = checked.emblem, BundleResources.wallpaperMark(emblem.asset) == nil {
             throw WallpaperError.unavailable("The original logo ‘\(emblem.asset)’ is not installed.")
         }
         if let image = checked.image, BundleResources.artwork(image) == nil {
@@ -26,13 +26,14 @@ import UnfoldMyMacCore
         }
         templates.append(checked)
     }
-    func importTemplate(_ url: URL) throws -> WallpaperTemplate {
+    /// `validate` builds whatever the caller needs to prove the template renders before it is kept.
+    func importTemplate(_ url: URL, validate: (WallpaperTemplate) throws -> Void) throws -> WallpaperTemplate {
         let template = try decode(url)
         guard !templates.contains(where: { $0.id == template.id }), shaders.contains(template.shader) else {
             if templates.contains(where: { $0.id == template.id }) { throw WallpaperError.duplicateID(template.id) }
             throw WallpaperError.missingShader(template.shader)
         }
-        _ = try WallpaperPipeline(template: template, catalog: shaders)
+        try validate(template)
         try FileManager.default.createDirectory(at: WallpaperPaths.templates, withIntermediateDirectories: true)
         let destination = WallpaperPaths.templates.appendingPathComponent(UUID().uuidString + ".json")
         try JSONEncoder().encode(template).write(to: destination, options: .atomic)

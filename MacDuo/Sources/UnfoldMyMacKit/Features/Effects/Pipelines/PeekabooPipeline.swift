@@ -1,4 +1,4 @@
-import MetalKit
+import Metal
 import UnfoldMyMacCore
 
 private struct PeekabooUniforms {
@@ -10,10 +10,9 @@ private struct PeekabooUniforms {
 
 /// Two deforming vinyl surfaces and four independently posed sphere meshes.
 /// All movement uses the session clock; no capture, image texture, or private timer.
-@MainActor final class PeekabooPipeline: MetalEffectPipeline {
-    let pixelFormat: MTLPixelFormat = .bgra8Unorm_srgb
-    let gpu: MTLDevice
-    let queue: MTLCommandQueue
+@MainActor final class PeekabooPipeline: EffectPipeline {
+    let gpu: GPUContext
+    let surface = SurfaceConfiguration(pixelFormat: .bgra8Unorm_srgb)
     let animatesWithTime = true
     private let body: MTLRenderPipelineState
     private let eyes: MTLRenderPipelineState
@@ -23,53 +22,30 @@ private struct PeekabooUniforms {
     private let indices: MTLBuffer
     private let indexCount: Int
 
-    init() throws {
-        guard let gpu = MTLCreateSystemDefaultDevice(), let queue = gpu.makeCommandQueue() else {
-            throw GPUError.metalUnavailable
-        }
-        self.gpu = gpu; self.queue = queue
-        let library = try gpu.makeLibrary(source: BundleResources.shaderSource("Peekaboo", family: .effects), options: nil)
-        func pipeline(_ vertex: String, _ fragment: String) throws -> MTLRenderPipelineState {
-            let descriptor = MTLRenderPipelineDescriptor()
-            descriptor.vertexFunction = library.makeFunction(name: vertex)
-            descriptor.fragmentFunction = library.makeFunction(name: fragment)
-            descriptor.colorAttachments[0].pixelFormat = .bgra8Unorm_srgb
-            descriptor.depthAttachmentPixelFormat = .depth32Float
-            return try gpu.makeRenderPipelineState(descriptor: descriptor)
-        }
-        body = try pipeline("peekabooBodyVertex", "peekabooBodyFragment")
-        eyes = try pipeline("peekabooEyeVertex", "peekabooEyeFragment")
+    init(gpu: GPUContext) throws {
+        self.gpu = gpu
+        let module = ShaderModule.effect("Peekaboo")
+        body = try gpu.pipeline(module, vertex: "peekabooBodyVertex", fragment: "peekabooBodyFragment", color: .bgra8Unorm_srgb, depth: .depth32Float)
+        eyes = try gpu.pipeline(module, vertex: "peekabooEyeVertex", fragment: "peekabooEyeFragment", color: .bgra8Unorm_srgb, depth: .depth32Float)
         let depthDescriptor = MTLDepthStencilDescriptor()
         depthDescriptor.depthCompareFunction = .less
         depthDescriptor.isDepthWriteEnabled = true
-        guard let depthState = gpu.makeDepthStencilState(descriptor: depthDescriptor) else { throw GPUError.allocationFailed("the depth state") }
+        guard let depthState = gpu.device.makeDepthStencilState(descriptor: depthDescriptor) else { throw GPUError.allocationFailed("the depth state") }
         self.depthState = depthState
-
         // One reusable UV grid is instanced as both pillow surfaces and spheres.
-        let columns = 96, rows = 64
-        var points: [SIMD2<Float>] = []
-        var triangles: [UInt32] = []
-        for row in 0...rows { for column in 0...columns {
-            points.append(SIMD2(Float(column) / Float(columns), Float(row) / Float(rows)))
-        } }
-        for row in 0..<rows { for column in 0..<columns {
-            let a = UInt32(row * (columns + 1) + column), b = a + 1
-            let c = a + UInt32(columns + 1), d = c + 1
-            triangles.append(contentsOf: [a, b, c, b, d, c])
-        } }
-        guard let vertices = gpu.makeBuffer(bytes: points, length: points.count * MemoryLayout<SIMD2<Float>>.stride),
-              let indices = gpu.makeBuffer(bytes: triangles, length: triangles.count * MemoryLayout<UInt32>.stride) else {
+        let mesh = GridMesh(columns: 96, rows: 64)
+        guard let vertices = gpu.device.makeBuffer(bytes: mesh.points, length: mesh.points.count * MemoryLayout<SIMD2<Float>>.stride),
+              let indices = gpu.device.makeBuffer(bytes: mesh.triangles, length: mesh.triangles.count * MemoryLayout<UInt32>.stride) else {
             throw GPUError.allocationFailed("the Peekaboo geometry")
         }
-        self.vertices = vertices; self.indices = indices; indexCount = triangles.count
+        self.vertices = vertices; self.indices = indices; indexCount = mesh.triangles.count
     }
-
-    func encode(command: MTLCommandBuffer, pass: MTLRenderPassDescriptor, size: CGSize, context: EffectContext) -> Bool {
+    func encode(command: MTLCommandBuffer, pass: MTLRenderPassDescriptor, size: CGSize, frame context: EffectContext) -> Bool {
         let width = max(1, Int(size.width)), height = max(1, Int(size.height))
         if depth?.width != width || depth?.height != height {
             let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .depth32Float, width: width, height: height, mipmapped: false)
             descriptor.storageMode = .private; descriptor.usage = .renderTarget
-            depth = gpu.makeTexture(descriptor: descriptor)
+            depth = gpu.device.makeTexture(descriptor: descriptor)
         }
         guard let depth else { return false }
         pass.depthAttachment.texture = depth
@@ -87,11 +63,9 @@ private struct PeekabooUniforms {
             encoder.setDepthStencilState(depthState)
             encoder.setCullMode(.none)
             encoder.setRenderPipelineState(body)
-            encoder.drawIndexedPrimitives(type: .triangle, indexCount: indexCount, indexType: .uint32,
-                indexBuffer: indices, indexBufferOffset: 0, instanceCount: 2)
+            encoder.drawIndexedPrimitives(type: .triangle, indexCount: indexCount, indexType: .uint32, indexBuffer: indices, indexBufferOffset: 0, instanceCount: 2)
             encoder.setRenderPipelineState(eyes)
-            encoder.drawIndexedPrimitives(type: .triangle, indexCount: indexCount, indexType: .uint32,
-                indexBuffer: indices, indexBufferOffset: 0, instanceCount: 4)
+            encoder.drawIndexedPrimitives(type: .triangle, indexCount: indexCount, indexType: .uint32, indexBuffer: indices, indexBufferOffset: 0, instanceCount: 4)
         }
         encoder.endEncoding()
         return true

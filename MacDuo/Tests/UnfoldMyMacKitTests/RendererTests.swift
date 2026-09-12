@@ -6,11 +6,11 @@ import UnfoldMyMacCore
 
 @MainActor private struct OffscreenFrost {
     let pipeline: FrostPipeline
-    init() throws { pipeline = try FrostPipeline() }
+    init() throws { pipeline = try FrostPipeline(gpu: try TestGPU.context()) }
     func texture(width: Int, height: Int) throws -> MTLTexture {
         let desc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm_srgb, width: width, height: height, mipmapped: false)
         desc.storageMode = .shared; desc.usage = [.shaderRead, .renderTarget]
-        return try #require(pipeline.gpu.makeTexture(descriptor: desc))
+        return try #require(pipeline.gpu.device.makeTexture(descriptor: desc))
     }
     func render(_ bytes: [UInt8], width: Int, height: Int, closure: Double, strength: Double = 1) throws -> [UInt8] {
         let source = try texture(width: width, height: height)
@@ -18,8 +18,8 @@ import UnfoldMyMacCore
         let target = try texture(width: width, height: height)
         let pass = MTLRenderPassDescriptor()
         pass.colorAttachments[0].texture = target; pass.colorAttachments[0].loadAction = .clear; pass.colorAttachments[0].storeAction = .store
-        let command = try #require(pipeline.queue.makeCommandBuffer())
-        #expect(pipeline.encode(command: command, source: source, mips: pipeline.makeMips(source: source), pass: pass, context: .init(closure: closure, parameters: .init(strength: strength))))
+        let command = try #require(pipeline.gpu.queue.makeCommandBuffer())
+        #expect(pipeline.encode(command: command, source: source, pass: pass, context: .init(closure: closure, parameters: .init(strength: strength))))
         command.commit(); command.waitUntilCompleted()
         #expect(command.error == nil)
         var result = [UInt8](repeating: 0, count: width * height * 4)
@@ -63,7 +63,7 @@ import UnfoldMyMacCore
     var buffer: CVPixelBuffer?
     let attributes = [kCVPixelBufferMetalCompatibilityKey: true, kCVPixelBufferIOSurfacePropertiesKey: [:]] as CFDictionary
     #expect(CVPixelBufferCreate(nil, 257, 193, kCVPixelFormatType_32BGRA, attributes, &buffer) == kCVReturnSuccess)
-    let renderer = FrostRenderer(pipeline: try FrostPipeline())
+    let renderer = MetalSurfaceRenderer(pipeline: try FrostPipeline(gpu: try TestGPU.context()))
     renderer.receive(DesktopFrame(try #require(buffer)))
     #expect(renderer.ready)
     renderer.stop()
@@ -99,18 +99,17 @@ import UnfoldMyMacCore
     }
 }
 @Test @MainActor func frostUsesLatestSourceAfterBlurAndIdentity() throws {
-    let pipeline = try FrostPipeline()
+    let pipeline = try FrostPipeline(gpu: try TestGPU.context())
     let h = try OffscreenFrost()
     let source = try h.texture(width: 131, height: 97)
     let destination = try h.texture(width: 131, height: 97)
-    let mips = pipeline.makeMips(source: source)
     for (index, closure) in [0.2, 0.0, 0.3].enumerated() {
         var bytes = [UInt8](repeating: 0, count: 131 * 97 * 4)
         for i in stride(from: 0, to: bytes.count, by: 4) { bytes[i + index] = 255; bytes[i + 3] = 255 }
         bytes.withUnsafeBytes { source.replace(region: MTLRegionMake2D(0, 0, 131, 97), mipmapLevel: 0, withBytes: $0.baseAddress!, bytesPerRow: 131 * 4) }
         let pass = MTLRenderPassDescriptor(); pass.colorAttachments[0].texture = destination; pass.colorAttachments[0].storeAction = .store
-        let command = try #require(pipeline.queue.makeCommandBuffer())
-        #expect(pipeline.encode(command: command, source: source, mips: mips, pass: pass, context: .init(closure: closure)))
+        let command = try #require(pipeline.gpu.queue.makeCommandBuffer())
+        #expect(pipeline.encode(command: command, source: source, pass: pass, context: .init(closure: closure)))
         command.commit(); command.waitUntilCompleted()
         var pixel = [UInt8](repeating: 0, count: 4)
         pixel.withUnsafeMutableBytes { destination.getBytes($0.baseAddress!, bytesPerRow: 4, from: MTLRegionMake2D(65, 70, 1, 1), mipmapLevel: 0) }
@@ -120,24 +119,23 @@ import UnfoldMyMacCore
 }
 
 @Test @MainActor func nativeResolutionGPUFrameBudget() throws {
-    let pipeline = try FrostPipeline()
+    let pipeline = try FrostPipeline(gpu: try TestGPU.context())
     let desc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm_srgb, width: 3024, height: 1964, mipmapped: false)
     desc.storageMode = .private; desc.usage = [.shaderRead, .renderTarget]
-    let source = try #require(pipeline.gpu.makeTexture(descriptor: desc))
-    let target = try #require(pipeline.gpu.makeTexture(descriptor: desc))
-    let mips = pipeline.makeMips(source: source)
+    let source = try #require(pipeline.gpu.device.makeTexture(descriptor: desc))
+    let target = try #require(pipeline.gpu.device.makeTexture(descriptor: desc))
     // Initialize the source deterministically on the GPU.
     let clear = MTLRenderPassDescriptor(); clear.colorAttachments[0].texture = source
     clear.colorAttachments[0].loadAction = .clear; clear.colorAttachments[0].storeAction = .store
     clear.colorAttachments[0].clearColor = MTLClearColor(red: 0.8, green: 0.5, blue: 0.2, alpha: 1)
-    let initCommand = try #require(pipeline.queue.makeCommandBuffer())
+    let initCommand = try #require(pipeline.gpu.queue.makeCommandBuffer())
     initCommand.makeRenderCommandEncoder(descriptor: clear)?.endEncoding()
     initCommand.commit(); initCommand.waitUntilCompleted()
     var durations: [Double] = []
     for iteration in 0..<15 {
         let pass = MTLRenderPassDescriptor(); pass.colorAttachments[0].texture = target; pass.colorAttachments[0].storeAction = .store
-        let command = try #require(pipeline.queue.makeCommandBuffer())
-        #expect(pipeline.encode(command: command, source: source, mips: mips, pass: pass, context: .init(closure: 0.35)))
+        let command = try #require(pipeline.gpu.queue.makeCommandBuffer())
+        #expect(pipeline.encode(command: command, source: source, pass: pass, context: .init(closure: 0.35)))
         command.commit(); command.waitUntilCompleted()
         #expect(command.error == nil)
         if iteration >= 3 { durations.append((command.gpuEndTime - command.gpuStartTime) * 1000) }

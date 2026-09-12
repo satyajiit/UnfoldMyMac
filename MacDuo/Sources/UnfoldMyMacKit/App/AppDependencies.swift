@@ -10,11 +10,13 @@ import UnfoldMyMacCore
     let filePicker: any FilePicking
     let workspace: any WorkspaceOpening
     let capturePermission: any ScreenCapturePermissionChecking
+    /// Nil only on a Mac without Metal; GPU effects and wallpapers then report that instead of crashing.
+    let gpu: GPUContext?
     let clock: () -> TimeInterval
 
     static func live() -> AppDependencies {
         AppDependencies(preferences: UserDefaultsPreferencesStore(), environment: SystemEnvironment(), displays: DisplayEnvironment(),
                         surfaces: DesktopSurfaceRegistry(), filePicker: OpenPanelFilePicker(), workspace: SystemWorkspace(),
-                        capturePermission: SystemScreenCapturePermission(), clock: { CACurrentMediaTime() })
+                        capturePermission: SystemScreenCapturePermission(), gpu: try? GPUContext(), clock: { CACurrentMediaTime() })
     }
 }

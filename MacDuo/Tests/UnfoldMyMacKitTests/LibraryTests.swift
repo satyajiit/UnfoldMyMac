@@ -65,8 +65,8 @@ private func imageFixture(in directory: URL) throws -> URL {
     #expect(reloaded.definitions[0].descriptor.matches(query: "Test Artist", tag: "Imported"))
     let registry = EffectRegistry.builtIn()
     try registry.register(.artwork(reloaded.definitions[0]))
-    let renderer = try registry.entry(for: artwork.id).makeRenderer()
-    #expect(!(renderer is any DesktopFrameConsuming)); renderer.stop()
+    let renderer = try registry.entry(for: artwork.id).makeRenderer(try TestGPU.context())
+    #expect(!(renderer is any DesktopFrameSink)); renderer.stop()
     var settings = UnfoldMyMacSettings(); settings.effect = artwork.id
     settings.parameters[artwork.id.rawValue] = .init(strength: 0.42, reveal: .straight)
     settings.sanitize()

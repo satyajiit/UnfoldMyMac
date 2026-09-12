@@ -8,7 +8,7 @@ import UnfoldMyMacCore
     var captures: [FakeCapture] = []
     let registry = makeRegistry()
     let host = FakeHost()
-    let session = EffectSession(registry: registry, host: host, displays: FakeDisplay(), makeCapture: { let c = FakeCapture(); captures.append(c); return c })
+    let session = EffectSession(registry: registry, host: host, displays: FakeDisplay(), gpu: nil, makeCapture: { let c = FakeCapture(); captures.append(c); return c })
     session.start(effect: .veil, screen: screen, reduceTransparency: false)
     session.update(.init(closure: 0.5))
     #expect(host.shown)
@@ -32,7 +32,7 @@ import UnfoldMyMacCore
     let screen = try #require(NSScreen.screens.first)
     let capture = FakeCapture()
     var renderers: [FakeRenderer] = []
-    let session = EffectSession(registry: makeRegistry { _, r in renderers.append(r) }, host: FakeHost(), displays: FakeDisplay(), makeCapture: { capture })
+    let session = EffectSession(registry: makeRegistry { _, r in renderers.append(r) }, host: FakeHost(), displays: FakeDisplay(), gpu: nil, makeCapture: { capture })
     var failures = 0
     session.onError = { _ in failures += 1 }
     session.start(effect: .frost, screen: screen, reduceTransparency: false)
@@ -55,7 +55,7 @@ import UnfoldMyMacCore
     var captures = 0
     var renderedID: EffectID?
     let registry = makeRegistry { id, _ in renderedID = id }
-    let session = EffectSession(registry: registry, host: host, displays: FakeDisplay(), makeCapture: { captures += 1; return FakeCapture() })
+    let session = EffectSession(registry: registry, host: host, displays: FakeDisplay(), gpu: nil, makeCapture: { captures += 1; return FakeCapture() })
     session.start(effect: .frost, screen: screen, reduceTransparency: true)
     #expect(renderedID == .fade)
     #expect(captures == 0)
@@ -75,7 +75,7 @@ import UnfoldMyMacCore
     sensor.angle = 110
     var renderer: FakeRenderer?
     let registry = makeRegistry { _, next in renderer = next }
-    let session = EffectSession(registry: registry, host: host, displays: FakeDisplay(), makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: host, displays: FakeDisplay(), gpu: nil, makeCapture: { FakeCapture() })
     var time = 0.0
     let model = makeModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, clock: { time })
     defer { model.shutdown() }
@@ -114,7 +114,7 @@ import UnfoldMyMacCore
     store.settings.effect = .fade
     var renderer: FakeRenderer?
     let registry = makeRegistry { _, next in renderer = next }
-    let session = EffectSession(registry: registry, host: host, displays: FakeDisplay(), makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: host, displays: FakeDisplay(), gpu: nil, makeCapture: { FakeCapture() })
     var time = 0.0
     let model = makeModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, clock: { time })
     defer { model.shutdown() }
@@ -139,7 +139,7 @@ import UnfoldMyMacCore
     store.settings.effect = .fade
     let registry = makeRegistry()
     let host = FakeHost()
-    let session = EffectSession(registry: registry, host: host, displays: FakeDisplay(), makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: host, displays: FakeDisplay(), gpu: nil, makeCapture: { FakeCapture() })
     var time = 0.0
     let model = makeModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, clock: { time })
     let shell = AppShellModel(effects: model, wallpaper: FakeWallpaperBrowsing())
@@ -167,7 +167,7 @@ import UnfoldMyMacCore
     var renderedID: EffectID?
     var renderer: FakeRenderer?
     let registry = makeRegistry { id, next in renderedID = id; renderer = next }
-    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), gpu: nil, makeCapture: { FakeCapture() })
     var now = 0.0
     let model = makeModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, clock: { now })
     let shell = AppShellModel(effects: model, wallpaper: FakeWallpaperBrowsing())
@@ -199,7 +199,7 @@ import UnfoldMyMacCore
     let display = FakeDisplay(), sensor = FakeSensor(), store = InMemoryPreferencesStore()
     store.settings.effect = .fade
     let registry = makeRegistry()
-    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), gpu: nil, makeCapture: { FakeCapture() })
     let model = makeModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session)
     let shell = AppShellModel(effects: model, wallpaper: FakeWallpaperBrowsing())
     defer { model.shutdown() }
@@ -222,7 +222,7 @@ import UnfoldMyMacCore
     let display = FakeDisplay(), sensor = FakeSensor(), store = InMemoryPreferencesStore()
     store.settings.effect = .fade
     let registry = makeRegistry()
-    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), gpu: nil, makeCapture: { FakeCapture() })
     let model = makeModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session)
     let shell = AppShellModel(effects: model, wallpaper: FakeWallpaperBrowsing())
     defer { model.shutdown() }
@@ -257,7 +257,7 @@ import UnfoldMyMacCore
 @Test @MainActor func captureStartupFailureStopsSession() async throws {
     let screen = try #require(NSScreen.screens.first)
     let capture = FakeCapture(); capture.failure = CaptureFailure.exclusionUnavailable
-    let session = EffectSession(registry: makeRegistry(), host: FakeHost(), displays: FakeDisplay(), makeCapture: { capture })
+    let session = EffectSession(registry: makeRegistry(), host: FakeHost(), displays: FakeDisplay(), gpu: nil, makeCapture: { capture })
     var failures = 0; session.onError = { _ in failures += 1 }
     session.start(effect: .frost, screen: screen, reduceTransparency: false)
     for _ in 0..<10 { await Task.yield() }
@@ -271,7 +271,7 @@ import UnfoldMyMacCore
     store.settings.effect = .current
     var renderer: FakeRenderer?
     let registry = makeRegistry { _, next in renderer = next }
-    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), gpu: nil, makeCapture: { FakeCapture() })
     var now = 0.0
     let model = makeModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, clock: { now })
     defer { model.shutdown() }

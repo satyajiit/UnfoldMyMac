@@ -2,6 +2,6 @@
 @MainActor enum WallpaperFeature {
     static func make(dependencies: AppDependencies) -> WallpaperModel {
         WallpaperModel(preferences: dependencies.preferences, environment: dependencies.environment, surfaces: dependencies.surfaces,
-                       systemBackdrop: WallpaperSystemBackdrop())
+                       gpu: dependencies.gpu, systemBackdrop: WallpaperSystemBackdrop())
     }
 }

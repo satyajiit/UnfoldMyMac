@@ -1,4 +1,4 @@
-import MetalKit
+import Metal
 import UnfoldMyMacCore
 
 private struct CurrentUniforms {
@@ -10,24 +10,17 @@ private struct CurrentUniforms {
 }
 
 /// Analytic ribbons and drifting particles; no captures, textures, or private clock.
-@MainActor final class CurrentPipeline: MetalEffectPipeline {
-    let gpu: MTLDevice
-    let queue: MTLCommandQueue
+@MainActor final class CurrentPipeline: EffectPipeline {
+    let gpu: GPUContext
+    let surface = SurfaceConfiguration()
     let animatesWithTime = true
     private let pipeline: MTLRenderPipelineState
-    init() throws {
-        guard let gpu = MTLCreateSystemDefaultDevice(), let queue = gpu.makeCommandQueue() else {
-            throw GPUError.metalUnavailable
-        }
-        self.gpu = gpu; self.queue = queue
-        let library = try gpu.makeLibrary(source: BundleResources.shaderSource("Current", family: .effects), options: nil)
-        let descriptor = MTLRenderPipelineDescriptor()
-        descriptor.vertexFunction = library.makeFunction(name: "currentVertex")
-        descriptor.fragmentFunction = library.makeFunction(name: "currentFragment")
-        descriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
-        pipeline = try gpu.makeRenderPipelineState(descriptor: descriptor)
+
+    init(gpu: GPUContext) throws {
+        self.gpu = gpu
+        pipeline = try gpu.pipeline(.effect("Current"), vertex: "currentVertex", fragment: "currentFragment", color: .bgra8Unorm)
     }
-    func encode(command: MTLCommandBuffer, pass: MTLRenderPassDescriptor, size: CGSize, context: EffectContext) -> Bool {
+    func encode(command: MTLCommandBuffer, pass: MTLRenderPassDescriptor, size: CGSize, frame context: EffectContext) -> Bool {
         guard let encoder = command.makeRenderCommandEncoder(descriptor: pass) else { return false }
         if context.closure > 0 {
             var uniforms = CurrentUniforms(closure: Float(context.closure), strength: Float(context.strength),

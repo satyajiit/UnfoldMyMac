@@ -1,4 +1,4 @@
-import AppKit
+import Metal
 import MetalKit
 import UnfoldMyMacCore
 
@@ -14,36 +14,28 @@ private struct ArtRevealUniforms {
 
 /// Bundled and imported artwork share one reversible reveal pipeline.
 /// Image identity and selectable cut geometry are independent. No desktop capture.
-@MainActor final class ArtRevealPipeline: MetalEffectPipeline {
-    let gpu: MTLDevice
-    let queue: MTLCommandQueue
+@MainActor final class ArtRevealPipeline: EffectPipeline {
+    let gpu: GPUContext
+    let surface = SurfaceConfiguration()
     let artwork: MTLTexture
     let defaultReveal: ArtRevealMotion
     private let pipeline: MTLRenderPipelineState
 
-    init(artwork definition: ArtworkDefinition) throws {
-        guard let gpu = MTLCreateSystemDefaultDevice(), let queue = gpu.makeCommandQueue() else {
-            throw GPUError.metalUnavailable
-        }
-        self.gpu = gpu; self.queue = queue; self.defaultReveal = definition.descriptor.defaultReveal ?? .curved
-        artwork = try MTKTextureLoader(device: gpu).newTexture(URL: definition.imageURL, options: [
+    init(artwork definition: ArtworkDefinition, gpu: GPUContext) throws {
+        self.gpu = gpu
+        defaultReveal = definition.descriptor.defaultReveal ?? .curved
+        artwork = try gpu.textures.newTexture(URL: definition.imageURL, options: [
             .SRGB: true,
             .origin: MTKTextureLoader.Origin.topLeft.rawValue,
             .generateMipmaps: true,
             .textureUsage: NSNumber(value: MTLTextureUsage.shaderRead.rawValue),
             .textureStorageMode: NSNumber(value: MTLStorageMode.shared.rawValue),
         ])
-        let library = try gpu.makeLibrary(source: BundleResources.shaderSource("ArtReveal", family: .effects), options: nil)
-        let descriptor = MTLRenderPipelineDescriptor()
-        descriptor.vertexFunction = library.makeFunction(name: "artRevealVertex")
-        descriptor.fragmentFunction = library.makeFunction(name: "artRevealFragment")
         // Shader encodes sRGB before premultiplication for Core Animation's
         // transparent surface, keeping bright antialiased edges halo-free.
-        descriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
-        pipeline = try gpu.makeRenderPipelineState(descriptor: descriptor)
+        pipeline = try gpu.pipeline(.effect("ArtReveal"), vertex: "artRevealVertex", fragment: "artRevealFragment", color: .bgra8Unorm)
     }
-
-    func encode(command: MTLCommandBuffer, pass: MTLRenderPassDescriptor, size: CGSize, context: EffectContext) -> Bool {
+    func encode(command: MTLCommandBuffer, pass: MTLRenderPassDescriptor, size: CGSize, frame context: EffectContext) -> Bool {
         guard let encoder = command.makeRenderCommandEncoder(descriptor: pass) else { return false }
         if context.closure > 0 {
             var uniforms = ArtRevealUniforms(closure: Float(context.closure), strength: context.reduceMotion ? 0 : Float(context.strength),
@@ -58,5 +50,3 @@ private struct ArtRevealUniforms {
         return true
     }
 }
-
-typealias ArtRevealRenderer = MetalEffectRenderer<ArtRevealPipeline>

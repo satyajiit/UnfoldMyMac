@@ -8,7 +8,7 @@ import UnfoldMyMacCore
         let library = ArtworkLibrary()
         for artwork in library.definitions { try? registry.register(.artwork(artwork)) }
         let surfaces = dependencies.surfaces
-        let session = EffectSession(registry: registry, host: EffectHost(), displays: dependencies.displays, makeCapture: { DesktopCapture(surfaces: surfaces) })
+        let session = EffectSession(registry: registry, host: EffectHost(), displays: dependencies.displays, gpu: dependencies.gpu, makeCapture: { DesktopCapture(surfaces: surfaces) })
         return UnfoldMyMacModel(dependencies: EffectsDependencies(
             preferences: dependencies.preferences, registry: registry, makeSensor: { LidSensor() }, displays: dependencies.displays,
             session: session, environment: dependencies.environment, filePicker: dependencies.filePicker, workspace: dependencies.workspace,

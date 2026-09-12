@@ -6,18 +6,18 @@ import UnfoldMyMacCore
 
 @MainActor private struct OffscreenArt {
     let pipeline: ArtRevealPipeline
-    init(_ artwork: ArtworkDefinition) throws { pipeline = try ArtRevealPipeline(artwork: artwork) }
+    init(_ artwork: ArtworkDefinition) throws { pipeline = try ArtRevealPipeline(artwork: artwork, gpu: try TestGPU.context()) }
 
     func render(_ closure: Double, strength: Double = 1, reveal: ArtRevealMotion? = nil, width: Int = 768, height: Int = 512) throws -> [UInt8] {
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: width, height: height, mipmapped: false)
         descriptor.storageMode = .shared; descriptor.usage = [.renderTarget]
-        let texture = try #require(pipeline.gpu.makeTexture(descriptor: descriptor))
+        let texture = try #require(pipeline.gpu.device.makeTexture(descriptor: descriptor))
         let pass = MTLRenderPassDescriptor()
         pass.colorAttachments[0].texture = texture
         pass.colorAttachments[0].loadAction = .clear
         pass.colorAttachments[0].storeAction = .store
         pass.colorAttachments[0].clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
-        let command = try #require(pipeline.queue.makeCommandBuffer())
+        let command = try #require(pipeline.gpu.queue.makeCommandBuffer())
         #expect(pipeline.encode(command: command, pass: pass, size: CGSize(width: width, height: height),
                                context: .init(closure: closure, parameters: .init(strength: strength, reveal: reveal))))
         command.commit(); command.waitUntilCompleted()
@@ -113,8 +113,8 @@ import UnfoldMyMacCore
         let entry = registry.entry(for: artwork.id)
         #expect(entry.descriptor.id == artwork.id)
         #expect(!entry.descriptor.requiresCapture)
-        let renderer = try entry.makeRenderer()
-        #expect(!(renderer is any DesktopFrameConsuming))
+        let renderer = try entry.makeRenderer(try TestGPU.context())
+        #expect(!(renderer is any DesktopFrameSink))
         renderer.stop()
         var settings = UnfoldMyMacSettings()
         settings.effect = artwork.id

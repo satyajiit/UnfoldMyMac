@@ -6,18 +6,18 @@ import UnfoldMyMacCore
 
 @MainActor private struct OffscreenCurtains {
     let pipeline: CurtainsPipeline
-    init() throws { pipeline = try CurtainsPipeline() }
+    init() throws { pipeline = try CurtainsPipeline(gpu: try TestGPU.context()) }
 
     func render(_ closure: Double, strength: Double = 1, width: Int = 640, height: Int = 420) throws -> (bytes: [UInt8], milliseconds: Double) {
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm_srgb, width: width, height: height, mipmapped: false)
         descriptor.storageMode = .shared; descriptor.usage = [.renderTarget]
-        let texture = try #require(pipeline.gpu.makeTexture(descriptor: descriptor))
+        let texture = try #require(pipeline.gpu.device.makeTexture(descriptor: descriptor))
         let pass = MTLRenderPassDescriptor()
         pass.colorAttachments[0].texture = texture
         pass.colorAttachments[0].loadAction = .clear
         pass.colorAttachments[0].storeAction = .store
         pass.colorAttachments[0].clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
-        let command = try #require(pipeline.queue.makeCommandBuffer())
+        let command = try #require(pipeline.gpu.queue.makeCommandBuffer())
         #expect(pipeline.encode(command: command, pass: pass, size: CGSize(width: width, height: height),
                                context: .init(closure: closure, parameters: .init(strength: strength))))
         command.commit(); command.waitUntilCompleted()
@@ -105,9 +105,9 @@ import UnfoldMyMacCore
     #expect(entry.descriptor.id == .curtains)
     #expect(!entry.descriptor.requiresCapture)
     #expect(entry.descriptor.parameterTitle == "Fold depth")
-    let renderer = try entry.makeRenderer()
+    let renderer = try entry.makeRenderer(try TestGPU.context())
     #expect(renderer.ready)
-    #expect(!(renderer is any DesktopFrameConsuming))
+    #expect(!(renderer is any DesktopFrameSink))
     renderer.stop()
     var settings = UnfoldMyMacSettings()
     settings.effect = .curtains

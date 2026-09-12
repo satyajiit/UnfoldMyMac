@@ -8,7 +8,7 @@ import UnfoldMyMacCore
 @Test @MainActor func enablingDuringAPreviewSurvivesStoppingThePreview() {
     let store = InMemoryPreferencesStore(); store.settings.effect = .fade
     let registry = makeRegistry()
-    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), gpu: nil, makeCapture: { FakeCapture() })
     let model = makeModel(store: store, registry: registry, sensorFactory: { FakeSensor() }, displays: FakeDisplay(), session: session, clock: { 0 })
     defer { model.shutdown() }
     #expect(!model.enabled)
@@ -27,7 +27,7 @@ import UnfoldMyMacCore
     let sensor = FakeSensor(); sensor.angle = nil
     var constructions = 0
     let registry = makeRegistry()
-    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), gpu: nil, makeCapture: { FakeCapture() })
     var now = 0.0
     let model = makeModel(store: InMemoryPreferencesStore(), registry: registry, sensorFactory: { constructions += 1; return sensor }, displays: FakeDisplay(), session: session, clock: { now })
     defer { model.shutdown() }
@@ -53,7 +53,7 @@ import UnfoldMyMacCore
     let store = InMemoryPreferencesStore(); store.settings.effect = .fade
     let capture = FakeCapture(); capture.failure = CaptureFailure.exclusionUnavailable
     let registry = makeRegistry()
-    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { capture })
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), gpu: nil, makeCapture: { capture })
     var now = 0.0
     let model = makeModel(store: store, registry: registry, sensorFactory: { FakeSensor() }, displays: FakeDisplay(), session: session, clock: { now })
     defer { model.shutdown() }
@@ -74,7 +74,7 @@ import UnfoldMyMacCore
 
 // L10: duplicate registrations are reported, not fatal.
 @Test @MainActor func registryIgnoresDuplicateEntriesAndReportsThem() {
-    let entry = EffectRegistration(descriptor: .init(id: .veil, title: "Veil", subtitle: "", detail: "", symbol: "circle"), makeRenderer: { FakeRenderer() })
+    let entry = EffectRegistration(descriptor: .init(id: .veil, title: "Veil", subtitle: "", detail: "", symbol: "circle"), makeRenderer: { _ in FakeRenderer() })
     let registry = EffectRegistry(entries: [entry, entry])
     #expect(registry.entries.count == 1)
     #expect(registry.diagnostics == ["Duplicate effect ‘veil’ was ignored."])
@@ -95,7 +95,7 @@ import UnfoldMyMacCore
     var buffer: CVPixelBuffer?
     let attributes = [kCVPixelBufferMetalCompatibilityKey: true, kCVPixelBufferIOSurfacePropertiesKey: [:]] as CFDictionary
     #expect(CVPixelBufferCreate(nil, 64, 48, kCVPixelFormatType_32BGRA, attributes, &buffer) == kCVReturnSuccess)
-    let renderer = FrostRenderer(pipeline: try FrostPipeline())
+    let renderer = MetalSurfaceRenderer(pipeline: try FrostPipeline(gpu: try TestGPU.context()))
     renderer.prepare(size: CGSize(width: 64, height: 48), scale: 1)
     renderer.receive(DesktopFrame(try #require(buffer)))
     #expect(renderer.ready)

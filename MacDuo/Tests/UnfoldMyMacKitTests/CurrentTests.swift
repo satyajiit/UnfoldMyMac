@@ -6,15 +6,15 @@ import UnfoldMyMacCore
 
 @MainActor private struct CurrentHarness {
     let pipeline: CurrentPipeline
-    init() throws { pipeline = try CurrentPipeline() }
+    init() throws { pipeline = try CurrentPipeline(gpu: try TestGPU.context()) }
     func render(_ context: EffectContext, width: Int = 640, height: Int = 420) throws -> (pixels: [UInt8], gpuTime: Double) {
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: width, height: height, mipmapped: false)
         descriptor.storageMode = .shared; descriptor.usage = [.renderTarget]
-        let texture = try #require(pipeline.gpu.makeTexture(descriptor: descriptor))
+        let texture = try #require(pipeline.gpu.device.makeTexture(descriptor: descriptor))
         let pass = MTLRenderPassDescriptor()
         pass.colorAttachments[0].texture = texture; pass.colorAttachments[0].loadAction = .clear; pass.colorAttachments[0].storeAction = .store
         pass.colorAttachments[0].clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
-        let command = try #require(pipeline.queue.makeCommandBuffer())
+        let command = try #require(pipeline.gpu.queue.makeCommandBuffer())
         #expect(pipeline.encode(command: command, pass: pass, size: CGSize(width: width, height: height), context: context))
         command.commit(); command.waitUntilCompleted(); #expect(command.error == nil)
         var pixels = [UInt8](repeating: 0, count: width * height * 4)
@@ -44,8 +44,8 @@ import UnfoldMyMacCore
     }
     let entry = EffectRegistry.builtIn().entry(for: .current)
     #expect(entry.descriptor.hasContinuousMotion && !entry.descriptor.requiresCapture)
-    let renderer = try entry.makeRenderer()
-    #expect(renderer.animatesWithTime && !(renderer is any DesktopFrameConsuming)); renderer.stop()
+    let renderer = try entry.makeRenderer(try TestGPU.context())
+    #expect(renderer.animatesWithTime && !(renderer is any DesktopFrameSink)); renderer.stop()
     if let path = ProcessInfo.processInfo.environment["UNFOLDMYMAC_CURRENT_ARTIFACTS"] ?? ProcessInfo.processInfo.environment["LUMA_CURRENT_ARTIFACTS"] {
         let directory = URL(fileURLWithPath: path); try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         for progress in [0.65, 1.0] {

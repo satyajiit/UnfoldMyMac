@@ -19,50 +19,50 @@ import UnfoldMyMacCore
             ("half", .init(closure: 0.5, time: 1.5)),
             ("sealed", .init(closure: 1, time: 3)),
         ]
-        let frost = try FrostPipeline()
+        let frost = try FrostPipeline(gpu: try TestGPU.context())
         let source = OffscreenHarness.gradient(width: width, height: height)
         let sourceDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm_srgb, width: width, height: height, mipmapped: false)
         sourceDescriptor.storageMode = .shared; sourceDescriptor.usage = [.shaderRead, .renderTarget]
-        let sourceTexture = try #require(frost.gpu.makeTexture(descriptor: sourceDescriptor))
+        let sourceTexture = try #require(frost.gpu.device.makeTexture(descriptor: sourceDescriptor))
         source.withUnsafeBytes { sourceTexture.replace(region: MTLRegionMake2D(0, 0, width, height), mipmapLevel: 0, withBytes: $0.baseAddress!, bytesPerRow: width * 4) }
         for pose in poses {
-            hashes["frost/\(pose.name)"] = try OffscreenHarness.render(device: frost.gpu, queue: frost.queue, pixelFormat: .bgra8Unorm_srgb, width: width, height: height) {
-                frost.encode(command: $0, source: sourceTexture, mips: frost.makeMips(source: sourceTexture), pass: $1, context: pose.context)
+            hashes["frost/\(pose.name)"] = try OffscreenHarness.render(device: frost.gpu.device, queue: frost.gpu.queue, pixelFormat: .bgra8Unorm_srgb, width: width, height: height) {
+                frost.encode(command: $0, source: sourceTexture, pass: $1, context: pose.context)
             }.sha256
         }
-        let curtains = try CurtainsPipeline()
+        let curtains = try CurtainsPipeline(gpu: try TestGPU.context())
         for pose in poses {
-            hashes["curtains/\(pose.name)"] = try OffscreenHarness.render(device: curtains.gpu, queue: curtains.queue, pixelFormat: curtains.pixelFormat, width: width, height: height) {
+            hashes["curtains/\(pose.name)"] = try OffscreenHarness.render(device: curtains.gpu.device, queue: curtains.gpu.queue, pixelFormat: curtains.surface.pixelFormat, width: width, height: height) {
                 curtains.encode(command: $0, pass: $1, size: CGSize(width: width, height: height), context: pose.context)
             }.sha256
         }
-        let current = try CurrentPipeline()
+        let current = try CurrentPipeline(gpu: try TestGPU.context())
         for pose in poses {
-            hashes["current/\(pose.name)"] = try OffscreenHarness.render(device: current.gpu, queue: current.queue, pixelFormat: current.pixelFormat, width: width, height: height) {
+            hashes["current/\(pose.name)"] = try OffscreenHarness.render(device: current.gpu.device, queue: current.gpu.queue, pixelFormat: current.surface.pixelFormat, width: width, height: height) {
                 current.encode(command: $0, pass: $1, size: CGSize(width: width, height: height), context: pose.context)
             }.sha256
         }
-        let peekaboo = try PeekabooPipeline()
+        let peekaboo = try PeekabooPipeline(gpu: try TestGPU.context())
         for pose in poses {
-            hashes["peekaboo/\(pose.name)"] = try OffscreenHarness.render(device: peekaboo.gpu, queue: peekaboo.queue, pixelFormat: peekaboo.pixelFormat, width: width, height: height) {
+            hashes["peekaboo/\(pose.name)"] = try OffscreenHarness.render(device: peekaboo.gpu.device, queue: peekaboo.gpu.queue, pixelFormat: peekaboo.surface.pixelFormat, width: width, height: height) {
                 peekaboo.encode(command: $0, pass: $1, size: CGSize(width: width, height: height), context: pose.context)
             }.sha256
         }
         for artwork in try LibraryAssets.artworks() {
-            let art = try ArtRevealPipeline(artwork: artwork)
+            let art = try ArtRevealPipeline(artwork: artwork, gpu: try TestGPU.context())
             for reveal in ArtRevealMotion.allCases {
                 let context = EffectContext(closure: 0.5, parameters: .init(strength: 1, reveal: reveal))
-                hashes["art/\(artwork.id.rawValue)/\(reveal.rawValue)"] = try OffscreenHarness.render(device: art.gpu, queue: art.queue, pixelFormat: art.pixelFormat, width: width, height: height) {
+                hashes["art/\(artwork.id.rawValue)/\(reveal.rawValue)"] = try OffscreenHarness.render(device: art.gpu.device, queue: art.gpu.queue, pixelFormat: art.surface.pixelFormat, width: width, height: height) {
                     art.encode(command: $0, pass: $1, size: CGSize(width: width, height: height), context: context)
                 }.sha256
             }
         }
-        let catalog = try WallpaperShaderCatalog()
+        let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
         let registry = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false)
         for template in registry.templates {
-            let pipeline = try WallpaperPipeline(template: template, catalog: catalog)
+            let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog)
             for (name, time, energy) in [("calm", 2.0, 0.2), ("busy", 5.0, 0.7)] {
-                hashes["wallpaper/\(template.id)/\(name)"] = try OffscreenHarness.render(device: catalog.gpu, queue: catalog.queue, pixelFormat: .bgra8Unorm, width: width, height: height) {
+                hashes["wallpaper/\(template.id)/\(name)"] = try OffscreenHarness.render(device: gpu.device, queue: gpu.queue, pixelFormat: .bgra8Unorm, width: width, height: height) {
                     pipeline.encode(command: $0, pass: $1, size: CGSize(width: width, height: height), time: time, energy: energy, channels: .zero, grid: nil)
                 }.sha256
             }

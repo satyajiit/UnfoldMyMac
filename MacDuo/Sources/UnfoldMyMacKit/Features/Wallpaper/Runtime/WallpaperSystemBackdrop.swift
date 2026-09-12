@@ -34,7 +34,7 @@ import UnfoldMyMacCore
                cached.size == screen.size, cached.url == current.url { continue }
             let previous = journal?.records[current.url.path]
             let original = previous.flatMap { $0.display == screen.id ? $0.original : nil } ?? current
-            let image = try WallpaperThumbnailRenderer.image(pipeline: pipeline, size: screen.size)
+            let image = try WallpaperCoverRenderer.image(pipeline: pipeline, size: screen.size)
             guard let tiff = image.tiffRepresentation, let bitmap = NSBitmapImageRep(data: tiff),
                   let png = bitmap.representation(using: .png, properties: [:]) else { throw WallpaperError.unavailable("The desktop still could not be encoded.") }
             let encoder = JSONEncoder(); encoder.outputFormatting = .sortedKeys

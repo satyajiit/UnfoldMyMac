@@ -6,7 +6,7 @@ import UnfoldMyMacCore
 @testable import UnfoldMyMacKit
 
 @Test @MainActor func wallpaperOriginalMarksSurviveBackgroundChangesAndRejectInvalidPlacement() throws {
-    let catalog = try WallpaperShaderCatalog()
+    let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let registry = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false)
     let originals = ["GTAVI": "f1a4e777835a98fa0386106ef5a948e8fd590121ee0cd72daa191997ed979616", "F1": "1fdcb92bab1a08d50bdf784fcf59d4c32da72cbce70cf941da9a509a257dfe2d",
                      "Codex": "69fb4384e161be8a20dcb94a9ac34aea4fbfaeb67514110a71e7b0732eccb0fc",
@@ -16,9 +16,9 @@ import UnfoldMyMacCore
         let url = try #require(WallpaperEmblemPipeline.url(mark.asset))
         let digest = SHA256.hash(data: try Data(contentsOf: url)).map { String(format: "%02x", $0) }.joined()
         #expect(digest == originals[mark.asset])
-        let original = try WallpaperHarness(pipeline: WallpaperPipeline(template: template, catalog: catalog))
+        let original = try WallpaperHarness(pipeline: WallpaperPipeline(template: template, gpu: gpu, shaders: catalog))
             .render(time: 4, energy: 0.35).pixels
-        let alternate = try WallpaperHarness(pipeline: WallpaperPipeline(template: template, catalog: catalog, imageURL: url))
+        let alternate = try WallpaperHarness(pipeline: WallpaperPipeline(template: template, gpu: gpu, shaders: catalog, imageURL: url))
             .render(time: 4, energy: 0.35).pixels
         if template.image == nil { #expect(original == alternate) }
         else {
@@ -37,7 +37,7 @@ import UnfoldMyMacCore
             #expect(checked > width * height / 4)
             if mark.asset == "GTAVI" {
                 var unmarked = template; unmarked.emblem = nil
-                let background = try WallpaperHarness(pipeline: WallpaperPipeline(template: unmarked, catalog: catalog)).render(time: 4, energy: 0.35).pixels
+                let background = try WallpaperHarness(pipeline: WallpaperPipeline(template: unmarked, gpu: gpu, shaders: catalog)).render(time: 4, energy: 0.35).pixels
                 let corner = ((markY + height/2) * 640 + markX + width - 2) * 4
                 #expect(original[corner..<corner+4] == background[corner..<corner+4])
             }
@@ -47,18 +47,18 @@ import UnfoldMyMacCore
         invalid.emblem?.asset = "../Codex"
         #expect(throws: WallpaperError.invalidTemplate) { try invalid.validated() }
         invalid.emblem = mark; invalid.emblem?.y = 0.99
-        #expect(throws: WallpaperError.invalidTemplate) { try WallpaperPipeline(template: invalid, catalog: catalog) }
+        #expect(throws: WallpaperError.invalidTemplate) { try WallpaperPipeline(template: invalid, gpu: gpu, shaders: catalog) }
         invalid.emblem = mark; invalid.emblem?.asset = "MissingMark"
         #expect(throws: (any Error).self) { try registry.register(invalid) }
     }
 }
 
 @Test @MainActor func newWallpapersRespondToToolSignalsAndRenderCompleteCompositions() throws {
-    let catalog = try WallpaperShaderCatalog()
+    let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let registry = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false)
     UnfoldMyMacType.register()
     for template in registry.templates {
-        let pipeline = try WallpaperPipeline(template: template, catalog: catalog)
+        let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog)
         let harness = WallpaperHarness(pipeline: pipeline)
         let idle = try harness.render(time: 4, energy: 0.35).pixels
         let signal = try harness.render(time: 4, energy: 0.35, channels: SIMD4(0, 1, 0, 0)).pixels

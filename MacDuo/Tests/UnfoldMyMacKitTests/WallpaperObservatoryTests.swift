@@ -95,7 +95,7 @@ private actor NOAAFixtureServer {
 }
 
 @Test @MainActor func scalarGridUploadsOnlyNewRevisionsAndMissingDataClearsBinding() throws {
-    let catalog = try WallpaperShaderCatalog(), texture = try WallpaperGridTexture(device: catalog.gpu)
+    let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context(), texture = try WallpaperGridTexture(device: gpu.device)
     let grid = WallpaperScalarGrid(revision: "one", width: 2, height: 2, values: [0, 0.5, 1, 0])
     let first = texture.texture(for: grid)
     #expect(texture.texture(for: grid) === first && texture.uploadCount == 1)
@@ -106,14 +106,14 @@ private actor NOAAFixtureServer {
 
 @Test @MainActor func newPublicWallpapersRenderForecastAndExportCompositions() throws {
     UnfoldMyMacType.register()
-    let catalog = try WallpaperShaderCatalog()
+    let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let templates = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false).templates
     let rawURL = ProcessInfo.processInfo.environment["UNFOLDMYMAC_AURORA_JSON"].map { URL(fileURLWithPath: $0) }
     let forecast = try NOAAWeatherClient.decodeForecast(rawURL.map { try Data(contentsOf: $0) } ?? forecastFixture(at: .now))
     var snapshot = WallpaperSnapshot()
     snapshot.sources["aurora"] = AuroraWallpaperProvider.snapshot(.init(forecast: forecast, kp: .init(date: .now, value: 3)), at: .now)
     for template in templates where ["aurora-observatory", "gta-vi-countdown"].contains(template.id) {
-        let pipeline = try WallpaperPipeline(template: template, catalog: catalog)
+        let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog)
         let harness = WallpaperHarness(pipeline: pipeline)
         let grid = template.gridBinding == nil ? nil : forecast.grid
         let rendered = try harness.render(time: 4, energy: 0.4, grid: grid)

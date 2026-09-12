@@ -4,7 +4,7 @@ import UnfoldMyMacCore
 
 @Test @MainActor func shellSyncsWallpaperBrowsingWithRouteAndWindowAndEndsPreviews() {
     let store = InMemoryPreferencesStore(), registry = makeRegistry()
-    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), gpu: nil, makeCapture: { FakeCapture() })
     let model = makeModel(store: store, registry: registry, session: session)
     defer { model.shutdown() }
     let wallpaper = FakeWallpaperBrowsing()

@@ -1,7 +1,7 @@
 import Foundation
-import Synchronization
 
-struct WallpaperRenderStats: Equatable, Sendable {
+/// One second of presented-frame statistics for a surface.
+struct RenderStats: Equatable, Sendable {
     var fps = 0.0
     var gpuMilliseconds = 0.0
     var width = 0

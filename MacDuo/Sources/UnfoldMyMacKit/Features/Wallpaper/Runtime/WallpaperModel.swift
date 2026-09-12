@@ -10,7 +10,7 @@ import UnfoldMyMacCore
     private(set) var activePipeline: WallpaperPipeline?
     private(set) var thumbnails: [String: NSImage] = [:]
     private(set) var playback = WallpaperPlayback()
-    private(set) var stats = WallpaperRenderStats()
+    private(set) var stats = RenderStats()
     private var previewVisible = false
     var error: String?
     let data = WallpaperDataHub()
@@ -24,6 +24,8 @@ import UnfoldMyMacCore
     @ObservationIgnored private var lastSystemState: SystemState?
     @ObservationIgnored private let preferencesStore: any PreferencesStore
     @ObservationIgnored private let systemBackdrop: WallpaperSystemBackdrop?
+    @ObservationIgnored private let gpu: GPUContext?
+    @ObservationIgnored private let shaders = WallpaperShaderCatalog()
     @ObservationIgnored private var registry: WallpaperTemplateRegistry?
     @ObservationIgnored private var sampling = false
     @ObservationIgnored private var browsing = false
@@ -33,9 +35,10 @@ import UnfoldMyMacCore
     var activeTitle: String { templates.first { $0.id == preferences.templateID }?.title ?? "Wallpaper" }
     var isSelectedApplied: Bool { enabled && preferences.templateID == selectedID }
 
-    init(preferences store: any PreferencesStore, environment: any SystemEnvironmentObserving, surfaces: DesktopSurfaceRegistry, systemBackdrop: WallpaperSystemBackdrop? = nil) {
+    init(preferences store: any PreferencesStore, environment: any SystemEnvironmentObserving, surfaces: DesktopSurfaceRegistry, gpu: GPUContext?,
+         systemBackdrop: WallpaperSystemBackdrop? = nil) {
         preferencesStore = store; self.environment = environment; host = WallpaperDesktopHost(surfaces: surfaces)
-        self.systemBackdrop = systemBackdrop
+        self.systemBackdrop = systemBackdrop; self.gpu = gpu
         let saved = store.load(WallpaperPreferences.key)
         preferences = saved; selectedID = saved.templateID
         setup = WallpaperSetupController(preferences: store)
@@ -44,12 +47,12 @@ import UnfoldMyMacCore
     }
     func start() {
         do {
-            let shaders = try WallpaperShaderCatalog()
+            guard let gpu else { throw GPUError.metalUnavailable }
             let registry = try WallpaperTemplateRegistry(shaders: shaders)
             self.registry = registry; templates = registry.templates
             for template in templates {
-                let pipeline = try WallpaperPipeline(template: template, catalog: shaders)
-                thumbnails[template.id] = try WallpaperThumbnailRenderer.cover(pipeline: pipeline)
+                let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: shaders)
+                thumbnails[template.id] = try WallpaperCoverRenderer.cover(pipeline: pipeline)
             }
             if selected == nil { selectedID = templates.first?.id ?? "pulse" }
             try preparePreview()
@@ -104,15 +107,15 @@ import UnfoldMyMacCore
     }
     func importTemplate(_ url: URL) {
         do {
-            guard let registry else { return }
-            let template = try registry.importTemplate(url)
+            guard let registry, let gpu else { return }
+            let template = try registry.importTemplate(url) { _ = try WallpaperPipeline(template: $0, gpu: gpu, shaders: shaders) }
             templates = registry.templates
-            let pipeline = try WallpaperPipeline(template: template, catalog: registry.shaders)
-            thumbnails[template.id] = try WallpaperThumbnailRenderer.cover(pipeline: pipeline)
+            let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: shaders)
+            thumbnails[template.id] = try WallpaperCoverRenderer.cover(pipeline: pipeline)
             select(template.id)
         } catch { self.error = error.localizedDescription }
     }
-    func receiveStats(_ value: WallpaperRenderStats) { stats = value }
+    func receiveStats(_ value: RenderStats) { stats = value }
     func shutdown() {
         browsing = false; host.stop(); environmentObservation?.cancel(); environmentObservation = nil; activity.setRendering(false)
         data.stop(); previewData.stop(); setup.cancel(); sampling = false
@@ -120,9 +123,9 @@ import UnfoldMyMacCore
         playback = .init(); activePipeline = nil; previewPipeline = nil
     }
     private func preparePreview() throws {
-        guard let selected, let registry else { return }
+        guard let selected, registry != nil, let gpu else { return }
         let image = preferences.customBackground && selected.image != nil && selected.allowsCustomBackground != false ? WallpaperPaths.background : nil
-        previewPipeline = try WallpaperPipeline(template: selected, catalog: registry.shaders, imageURL: image)
+        previewPipeline = try WallpaperPipeline(template: selected, gpu: gpu, shaders: shaders, imageURL: image)
     }
     private func rebuildDesktop() {
         syncSystemBackdrop()
