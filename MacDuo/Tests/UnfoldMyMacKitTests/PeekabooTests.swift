@@ -24,7 +24,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func peekabooHasImmediateEntryClearOpeningAndSealedCompletion() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func peekabooHasImmediateEntryClearOpeningAndSealedCompletion() throws {
     let harness = try PeekabooHarness()
     let onset = EffectMath.liveProgress(lid: 108, activation: 108, completionFraction: 0.8)
     for strength in [0.0, 1.0] {
@@ -77,7 +77,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func peekabooNativeResolutionFrameBudget() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func peekabooNativeResolutionFrameBudget() throws {
     let harness = try PeekabooHarness()
     var times: [Double] = []
     for frame in 0..<8 {

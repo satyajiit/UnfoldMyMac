@@ -28,7 +28,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func identityOrientationScaleAndColor() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func identityOrientationScaleAndColor() throws {
     let renderer = try OffscreenFrost()
     let width = 257, height = 193
     var input = [UInt8](repeating: 255, count: width * height * 4)
@@ -41,7 +41,7 @@ import UnfoldMyMacCore
         #expect(zip(input, output).allSatisfy { abs(Int($0) - Int($1)) <= 1 })
     }
 }
-@Test @MainActor func blurProgressionHingeAndFinalBlack() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func blurProgressionHingeAndFinalBlack() throws {
     let renderer = try OffscreenFrost()
     let width = 512, height = 384
     var input = [UInt8](repeating: 255, count: width * height * 4)
@@ -70,7 +70,7 @@ import UnfoldMyMacCore
     #expect(!renderer.ready)
 }
 
-@Test @MainActor func frostRespondsOnTheFirstLiveFrame() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func frostRespondsOnTheFirstLiveFrame() throws {
     let renderer = try OffscreenFrost()
     let input = [UInt8](repeating: 255, count: 128 * 96 * 4)
     let onset = EffectMath.liveProgress(lid: 108, activation: 108, completionFraction: 0.8)

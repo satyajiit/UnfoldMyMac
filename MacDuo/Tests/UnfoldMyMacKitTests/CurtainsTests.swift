@@ -41,7 +41,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func curtainsOpenCloseAndReverseWithoutLeakingTheDesktop() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func curtainsOpenCloseAndReverseWithoutLeakingTheDesktop() throws {
     let renderer = try OffscreenCurtains()
     let open = try renderer.render(0).bytes
     #expect(open.allSatisfy { $0 == 0 })
@@ -69,7 +69,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func curtainsFoldDepthAndResizePreserveCoverage() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func curtainsFoldDepthAndResizePreserveCoverage() throws {
     let renderer = try OffscreenCurtains()
     let shallow = try renderer.render(1, strength: 0, width: 400, height: 600).bytes
     let deep = try renderer.render(1, width: 400, height: 600).bytes
@@ -86,7 +86,7 @@ import UnfoldMyMacCore
     print("Curtains 3024×1964 GPU median: \(String(format: "%.2f", median)) ms (60 Hz budget 16.67 ms)")
 }
 
-@Test @MainActor func curtainsEnterOnTheFirstLiveFrame() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func curtainsEnterOnTheFirstLiveFrame() throws {
     let renderer = try OffscreenCurtains()
     let onset = EffectMath.liveProgress(lid: 108, activation: 108, completionFraction: 0.8)
     for strength in [0.0, 1.0] {

@@ -59,7 +59,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func currentNativeResolutionFrameBudget() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func currentNativeResolutionFrameBudget() throws {
     let harness = try CurrentHarness()
     var times: [Double] = []
     for frame in 0..<8 {

@@ -41,7 +41,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func artRevealsAreTransparentReversibleAndPremultiplied() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func artRevealsAreTransparentReversibleAndPremultiplied() throws {
     for artwork in try EffectAssets.artworks() {
         let renderer = try OffscreenArt(artwork)
         let open = try renderer.render(0)
@@ -69,7 +69,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func assembledArtworkPreservesOrientationAndSRGBColour() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func assembledArtworkPreservesOrientationAndSRGBColour() throws {
     for artwork in try EffectAssets.artworks() {
         let renderer = try OffscreenArt(artwork)
         let source = renderer.pipeline.artwork
@@ -92,7 +92,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func artworkEntersOnTheFirstLiveFrame() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func artworkEntersOnTheFirstLiveFrame() throws {
     let onset = EffectMath.liveProgress(lid: 108, activation: 108, completionFraction: 0.8)
     for artwork in try EffectAssets.artworks() {
         let renderer = try OffscreenArt(artwork)
@@ -125,7 +125,7 @@ import UnfoldMyMacCore
     }
 }
 
-@Test @MainActor func anyArtworkCanUseAnyRevealWithoutChangingItsIdentity() throws {
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func anyArtworkCanUseAnyRevealWithoutChangingItsIdentity() throws {
     let artwork = try #require(EffectAssets.artworks().first)
     let renderer = try OffscreenArt(artwork)
     let closed = try renderer.render(1)
