@@ -63,10 +63,15 @@ private actor SlowWallpaperProvider: WallpaperDataProvider {
     hub.update([SlowWallpaperProvider()])
     try await Task.sleep(for: .milliseconds(10))
     hub.stop()
-    try await Task.sleep(for: .milliseconds(120))
+    // Absence, so a fixed wait is right, but it has to be comfortably longer than the provider's
+    // 80ms: a late result that was going to land would have landed by now.
+    try await Task.sleep(for: .milliseconds(400))
     #expect(hub.snapshot.sources.isEmpty)
     hub.update([SlowWallpaperProvider()])
-    try await Task.sleep(for: .milliseconds(120))
+    // Presence, so wait for the value rather than for a duration. A fixed 120ms here is not
+    // reliably longer than 80ms of provider work plus scheduling on a shared runner, and the
+    // test then fails for a reason that has nothing to do with the hub.
+    try await settle { hub.snapshot.number("test.number") == 1 }
     #expect(hub.snapshot.number("test.number") == 1)
     hub.stop()
 }
