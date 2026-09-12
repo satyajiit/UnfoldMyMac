@@ -72,7 +72,40 @@ release gate re-hashes the bytes it downloads.
 | `verify_release.sh` | The post-notarization gate, runnable against downloaded artifacts. Prints the SHA-256 and the `release.json` block. |
 | `release_macos.sh` | The driver, with `--from` resume. |
 
+## Looking at the installer window without notarizing
+
+Reviewing the artwork should not cost a notarization submission. Set `UNFOLDMYMAC_DMG_PREVIEW=1`
+and `package_dmg.sh` will build the same window from whatever bundle you hand it, including the
+one `./script/build_and_run.sh --build` just made:
+
+```sh
+./script/build_and_run.sh --build
+UNFOLDMYMAC_DMG_PREVIEW=1 ./script/package_dmg.sh dist/UnfoldMyMac.app
+open dist/UnfoldMyMac-1.0.0-preview.dmg
+```
+
+Geometry, background, Finder layout and volume icon are identical to the release path. What the
+preview drops is everything that makes an image shippable: it asserts nothing about the bundle's
+signature, hardened runtime or staple, it signs nothing, and it forces a `-preview.dmg` filename
+so a preview cannot occupy the release name or be uploaded by mistake. Check it in both Light and
+Dark Mode; Finder draws the icon captions in the viewer's appearance and the background cannot
+override them.
+
+To iterate on the artwork alone, skip the image entirely:
+
+```sh
+xcrun swift script/render_dmg_background.swift --out /tmp/dmg-art \
+  --fonts Sources/UnfoldMyMacKit/Resources/Fonts --theme light --version 1.0.0
+```
+
 ## Things that fail silently if you change them
+
+**The window bounds are not the size of the artwork.** Finder's `bounds` include the title bar,
+but the background is laid against the icon view's top-left and is never scaled. Setting bounds
+to 660x420 crops the bottom of the art by exactly the title bar height and quietly eats the
+footer line; nothing fails and the image still passes every later check. `package_dmg.sh` asks
+AppKit for the chrome height on the running macOS and adds it, rather than hardcoding a number
+that a future release moves.
 
 - **`ditto`, never `cp -R`.** `cp` drops the xattrs and `_CodeSignature` a signed bundle depends
   on, producing an image that mounts, launches, and fails `stapler validate` in front of a user.

@@ -23,6 +23,12 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$HERE/.." && pwd)"
 IDENTITY="${UNFOLDMYMAC_SIGN_IDENTITY:-}"
 THEME="${UNFOLDMYMAC_DMG_THEME:-light}"
+# Artwork preview. Builds the same window, geometry, background and volume icon from whatever
+# bundle it is handed, so the installer can be reviewed and re-rendered without spending a
+# notarization submission on every change. It signs nothing, it asserts nothing about the
+# application, and it forces a "-preview" filename so a preview can never be mistaken for, or
+# uploaded as, a release artifact. Never ship the output.
+PREVIEW="${UNFOLDMYMAC_DMG_PREVIEW:-0}"
 FONTS="$PROJECT_DIR/Sources/UnfoldMyMacKit/Resources/Fonts"
 APP="${1:-}"
 DMG="${2:-}"
@@ -33,15 +39,17 @@ fail() { echo "✖ package_dmg: $*" >&2; exit 1; }
 [ -d "$APP" ] && [ "${APP##*.}" = "app" ] || fail "not an application bundle: $APP"
 APP="$(cd "$(dirname "$APP")" && pwd)/$(basename "$APP")"
 
-case "$IDENTITY" in
-  "Developer ID Application:"*) ;;
-  *) fail "UNFOLDMYMAC_SIGN_IDENTITY must be an explicit 'Developer ID Application: …' identity" ;;
-esac
-identities="$(/usr/bin/security find-identity -v -p codesigning)"
-case "$identities" in
-  *"\"$IDENTITY\""*) ;;
-  *) fail "'$IDENTITY' is not a valid keychain signing identity" ;;
-esac
+if [ "$PREVIEW" != "1" ]; then
+  case "$IDENTITY" in
+    "Developer ID Application:"*) ;;
+    *) fail "UNFOLDMYMAC_SIGN_IDENTITY must be an explicit 'Developer ID Application: …' identity" ;;
+  esac
+  identities="$(/usr/bin/security find-identity -v -p codesigning)"
+  case "$identities" in
+    *"\"$IDENTITY\""*) ;;
+    *) fail "'$IDENTITY' is not a valid keychain signing identity" ;;
+  esac
+fi
 
 # ── Pre-flight: refuse to image anything not release-ready ──────────────────
 #
@@ -49,29 +57,39 @@ esac
 echo "→ pre-flight on $(basename "$APP")"
 /usr/bin/codesign --verify --deep --strict --verbose=2 "$APP"
 app_details="$(/usr/bin/codesign -dv --verbose=4 "$APP" 2>&1)"
-case "$app_details" in
-  *"Authority=Developer ID Application:"*) ;;
-  *) fail "application is not Developer ID signed; run script/sign_release.sh first" ;;
-esac
-case "$app_details" in *"Runtime Version="*) ;; *) fail "application is missing the Hardened Runtime flag" ;; esac
 app_cdhash="$(printf '%s\n' "$app_details" | sed -n 's/^CDHash=//p' | sed -n '1p')"
 [ -n "$app_cdhash" ] || fail "could not read the application code-directory hash"
-app_team="$(printf '%s\n' "$app_details" | sed -n 's/^TeamIdentifier=//p' | sed -n '1p')"
-[ -n "$app_team" ] || fail "application has no TeamIdentifier"
-# THE ordering assertion. Imaging an unstapled app produces a DMG whose inner bundle can never
-# pass verification, and the only repair is another notarization of the application.
-/usr/bin/xcrun stapler validate "$APP" >/dev/null 2>&1 \
-  || fail "the application has no stapled notarization ticket.
+if [ "$PREVIEW" = "1" ]; then
+  echo "  ! PREVIEW: release checks skipped. This image is for looking at, not for shipping."
+else
+  case "$app_details" in
+    *"Authority=Developer ID Application:"*) ;;
+    *) fail "application is not Developer ID signed; run script/sign_release.sh first" ;;
+  esac
+  case "$app_details" in *"Runtime Version="*) ;; *) fail "application is missing the Hardened Runtime flag" ;; esac
+  app_team="$(printf '%s\n' "$app_details" | sed -n 's/^TeamIdentifier=//p' | sed -n '1p')"
+  [ -n "$app_team" ] || fail "application has no TeamIdentifier"
+  # THE ordering assertion. Imaging an unstapled app produces a DMG whose inner bundle can never
+  # pass verification, and the only repair is another notarization of the application.
+  /usr/bin/xcrun stapler validate "$APP" >/dev/null 2>&1 \
+    || fail "the application has no stapled notarization ticket.
      Notarize and staple the .app BEFORE packaging: script/notarize_release.sh \"$APP\""
+fi
 
 version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP/Contents/Info.plist")"
 source_version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$PROJECT_DIR/Info.plist")"
 [ "$version" = "$source_version" ] \
   || fail "version mismatch: bundle=$version, MacDuo/Info.plist=$source_version. The bundle is stale."
 product="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleName' "$APP/Contents/Info.plist")"
-[ -n "$DMG" ] || DMG="$(cd "$(dirname "$APP")" && pwd)/${product}-${version}.dmg"
-[ "${DMG##*.}" = "dmg" ] || fail "output path must end in .dmg: $DMG"
-echo "  ✓ Developer ID, hardened, stapled, version $version"
+if [ "$PREVIEW" = "1" ]; then
+  # Forced, not defaulted: a preview must never be able to occupy the release filename.
+  DMG="$(cd "$(dirname "$APP")" && pwd)/${product}-${version}-preview.dmg"
+  echo "  ✓ preview image, version $version"
+else
+  [ -n "$DMG" ] || DMG="$(cd "$(dirname "$APP")" && pwd)/${product}-${version}.dmg"
+  [ "${DMG##*.}" = "dmg" ] || fail "output path must end in .dmg: $DMG"
+  echo "  ✓ Developer ID, hardened, stapled, version $version"
+fi
 
 volname="$product $version"
 staging=""; render_dir=""; rw_dir=""; rw_mount=""; rw_mounted=0; mount_dir=""; mounted=0
@@ -116,6 +134,21 @@ geom() { /usr/libexec/PlistBuddy -c "Print :$1" "$layout"; }
 win_w="$(geom windowWidth)"; win_h="$(geom windowHeight)"; icon_px="$(geom iconSize)"
 app_x="$(geom appIconCenterX)"; app_y="$(geom appIconCenterY)"
 apps_x="$(geom applicationsIconCenterX)"; apps_y="$(geom applicationsIconCenterY)"
+
+# Finder's window `bounds` cover the TITLE BAR as well as the icon view, but the background
+# image is laid against the icon view's top-left and is not scaled. Setting bounds to the art's
+# own height therefore crops the bottom of the art by exactly the title bar, which silently eats
+# the footer line. Ask AppKit what the chrome measures on THIS macOS instead of hardcoding it.
+chrome="$(/usr/bin/xcrun swift -e 'import AppKit
+let content = NSRect(x: 0, y: 0, width: 660, height: 420)
+let frame = NSWindow.frameRect(forContentRect: content, styleMask: [.titled, .closable, .miniaturizable, .resizable])
+print(Int(frame.height - content.height))' 2>/dev/null)"
+case "$chrome" in
+  ''|*[!0-9]*) fail "could not measure the Finder window title bar height" ;;
+esac
+[ "$chrome" -ge 20 ] && [ "$chrome" -le 60 ] \
+  || fail "implausible title bar height ${chrome}pt; refusing to lay out a cropped window"
+frame_h=$((win_h + chrome))
 
 # ── Image ───────────────────────────────────────────────────────────────────
 #
@@ -167,16 +200,16 @@ mkdir -p "$rw_mount/.background"
 /usr/bin/ditto "$staging/.background/background.tiff" "$rw_mount/.background/background.tiff"
 # .VolumeIcon.icns is deliberately NOT written here. See after the layout step.
 
-echo "→ laying out the installer window (${win_w}x${win_h}, icons at ${app_x},${app_y} and ${apps_x},${apps_y})"
+echo "→ laying out the installer window (${win_w}x${win_h} of art, ${frame_h}pt tall with the ${chrome}pt title bar, icons at ${app_x},${app_y} and ${apps_x},${apps_y})"
 # Finder positions are the icon CENTRE in the icon view's coordinate space, whose origin is the
 # top-left of the window content: the same origin the background was drawn against.
 if ! /usr/bin/osascript - "$volname" "$(basename "$APP")" \
-      "$win_w" "$win_h" "$icon_px" "$app_x" "$app_y" "$apps_x" "$apps_y" <<'APPLESCRIPT'
+      "$win_w" "$frame_h" "$icon_px" "$app_x" "$app_y" "$apps_x" "$apps_y" <<'APPLESCRIPT'
 on run argv
   set volName to item 1 of argv
   set appName to item 2 of argv
   set winW to (item 3 of argv) as integer
-  set winH to (item 4 of argv) as integer
+  set frameH to (item 4 of argv) as integer
   set iconPx to (item 5 of argv) as integer
   set appX to (item 6 of argv) as integer
   set appY to (item 7 of argv) as integer
@@ -188,7 +221,7 @@ on run argv
       set current view of container window to icon view
       set toolbar visible of container window to false
       set statusbar visible of container window to false
-      set the bounds of container window to {200, 150, 200 + winW, 150 + winH}
+      set the bounds of container window to {200, 150, 200 + winW, 150 + frameH}
       set viewOptions to the icon view options of container window
       set arrangement of viewOptions to not arranged
       set icon size of viewOptions to iconPx
@@ -244,8 +277,12 @@ echo "→ compressing to the distributable read-only image"
 /usr/bin/hdiutil convert "$rw_dmg" -format UDZO -imagekey zlib-level=9 -o "$DMG" -quiet
 [ -f "$DMG" ] || fail "hdiutil produced no image at $DMG"
 
-echo "→ signing the image"
-/usr/bin/codesign --force --timestamp --sign "$IDENTITY" "$DMG"
+if [ "$PREVIEW" = "1" ]; then
+  echo "→ not signing: preview image"
+else
+  echo "→ signing the image"
+  /usr/bin/codesign --force --timestamp --sign "$IDENTITY" "$DMG"
+fi
 
 # ── Self-check: the image holds the exact application we were handed ────────
 #
@@ -253,13 +290,15 @@ echo "→ signing the image"
 # caught BEFORE a second notarization submission rather than after it.
 echo "→ verifying the image contents"
 /usr/bin/hdiutil verify "$DMG" >/dev/null
-dmg_details="$(/usr/bin/codesign -dv --verbose=4 "$DMG" 2>&1)"
-case "$dmg_details" in
-  *"Authority=Developer ID Application:"*) ;;
-  *) fail "image is not Developer ID signed" ;;
-esac
-dmg_team="$(printf '%s\n' "$dmg_details" | sed -n 's/^TeamIdentifier=//p' | sed -n '1p')"
-[ "$dmg_team" = "$app_team" ] || fail "image TeamIdentifier '$dmg_team' differs from the application's '$app_team'"
+if [ "$PREVIEW" != "1" ]; then
+  dmg_details="$(/usr/bin/codesign -dv --verbose=4 "$DMG" 2>&1)"
+  case "$dmg_details" in
+    *"Authority=Developer ID Application:"*) ;;
+    *) fail "image is not Developer ID signed" ;;
+  esac
+  dmg_team="$(printf '%s\n' "$dmg_details" | sed -n 's/^TeamIdentifier=//p' | sed -n '1p')"
+  [ "$dmg_team" = "$app_team" ] || fail "image TeamIdentifier '$dmg_team' differs from the application's '$app_team'"
+fi
 
 mount_dir="$(mktemp -d)"
 /usr/bin/hdiutil attach -readonly -nobrowse -noautoopen -mountpoint "$mount_dir" "$DMG" >/dev/null
@@ -274,10 +313,17 @@ mounted_cdhash="$(/usr/bin/codesign -dv --verbose=4 "$dmg_app" 2>&1 | sed -n 's/
 [ "$mounted_cdhash" = "$app_cdhash" ] \
   || fail "imaged application code-directory hash differs (expected $app_cdhash, got $mounted_cdhash)"
 /usr/bin/diff -qr "$APP" "$dmg_app" >/dev/null || fail "the image does not contain the byte-identical application"
-/usr/bin/xcrun stapler validate "$dmg_app" >/dev/null \
-  || fail "the imaged application lost its stapled ticket; the copy was not made with ditto"
+if [ "$PREVIEW" != "1" ]; then
+  /usr/bin/xcrun stapler validate "$dmg_app" >/dev/null \
+    || fail "the imaged application lost its stapled ticket; the copy was not made with ditto"
+fi
 /usr/bin/hdiutil detach "$mount_dir" -quiet
 mounted=0
 
-echo "✓ package_dmg: $DMG holds the byte-identical stapled application (CDHash $app_cdhash)"
-echo "  next: notarize and staple the IMAGE, then run script/verify_release.sh"
+if [ "$PREVIEW" = "1" ]; then
+  echo "✓ package_dmg: $DMG is an UNSIGNED PREVIEW of the installer window. Do not distribute it."
+  echo "  open it with: open \"$DMG\""
+else
+  echo "✓ package_dmg: $DMG holds the byte-identical stapled application (CDHash $app_cdhash)"
+  echo "  next: notarize and staple the IMAGE, then run script/verify_release.sh"
+fi
