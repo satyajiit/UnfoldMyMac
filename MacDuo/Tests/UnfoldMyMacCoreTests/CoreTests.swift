@@ -77,17 +77,17 @@ import Testing
     defer { defaults.removePersistentDomain(forName: name) }
     defaults.set(110.0, forKey: "activation")
     defaults.set(2, forKey: "style")
-    let store = DefaultsSettingsStore(defaults: defaults)
-    var value = store.load()
+    let store = UserDefaultsPreferencesStore(defaults: defaults)
+    var value = store.load(UnfoldMyMacSettings.key)
     #expect(value.effect == .veil)
     #expect(value.activation == 110)
     value.effect = .fade
     value.appearance = .dark
     value.parameters["fade"] = .init(strength: 0.4)
-    store.save(value)
-    #expect(store.load() == value)
+    store.save(value, for: UnfoldMyMacSettings.key)
+    #expect(store.load(UnfoldMyMacSettings.key) == value)
     defaults.set(0, forKey: "style")
-    #expect(store.load().effect == .fade) // Legacy data must never overwrite migrated preferences.
+    #expect(store.load(UnfoldMyMacSettings.key).effect == .fade) // Legacy data must never overwrite migrated preferences.
 }
 @Test @MainActor func legacySettingsKeyMigratesToUnfoldMyMacKey() throws {
     let name = "UnfoldMyMacTests.\(UUID())"
@@ -98,10 +98,10 @@ import Testing
     original.activation = 100
     original.appearance = .dark
     original.parameters["fade"] = .init(strength: 0.4)
-    defaults.set(try JSONEncoder().encode(original), forKey: DefaultsSettingsStore.legacyKey)
-    let store = DefaultsSettingsStore(defaults: defaults)
-    #expect(store.load() == original)
-    #expect(defaults.data(forKey: DefaultsSettingsStore.key) != nil)
+    defaults.set(try JSONEncoder().encode(original), forKey: "luma.settings.v1")
+    let store = UserDefaultsPreferencesStore(defaults: defaults)
+    #expect(store.load(UnfoldMyMacSettings.key) == original)
+    #expect(defaults.data(forKey: UnfoldMyMacSettings.key.name) != nil)
     #expect(try JSONDecoder().decode(UnfoldMyMacSettings.self, from: try #require(defaults.data(forKey: "unfoldmymac.settings.v1"))) == original)
 }
 @Test @MainActor func allLegacyStylesAndInvalidActivation() throws {
@@ -109,7 +109,7 @@ import Testing
         let name = "UnfoldMyMacTests.\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: name))
         defaults.set(raw, forKey: "style"); defaults.set(900.0, forKey: "activation")
-        let value = DefaultsSettingsStore(defaults: defaults).load()
+        let value = UserDefaultsPreferencesStore(defaults: defaults).load(UnfoldMyMacSettings.key)
         #expect(value.effect == (raw == 2 ? .veil : .frost))
         #expect(value.activation == 180)
         defaults.removePersistentDomain(forName: name)

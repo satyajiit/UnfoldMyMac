@@ -5,7 +5,8 @@ struct CodexActivitySetup: View {
     @State private var installed = false
     @State private var receiving = false
     @State private var error: String?
-    private var executable: String { Bundle.main.executableURL?.path ?? CommandLine.arguments[0] }
+    @Environment(\.appInfo) private var appInfo
+    private var executable: String { appInfo.executablePath }
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             Text("Sign in to Codex as usual. This wallpaper connects to its local activity; it never asks for your password or API key.")

@@ -2,14 +2,14 @@ import Foundation
 import UnfoldMyMacCore
 
 /// Observational hook endpoint: parses metadata only and always permits Codex to continue.
-public enum WallpaperCodexHook {
+enum WallpaperCodexHook {
     private struct Input: Decodable {
         let session_id: String
         let hook_event_name: String
         let turn_id: String?
         let tool_use_id: String?
     }
-    public static func run() -> Int32 {
+    static func run() -> Int32 {
         defer { FileHandle.standardOutput.write(Data("{}\n".utf8)) }
         do {
             var data = Data()

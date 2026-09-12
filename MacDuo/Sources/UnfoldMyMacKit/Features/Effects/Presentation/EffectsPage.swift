@@ -3,6 +3,7 @@ import UnfoldMyMacCore
 
 struct EffectsPage: View {
     @Bindable var model: UnfoldMyMacModel
+    let showSettings: () -> Void
     @Environment(\.colorScheme) private var scheme
     @State private var showingInspector = false
     @State private var previewAfterInspector: EffectID?
@@ -20,7 +21,7 @@ struct EffectsPage: View {
                 FeaturePage(title: "Effects", onScroll: { offset in
                     categoriesPinned = categoriesOrigin > 0 && offset >= categoriesOrigin - 1
                 }) {
-                    EffectsHeader(model: model)
+                    EffectsHeader(model: model, showSettings: showSettings)
                 } content: {
                     library(minimumResultsHeight: max(0, viewport.size.height - 48))
                 }
@@ -125,7 +126,7 @@ struct EffectsPage: View {
                             }
                         }
                     }
-                    if let error = model.errorMessage { ErrorCard(message: error, needsPermission: model.needsPermission) }
+                    if let error = model.errorMessage { ErrorCard(message: error, needsPermission: model.needsPermission, openScreenRecordingSettings: model.openScreenRecordingSettings) }
                     if model.reduceTransparency {
                         Label("Reduce Transparency is on. Effects use a dim-only treatment.", icon: .accessibility)
                             .font(UnfoldMyMacType.callout).foregroundStyle(p.secondary)

@@ -53,7 +53,7 @@ struct EffectSettingsPage: View {
                 Label("Screen Recording", icon: .privacy).font(UnfoldMyMacType.headline)
                 Text("Frost needs permission to blur your desktop. It processes the built-in display in memory without saving frames or recording audio. Other designs work without screen capture.")
                     .font(UnfoldMyMacType.callout).modifier(SecondaryTextStyle()).fixedSize(horizontal: false, vertical: true)
-                Button("Screen Recording Settings…", action: { UnfoldMyMacModel.openScreenRecordingSettings() })
+                Button("Screen Recording Settings…", action: { model.openScreenRecordingSettings() })
                     .modifier(UnfoldMyMacButtonStyle())
             }
         }

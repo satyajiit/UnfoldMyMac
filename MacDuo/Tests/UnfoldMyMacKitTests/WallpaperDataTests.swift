@@ -106,7 +106,7 @@ private actor SlowWallpaperProvider: WallpaperDataProvider {
     let suite = "wallpaper-tests-" + UUID().uuidString
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
-    let model = WallpaperModel(defaults: defaults)
+    let model = WallpaperModel(preferences: UserDefaultsPreferencesStore(defaults: defaults), environment: FakeSystemEnvironment(), surfaces: DesktopSurfaceRegistry())
     model.start(); model.setBrowsing(true)
     model.setPreviewVisible(true)
     #expect(model.templates.count == 10 && !model.enabled)
@@ -126,7 +126,7 @@ private actor SlowWallpaperProvider: WallpaperDataProvider {
     model.setBrowsing(false)
     #expect(model.previewFPS == 0 && model.playback.framesPerSecond > 0)
     model.stopWallpaper()
-    #expect(!model.enabled && !WallpaperPreferences.load(from: defaults).enabled)
+    #expect(!model.enabled && !UserDefaultsPreferencesStore(defaults: defaults).load(WallpaperPreferences.key).enabled)
     model.shutdown()
     #expect(model.data.snapshot.sources.isEmpty && model.activePipeline == nil && model.previewPipeline == nil)
 }

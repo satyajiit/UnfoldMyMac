@@ -8,6 +8,19 @@ public struct UnfoldMyMacSettings: Codable, Equatable, Sendable {
     public var showAngle = true
     public var parameters: [String: EffectParameters] = [:]
     public init() {}
+    /// Current key, the pre-rename JSON key, and the two raw keys the first release wrote.
+    public static let key = PreferenceKey<UnfoldMyMacSettings>("unfoldmymac.settings.v1", legacyNames: ["luma.settings.v1", "activation", "style"],
+        default: { UnfoldMyMacSettings() },
+        migrate: { store in
+            let activation = store.object(forKey: "activation") as? Double
+            let style = store.object(forKey: "style") as? Int
+            guard activation != nil || style != nil else { return nil }
+            var value = UnfoldMyMacSettings()
+            if let activation { value.activation = activation }
+            if let style { value.effect = style == 2 ? .veil : .frost }
+            return value
+        },
+        sanitize: { $0.sanitize() })
     private enum CodingKeys: String, CodingKey { case effect, activation, completionFraction, appearance, showAngle, parameters }
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)

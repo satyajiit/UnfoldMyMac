@@ -71,7 +71,7 @@ import UnfoldMyMacCore
 }
 
 @Test @MainActor func wallpaperDesktopHostStaysBelowIconsAndRestoresByClosing() {
-    let host = WallpaperDesktopHost()
+    let host = WallpaperDesktopHost(surfaces: DesktopSurfaceRegistry())
     host.show { SwiftUI.Color.black }
     #expect(host.windows.count == NSScreen.screens.count)
     for window in host.windows {

@@ -3,6 +3,7 @@ import UnfoldMyMacCore
 
 struct EffectsHeader: View {
     @Bindable var model: UnfoldMyMacModel
+    let showSettings: () -> Void
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
@@ -35,7 +36,7 @@ struct EffectsHeader: View {
                 }
                 .accessibilityElement(children: .combine)
                 Spacer(minLength: 0)
-                Button(action: model.showEffectSettings) {
+                Button(action: showSettings) {
                     Label("Effect settings", icon: .settings)
                 }
                 .modifier(UnfoldMyMacButtonStyle()).fixedSize()

@@ -25,8 +25,7 @@ import UniformTypeIdentifiers
             }
         }
     }
-    static func copyClaudeHooks() {
-        let executable = Bundle.main.executableURL?.path ?? CommandLine.arguments[0]
+    static func copyClaudeHooks(executable: String) {
         let quoted = "'" + executable.replacingOccurrences(of: "'", with: "'\\''") + "' --wallpaper-claude-hook"
         let events = ["UserPromptSubmit", "PreToolUse", "PostToolUse", "PermissionRequest", "Stop", "StopFailure", "SessionEnd"]
         let entry: [[String: Any]] = [["hooks": [["type": "command", "command": quoted, "timeout": 3]]]]

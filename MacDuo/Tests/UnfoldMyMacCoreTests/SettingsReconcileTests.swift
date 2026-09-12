@@ -21,11 +21,11 @@ import UnfoldMyMacCore
     defer { defaults.removePersistentDomain(forName: name) }
     defaults.set(110.0, forKey: "activation"); defaults.set(2, forKey: "style")
     var legacy = UnfoldMyMacSettings(); legacy.effect = .fade
-    defaults.set(try JSONEncoder().encode(legacy), forKey: DefaultsSettingsStore.legacyKey)
-    let store = DefaultsSettingsStore(defaults: defaults)
-    #expect(store.load().effect == .fade)
-    #expect(defaults.data(forKey: DefaultsSettingsStore.key) != nil)
-    #expect(defaults.object(forKey: DefaultsSettingsStore.legacyKey) == nil)
+    defaults.set(try JSONEncoder().encode(legacy), forKey: "luma.settings.v1")
+    let store = UserDefaultsPreferencesStore(defaults: defaults)
+    #expect(store.load(UnfoldMyMacSettings.key).effect == .fade)
+    #expect(defaults.data(forKey: UnfoldMyMacSettings.key.name) != nil)
+    #expect(defaults.object(forKey: "luma.settings.v1") == nil)
     #expect(defaults.object(forKey: "activation") == nil && defaults.object(forKey: "style") == nil)
-    #expect(store.load().effect == .fade)
+    #expect(store.load(UnfoldMyMacSettings.key).effect == .fade)
 }

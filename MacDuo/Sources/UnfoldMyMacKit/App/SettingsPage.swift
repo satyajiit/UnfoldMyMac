@@ -4,6 +4,7 @@ import UnfoldMyMacCore
 /// Preferences shared by every feature belong here.
 struct SettingsPage: View {
     @Bindable var model: UnfoldMyMacModel
+    @Environment(\.appInfo) private var appInfo
     var body: some View {
         FeaturePage(title: "Settings") {
             PageHeading(title: "Settings", subtitle: "Make \(AppIdentity.name) feel at home on your Mac.")
@@ -48,7 +49,7 @@ struct SettingsPage: View {
                     BrandMark(size: 36)
                     VStack(alignment: .leading, spacing: 3) {
                         Text(AppIdentity.name).font(UnfoldMyMacType.headline)
-                        Text("Version \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0") · Made for macOS")
+                        Text("Version \(appInfo.version) · Made for macOS")
                             .font(UnfoldMyMacType.caption).modifier(SecondaryTextStyle())
                     }
                 }

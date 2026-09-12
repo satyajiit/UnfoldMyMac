@@ -3,10 +3,11 @@ import UnfoldMyMacCore
 
 /// Each feature owns its destinations instead of expanding global preferences.
 struct EffectsFeatureView: View {
-    @Bindable var model: UnfoldMyMacModel
+    let model: UnfoldMyMacModel
+    @Bindable var shell: AppShellModel
     var body: some View {
-        NavigationStack(path: $model.effectsPath) {
-            EffectsPage(model: model)
+        NavigationStack(path: $shell.effectsPath) {
+            EffectsPage(model: model, showSettings: shell.showEffectSettings)
                 .navigationDestination(for: EffectsDestination.self) { destination in
                     switch destination {
                     case .settings: EffectSettingsPage(model: model)

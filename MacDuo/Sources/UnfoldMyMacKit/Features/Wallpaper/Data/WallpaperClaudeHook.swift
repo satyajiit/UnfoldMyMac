@@ -2,9 +2,9 @@ import Foundation
 import UnfoldMyMacCore
 
 /// Invoked by Claude hooks, before NSApplication starts. Never retains prompt/tool content.
-public enum WallpaperClaudeHook {
+enum WallpaperClaudeHook {
     private struct Input: Decodable { let session_id: String; let hook_event_name: String }
-    public static func run() -> Int32 {
+    static func run() -> Int32 {
         do {
             var data = Data()
             while let chunk = try FileHandle.standardInput.read(upToCount: 65_536), !chunk.isEmpty {

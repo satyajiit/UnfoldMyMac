@@ -6,10 +6,10 @@ import UnfoldMyMacCore
 
 // L1: turning effects on while a preview runs must survive the preview ending.
 @Test @MainActor func enablingDuringAPreviewSurvivesStoppingThePreview() {
-    let store = FakeStore(); store.value.effect = .fade
+    let store = InMemoryPreferencesStore(); store.settings.effect = .fade
     let registry = makeRegistry()
-    let session = EffectSession(registry: registry, host: FakeHost(), makeCapture: { FakeCapture() })
-    let model = UnfoldMyMacModel(store: store, registry: registry, sensorFactory: { FakeSensor() }, displays: FakeDisplay(), session: session, clock: { 0 })
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { FakeCapture() })
+    let model = makeModel(store: store, registry: registry, sensorFactory: { FakeSensor() }, displays: FakeDisplay(), session: session, clock: { 0 })
     defer { model.shutdown() }
     #expect(!model.enabled)
     model.beginPreview(effect: .veil)
@@ -27,9 +27,9 @@ import UnfoldMyMacCore
     let sensor = FakeSensor(); sensor.angle = nil
     var constructions = 0
     let registry = makeRegistry()
-    let session = EffectSession(registry: registry, host: FakeHost(), makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { FakeCapture() })
     var now = 0.0
-    let model = UnfoldMyMacModel(store: FakeStore(), registry: registry, sensorFactory: { constructions += 1; return sensor }, displays: FakeDisplay(), session: session, clock: { now })
+    let model = makeModel(store: InMemoryPreferencesStore(), registry: registry, sensorFactory: { constructions += 1; return sensor }, displays: FakeDisplay(), session: session, clock: { now })
     defer { model.shutdown() }
     #expect(constructions == 1)
     model.tick(); #expect(constructions == 2, "First failed read reconnects immediately")
@@ -50,12 +50,12 @@ import UnfoldMyMacCore
 
 // P16: a card preview that fails ends the preview but keeps the chosen effect running.
 @Test @MainActor func aFailedPreviewOfAnotherEffectKeepsTheChosenEffectRunning() async throws {
-    let store = FakeStore(); store.value.effect = .fade
+    let store = InMemoryPreferencesStore(); store.settings.effect = .fade
     let capture = FakeCapture(); capture.failure = CaptureFailure.exclusionUnavailable
     let registry = makeRegistry()
-    let session = EffectSession(registry: registry, host: FakeHost(), makeCapture: { capture })
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { capture })
     var now = 0.0
-    let model = UnfoldMyMacModel(store: store, registry: registry, sensorFactory: { FakeSensor() }, displays: FakeDisplay(), session: session, clock: { now })
+    let model = makeModel(store: store, registry: registry, sensorFactory: { FakeSensor() }, displays: FakeDisplay(), session: session, clock: { now })
     defer { model.shutdown() }
     model.setEnabled(true); now = 0.6; model.tick()
     #expect(session.renderer != nil && model.enabled)

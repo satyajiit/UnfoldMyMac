@@ -8,7 +8,7 @@ import UnfoldMyMacCore
     var captures: [FakeCapture] = []
     let registry = makeRegistry()
     let host = FakeHost()
-    let session = EffectSession(registry: registry, host: host, makeCapture: { let c = FakeCapture(); captures.append(c); return c })
+    let session = EffectSession(registry: registry, host: host, displays: FakeDisplay(), makeCapture: { let c = FakeCapture(); captures.append(c); return c })
     session.start(effect: .veil, screen: screen, reduceTransparency: false)
     session.update(.init(closure: 0.5))
     #expect(host.shown)
@@ -32,7 +32,7 @@ import UnfoldMyMacCore
     let screen = try #require(NSScreen.screens.first)
     let capture = FakeCapture()
     var renderers: [FakeRenderer] = []
-    let session = EffectSession(registry: makeRegistry { _, r in renderers.append(r) }, host: FakeHost(), makeCapture: { capture })
+    let session = EffectSession(registry: makeRegistry { _, r in renderers.append(r) }, host: FakeHost(), displays: FakeDisplay(), makeCapture: { capture })
     var failures = 0
     session.onError = { _ in failures += 1 }
     session.start(effect: .frost, screen: screen, reduceTransparency: false)
@@ -55,7 +55,7 @@ import UnfoldMyMacCore
     var captures = 0
     var renderedID: EffectID?
     let registry = makeRegistry { id, _ in renderedID = id }
-    let session = EffectSession(registry: registry, host: host, makeCapture: { captures += 1; return FakeCapture() })
+    let session = EffectSession(registry: registry, host: host, displays: FakeDisplay(), makeCapture: { captures += 1; return FakeCapture() })
     session.start(effect: .frost, screen: screen, reduceTransparency: true)
     #expect(renderedID == .fade)
     #expect(captures == 0)
@@ -70,14 +70,14 @@ import UnfoldMyMacCore
     session.stop()
 }
 @Test @MainActor func liveFramesUseFreshAngleWithoutDelayedEntryOrExit() throws {
-    let display = FakeDisplay(), sensor = FakeSensor(), store = FakeStore(), host = FakeHost()
-    store.value.effect = .curtains; store.value.activation = 108
+    let display = FakeDisplay(), sensor = FakeSensor(), store = InMemoryPreferencesStore(), host = FakeHost()
+    store.settings.effect = .curtains; store.settings.activation = 108
     sensor.angle = 110
     var renderer: FakeRenderer?
     let registry = makeRegistry { _, next in renderer = next }
-    let session = EffectSession(registry: registry, host: host, makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: host, displays: FakeDisplay(), makeCapture: { FakeCapture() })
     var time = 0.0
-    let model = UnfoldMyMacModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, clock: { time })
+    let model = makeModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, clock: { time })
     defer { model.shutdown() }
     model.setEnabled(true)
     model.renderFrame(deltaTime: 1.0 / 60)
@@ -99,7 +99,7 @@ import UnfoldMyMacCore
     #expect(!host.shown) // No filtered tail above the threshold.
     model.setActivation(109.2)
     #expect(model.settings.activation == 109)
-    #expect(store.value.activation == 109)
+    #expect(store.settings.activation == 109)
     model.renderFrame(deltaTime: 1.0 / 60)
     #expect(host.shown)
     sensor.angle = 5
@@ -110,13 +110,13 @@ import UnfoldMyMacCore
 }
 
 @Test @MainActor func previewScrubbingIsImmediateAndSensorLossStillStopsLiveRendering() throws {
-    let display = FakeDisplay(), sensor = FakeSensor(), store = FakeStore(), host = FakeHost()
-    store.value.effect = .fade
+    let display = FakeDisplay(), sensor = FakeSensor(), store = InMemoryPreferencesStore(), host = FakeHost()
+    store.settings.effect = .fade
     var renderer: FakeRenderer?
     let registry = makeRegistry { _, next in renderer = next }
-    let session = EffectSession(registry: registry, host: host, makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: host, displays: FakeDisplay(), makeCapture: { FakeCapture() })
     var time = 0.0
-    let model = UnfoldMyMacModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, clock: { time })
+    let model = makeModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, clock: { time })
     defer { model.shutdown() }
     model.beginPreview()
     time = 0.6; model.tick()
@@ -135,21 +135,22 @@ import UnfoldMyMacCore
     #expect(model.status == DisplaySafetyGate.State.noSensor.rawValue)
 }
 @Test @MainActor func previewRestoresStateAndDisplaySafetyWins() {
-    let display = FakeDisplay(), sensor = FakeSensor(), store = FakeStore()
-    store.value.effect = .fade
+    let display = FakeDisplay(), sensor = FakeSensor(), store = InMemoryPreferencesStore()
+    store.settings.effect = .fade
     let registry = makeRegistry()
     let host = FakeHost()
-    let session = EffectSession(registry: registry, host: host, makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: host, displays: FakeDisplay(), makeCapture: { FakeCapture() })
     var time = 0.0
-    let model = UnfoldMyMacModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, clock: { time })
-    model.route = .effects
+    let model = makeModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, clock: { time })
+    let shell = AppShellModel(effects: model, wallpaper: FakeWallpaperBrowsing())
+    shell.route = .effects
     model.beginPreview(); #expect(model.enabled)
     time = 0.6; model.tick()
     #expect(session.renderer != nil)
     model.stopPreview(); #expect(!model.enabled); #expect(model.status == "Off")
     model.setEnabled(true)
     model.beginPreview(); model.stopPreview(); #expect(model.enabled)
-    model.beginPreview(); model.route = .settings; #expect(!model.isPreviewing)
+    model.beginPreview(); shell.route = .settings; #expect(!model.isPreviewing)
     display.closed = true
     time = 1.5; model.tick()
     #expect(session.renderer == nil)
@@ -160,21 +161,22 @@ import UnfoldMyMacCore
     model.shutdown()
 }
 @Test @MainActor func cardPreviewsUseTheirOwnParametersAndKeepTheChosenEffect() throws {
-    let display = FakeDisplay(), sensor = FakeSensor(), store = FakeStore()
-    store.value.effect = .fade
-    store.value.parameters[EffectID.rise.rawValue] = .init(strength: 0.27, reveal: .straight)
+    let display = FakeDisplay(), sensor = FakeSensor(), store = InMemoryPreferencesStore()
+    store.settings.effect = .fade
+    store.settings.parameters[EffectID.rise.rawValue] = .init(strength: 0.27, reveal: .straight)
     var renderedID: EffectID?
     var renderer: FakeRenderer?
     let registry = makeRegistry { id, next in renderedID = id; renderer = next }
-    let session = EffectSession(registry: registry, host: FakeHost(), makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { FakeCapture() })
     var now = 0.0
-    let model = UnfoldMyMacModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, clock: { now })
+    let model = makeModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, clock: { now })
+    let shell = AppShellModel(effects: model, wallpaper: FakeWallpaperBrowsing())
     defer { model.shutdown() }
     model.libraryQuery = "My search"
     model.togglePreview(for: .rise)
-    #expect(model.route == .effects && model.isPreviewing && model.isPlaying)
+    #expect(shell.route == .effects && model.isPreviewing && model.isPlaying)
     #expect(model.previewEffectID == .rise && model.activeEffect.id == .rise)
-    #expect(model.settings.effect == .fade && store.value.effect == .fade)
+    #expect(model.settings.effect == .fade && store.settings.effect == .fade)
     #expect(model.libraryQuery == "My search")
     now = 0.6; model.tick(); model.scrubPreview(0.4); model.renderFrame(deltaTime: 1.0 / 60)
     #expect(renderedID == .rise)
@@ -183,22 +185,23 @@ import UnfoldMyMacCore
     // Switching previews retains the enabled state from before the first preview.
     model.togglePreview(for: .current)
     #expect(model.isPreviewing && model.isPlaying && model.previewEffectID == .current)
-    #expect(model.settings.effect == .fade && store.value.effect == .fade)
+    #expect(model.settings.effect == .fade && store.settings.effect == .fade)
     model.togglePreview(for: .current)
     #expect(!model.isPreviewing && !model.enabled && !model.isPlaying)
     #expect(model.previewEffectID == nil && model.activeEffect.id == .fade)
     #expect(model.status == "Off")
     model.setEnabled(true)
     model.togglePreview(for: .rise); model.togglePreview(for: .curtains); model.stopPreview()
-    #expect(model.enabled && model.activeEffect.id == .fade && store.value.effect == .fade)
+    #expect(model.enabled && model.activeEffect.id == .fade && store.settings.effect == .fade)
 }
 
 @Test @MainActor func selectingTheChosenCardOrLeavingEffectsEndsItsPreview() {
-    let display = FakeDisplay(), sensor = FakeSensor(), store = FakeStore()
-    store.value.effect = .fade
+    let display = FakeDisplay(), sensor = FakeSensor(), store = InMemoryPreferencesStore()
+    store.settings.effect = .fade
     let registry = makeRegistry()
-    let session = EffectSession(registry: registry, host: FakeHost(), makeCapture: { FakeCapture() })
-    let model = UnfoldMyMacModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session)
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { FakeCapture() })
+    let model = makeModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session)
+    let shell = AppShellModel(effects: model, wallpaper: FakeWallpaperBrowsing())
     defer { model.shutdown() }
     #expect(AppRoute.allCases == [.effects, .wallpaper, .settings])
     model.togglePreview(for: .rise)
@@ -206,54 +209,55 @@ import UnfoldMyMacCore
     #expect(!model.isPreviewing && !model.enabled && model.previewEffectID == nil)
     #expect(model.settings.effect == .fade)
     model.togglePreview(for: .rise)
-    model.route = .settings
+    shell.route = .settings
     #expect(!model.isPreviewing && !model.isPlaying && !model.enabled)
-    #expect(model.settings.effect == .fade && store.value.effect == .fade)
+    #expect(model.settings.effect == .fade && store.settings.effect == .fade)
     model.togglePreview(for: .curtains)
-    #expect(model.route == .effects && model.isPreviewing)
+    #expect(shell.route == .effects && model.isPreviewing)
     model.selectEffect(.rise)
-    #expect(!model.isPreviewing && model.settings.effect == .rise && store.value.effect == .rise)
+    #expect(!model.isPreviewing && model.settings.effect == .rise && store.settings.effect == .rise)
 }
 
 @Test @MainActor func effectSettingsStopPreviewAndPreserveLibraryContext() {
-    let display = FakeDisplay(), sensor = FakeSensor(), store = FakeStore()
-    store.value.effect = .fade
+    let display = FakeDisplay(), sensor = FakeSensor(), store = InMemoryPreferencesStore()
+    store.settings.effect = .fade
     let registry = makeRegistry()
-    let session = EffectSession(registry: registry, host: FakeHost(), makeCapture: { FakeCapture() })
-    let model = UnfoldMyMacModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session)
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { FakeCapture() })
+    let model = makeModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session)
+    let shell = AppShellModel(effects: model, wallpaper: FakeWallpaperBrowsing())
     defer { model.shutdown() }
     model.libraryQuery = "Calm"
     model.libraryTag = "Minimal"
     model.togglePreview(for: .rise)
-    model.showEffectSettings()
-    #expect(model.route == .effects && model.effectsPath == [.settings])
+    shell.showEffectSettings()
+    #expect(shell.route == .effects && shell.effectsPath == [.settings])
     #expect(!model.isPreviewing && !model.isPlaying && !model.enabled)
     #expect(model.previewEffectID == nil && model.settings.effect == .fade)
     model.setActivation(110)
     model.setCompletionFraction(0.8)
-    model.showEffectSettings()
-    #expect(model.effectsPath == [.settings])
-    model.effectsPath.removeLast() // Native Back returns to the library.
+    shell.showEffectSettings()
+    #expect(shell.effectsPath == [.settings])
+    shell.effectsPath.removeLast() // Native Back returns to the library.
     #expect(model.libraryQuery == "Calm" && model.libraryTag == "Minimal")
-    #expect(store.value.activation == 110 && store.value.completionFraction == 0.8)
-    #expect(store.value.effect == .fade)
+    #expect(store.settings.activation == 110 && store.settings.completionFraction == 0.8)
+    #expect(store.settings.effect == .fade)
 
     // Leaving the feature returns its next visit to the library. A new preview
     // restores the enabled state that preceded it.
     model.setEnabled(true)
-    model.showEffectSettings()
-    model.route = .settings
-    #expect(model.effectsPath.isEmpty)
+    shell.showEffectSettings()
+    shell.route = .settings
+    #expect(shell.effectsPath.isEmpty)
     model.togglePreview(for: .curtains)
-    #expect(model.route == .effects && model.effectsPath.isEmpty && model.isPreviewing)
-    model.showEffectSettings()
+    #expect(shell.route == .effects && shell.effectsPath.isEmpty && model.isPreviewing)
+    shell.showEffectSettings()
     #expect(!model.isPreviewing && model.enabled && model.activeEffect.id == .fade)
 }
 
 @Test @MainActor func captureStartupFailureStopsSession() async throws {
     let screen = try #require(NSScreen.screens.first)
     let capture = FakeCapture(); capture.failure = CaptureFailure.exclusionUnavailable
-    let session = EffectSession(registry: makeRegistry(), host: FakeHost(), makeCapture: { capture })
+    let session = EffectSession(registry: makeRegistry(), host: FakeHost(), displays: FakeDisplay(), makeCapture: { capture })
     var failures = 0; session.onError = { _ in failures += 1 }
     session.start(effect: .frost, screen: screen, reduceTransparency: false)
     for _ in 0..<10 { await Task.yield() }
@@ -263,13 +267,13 @@ import UnfoldMyMacCore
 }
 
 @Test @MainActor func animatedEffectsUseTheSessionClockAndPauseWithPreview() throws {
-    let display = FakeDisplay(), sensor = FakeSensor(), store = FakeStore()
-    store.value.effect = .current
+    let display = FakeDisplay(), sensor = FakeSensor(), store = InMemoryPreferencesStore()
+    store.settings.effect = .current
     var renderer: FakeRenderer?
     let registry = makeRegistry { _, next in renderer = next }
-    let session = EffectSession(registry: registry, host: FakeHost(), makeCapture: { FakeCapture() })
+    let session = EffectSession(registry: registry, host: FakeHost(), displays: FakeDisplay(), makeCapture: { FakeCapture() })
     var now = 0.0
-    let model = UnfoldMyMacModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, clock: { now })
+    let model = makeModel(store: store, registry: registry, sensorFactory: { sensor }, displays: display, session: session, clock: { now })
     defer { model.shutdown() }
     model.beginPreview(); now = 0.6; model.tick()
     model.scrubPreview(0.4); model.renderFrame(deltaTime: 1.0 / 60)

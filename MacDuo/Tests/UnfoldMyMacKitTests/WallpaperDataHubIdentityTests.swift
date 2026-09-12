@@ -16,12 +16,6 @@ private final class CountingProvider: WallpaperDataProvider {
     }
 }
 
-/// The hub publishes on the main actor, which other tests may hold for a while; wait for a condition instead of a fixed delay.
-@MainActor private func settle(timeout: Duration = .seconds(10), until condition: () -> Bool) async throws {
-    let deadline = ContinuousClock.now + timeout
-    while !condition() && ContinuousClock.now < deadline { try await Task.sleep(for: .milliseconds(20)) }
-}
-
 // W7: a provider whose configuration changed is restarted; an identical one keeps running.
 @Test @MainActor func dataHubRestartsOnlyProvidersWhoseConfigurationChanged() async throws {
     let hub = WallpaperDataHub()

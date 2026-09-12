@@ -9,18 +9,16 @@ import UnfoldMyMacCore
     private(set) var connections: [String: [String: WallpaperConnectionSettings]]
     @ObservationIgnored var onChange: (() -> Void)?
     @ObservationIgnored var onApply: ((String) -> Void)?
-    @ObservationIgnored private let defaults: UserDefaults
-    private static let key = "unfoldmymac.wallpaper.connections.v1"
-
-    init(defaults: UserDefaults) {
-        self.defaults = defaults
-        connections = defaults.data(forKey: Self.key).flatMap {
-            try? JSONDecoder().decode([String: [String: WallpaperConnectionSettings]].self, from: $0)
-        } ?? [:]
-        // Preserve previously enabled local adapters. A legacy global GitHub
-        // username is deliberately not treated as a template's verified setup.
-        if defaults.data(forKey: Self.key) == nil, defaults.data(forKey: "unfoldmymac.wallpaper.v1") != nil {
-            let old = WallpaperPreferences.load(from: defaults)
+    @ObservationIgnored private let preferences: any PreferencesStore
+    /// Per-template connection settings. The first read on a pre-connections install preserves the
+    /// previously enabled local adapters; a legacy global GitHub username is deliberately not treated
+    /// as a template's verified setup.
+    static let key = PreferenceKey<[String: [String: WallpaperConnectionSettings]]>("unfoldmymac.wallpaper.connections.v1",
+        default: { [:] },
+        migrate: { store in
+            guard store.data(forKey: WallpaperPreferences.key.name) != nil else { return nil }
+            let old = store.load(WallpaperPreferences.key)
+            var connections: [String: [String: WallpaperConnectionSettings]] = [:]
             connections["codex-foundry"] = ["codex-history": .init(enabled: old.codexConnected != false)]
             connections["claude-current"] = ["claude-code": .init(enabled: old.claudeConnected, path: old.claudeRoot)]
             if let path = old.toolPath {
@@ -28,8 +26,12 @@ import UnfoldMyMacCore
                     connections[id, default: [:]]["tool-file"] = .init(enabled: true, path: path)
                 }
             }
-            if let data = try? JSONEncoder().encode(connections) { defaults.set(data, forKey: Self.key) }
-        }
+            return connections
+        })
+
+    init(preferences: any PreferencesStore) {
+        self.preferences = preferences
+        connections = preferences.load(Self.key)
     }
     func configuration(_ kind: WallpaperSetupRequirement.Kind, for templateID: String) -> WallpaperConnectionSettings {
         connections[templateID]?[kind.rawValue] ?? .init()
@@ -59,7 +61,7 @@ import UnfoldMyMacCore
     func finish() {
         guard let request, !request.applyAfterSetup || draftReady else { return }
         connections[request.template.id] = draft
-        if let data = try? JSONEncoder().encode(connections) { defaults.set(data, forKey: Self.key) }
+        preferences.save(connections, for: Self.key)
         self.request = nil; draft = [:]
         onChange?()
         if request.applyAfterSetup { onApply?(request.template.id) }

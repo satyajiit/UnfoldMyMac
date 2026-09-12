@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct WallpaperHookHelp: View {
+    @Environment(\.appInfo) private var appInfo
     @Environment(\.dismiss) private var dismiss
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -11,7 +12,7 @@ struct WallpaperHookHelp: View {
             Text("Without hooks, the scene shows recent log activity. Hook state expires after five minutes without an event; local token totals are not account billing or quota.")
                 .font(UnfoldMyMacType.callout).modifier(SecondaryTextStyle())
             HStack {
-                Button("Copy hook configuration") { WallpaperFileActions.copyClaudeHooks() }.modifier(UnfoldMyMacButtonStyle(prominent: true))
+                Button("Copy hook configuration") { WallpaperFileActions.copyClaudeHooks(executable: appInfo.executablePath) }.modifier(UnfoldMyMacButtonStyle(prominent: true))
                 Spacer()
                 Button("Done") { dismiss() }.modifier(UnfoldMyMacButtonStyle())
             }

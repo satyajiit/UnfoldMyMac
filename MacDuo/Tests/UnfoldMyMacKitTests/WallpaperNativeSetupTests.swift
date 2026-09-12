@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 import Testing
+import UnfoldMyMacCore
 @testable import UnfoldMyMacKit
 
 /// Render native controls through AppKit; ImageRenderer substitutes placeholders for them.
@@ -11,7 +12,7 @@ import Testing
     let suite = "native-setup-" + UUID().uuidString
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
-    let setup = WallpaperSetupController(defaults: defaults)
+    let setup = WallpaperSetupController(preferences: UserDefaultsPreferencesStore(defaults: defaults))
     let templates = try WallpaperTemplateRegistry(shaders: WallpaperShaderCatalog(), loadUserTemplates: false).templates
     for id in ["github-after-hours", "codex-mission-control"] {
         let template = try #require(templates.first { $0.id == id })

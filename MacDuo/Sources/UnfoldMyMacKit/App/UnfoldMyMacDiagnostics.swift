@@ -2,12 +2,12 @@ import AppKit
 import SwiftUI
 import UnfoldMyMacCore
 
-@MainActor public enum UnfoldMyMacDiagnostics {
-    public static func probe() -> Bool {
+@MainActor enum UnfoldMyMacDiagnostics {
+    static func probe() -> Bool {
         let sensor = LidSensor(); print(sensor.diagnostic)
         return sensor.read() != nil
     }
-    public static func checkShader() -> Bool {
+    static func checkShader() -> Bool {
         do {
             _ = try FrostPipeline()
             _ = try CurtainsPipeline()

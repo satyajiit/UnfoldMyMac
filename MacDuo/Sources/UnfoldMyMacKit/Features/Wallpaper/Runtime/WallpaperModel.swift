@@ -17,26 +17,28 @@ import UnfoldMyMacCore
     let previewData = WallpaperDataHub()
     let setup: WallpaperSetupController
     var previewSnapshot: WallpaperSnapshot { isSelectedApplied ? data.snapshot : previewData.snapshot }
-    @ObservationIgnored private let host = WallpaperDesktopHost()
-    @ObservationIgnored private let environment = WallpaperEnvironment()
-    @ObservationIgnored private let defaults: UserDefaults
+    @ObservationIgnored private let host: WallpaperDesktopHost
+    @ObservationIgnored private let environment: any SystemEnvironmentObserving
+    @ObservationIgnored private let activity = RenderingActivity()
+    @ObservationIgnored private var environmentObservation: Task<Void, Never>?
+    @ObservationIgnored private var lastSystemState: SystemState?
+    @ObservationIgnored private let preferencesStore: any PreferencesStore
     @ObservationIgnored private let systemBackdrop: WallpaperSystemBackdrop?
     @ObservationIgnored private var registry: WallpaperTemplateRegistry?
     @ObservationIgnored private var sampling = false
     @ObservationIgnored private var browsing = false
     var selected: WallpaperTemplate? { templates.first { $0.id == selectedID } }
     var enabled: Bool { preferences.enabled }
-    var desktopWindowIDs: Set<CGWindowID> { Set(host.windows.compactMap { CGWindowID(exactly: $0.windowNumber) }) }
     var previewFPS: Int { browsing && previewVisible ? playback.framesPerSecond : 0 }
     var activeTitle: String { templates.first { $0.id == preferences.templateID }?.title ?? "Wallpaper" }
     var isSelectedApplied: Bool { enabled && preferences.templateID == selectedID }
 
-    init(defaults: UserDefaults = .standard, systemBackdrop: WallpaperSystemBackdrop? = nil) {
-        self.defaults = defaults
+    init(preferences store: any PreferencesStore, environment: any SystemEnvironmentObserving, surfaces: DesktopSurfaceRegistry, systemBackdrop: WallpaperSystemBackdrop? = nil) {
+        preferencesStore = store; self.environment = environment; host = WallpaperDesktopHost(surfaces: surfaces)
         self.systemBackdrop = systemBackdrop
-        let saved = WallpaperPreferences.load(from: defaults)
+        let saved = store.load(WallpaperPreferences.key)
         preferences = saved; selectedID = saved.templateID
-        setup = WallpaperSetupController(defaults: defaults)
+        setup = WallpaperSetupController(preferences: store)
         setup.onChange = { [weak self] in self?.connectionsChanged() }
         setup.onApply = { [weak self] id in self?.select(id); self?.apply() }
     }
@@ -52,12 +54,13 @@ import UnfoldMyMacCore
             if selected == nil { selectedID = templates.first?.id ?? "pulse" }
             try preparePreview()
             if !registry.errors.isEmpty { error = registry.errors.joined(separator: "\n") }
-            environment.onChange = { [weak self] in self?.refreshPlayback() }
-            environment.onDisplaysChanged = { [weak self] in self?.rebuildDesktop() }
-            environment.onSpaceChanged = { [weak self] in self?.syncSystemBackdrop() }
-            environment.start()
+            lastSystemState = environment.state
+            let environment = self.environment
+            environmentObservation = Task { [weak self] in
+                for await state in Observations({ environment.state }) { self?.systemStateChanged(state) }
+            }
             if preferences.enabled, let selected, !setup.isReady(selected) {
-                preferences.enabled = false; preferences.save(to: defaults)
+                preferences.enabled = false; preferencesStore.save(preferences, for: WallpaperPreferences.key)
             }
             if preferences.enabled { apply() }
             else { syncSystemBackdrop() }
@@ -81,10 +84,10 @@ import UnfoldMyMacCore
         if activePipeline?.template.id != previewPipeline.template.id { data.stop() }
         activePipeline = previewPipeline
         preferences.templateID = selectedID; preferences.enabled = true
-        preferences.save(to: defaults); refreshPlayback(); rebuildDesktop()
+        preferencesStore.save(preferences, for: WallpaperPreferences.key); refreshPlayback(); rebuildDesktop()
     }
     func stopWallpaper() {
-        preferences.enabled = false; preferences.save(to: defaults)
+        preferences.enabled = false; preferencesStore.save(preferences, for: WallpaperPreferences.key)
         host.stop(); activePipeline = nil; stats = .init(); refreshPlayback()
         syncSystemBackdrop()
     }
@@ -93,9 +96,9 @@ import UnfoldMyMacCore
         previewVisible = value
         if !value && !enabled { stats = .init() }
     }
-    func setMaximumFPS(_ fps: Int) { preferences.maximumFPS = fps == 30 ? 30 : 60; preferences.save(to: defaults); refreshPlayback() }
+    func setMaximumFPS(_ fps: Int) { preferences.maximumFPS = fps == 30 ? 30 : 60; preferencesStore.save(preferences, for: WallpaperPreferences.key); refreshPlayback() }
     func setCustomBackground(_ enabled: Bool) {
-        preferences.customBackground = enabled; preferences.save(to: defaults)
+        preferences.customBackground = enabled; preferencesStore.save(preferences, for: WallpaperPreferences.key)
         select(selectedID)
         if isSelectedApplied { apply() }
     }
@@ -111,7 +114,8 @@ import UnfoldMyMacCore
     }
     func receiveStats(_ value: WallpaperRenderStats) { stats = value }
     func shutdown() {
-        browsing = false; host.stop(); environment.stop(); data.stop(); previewData.stop(); setup.cancel(); sampling = false
+        browsing = false; host.stop(); environmentObservation?.cancel(); environmentObservation = nil; activity.setRendering(false)
+        data.stop(); previewData.stop(); setup.cancel(); sampling = false
         do { try systemBackdrop?.restore() } catch { self.error = error.localizedDescription }
         playback = .init(); activePipeline = nil; previewPipeline = nil
     }
@@ -132,18 +136,26 @@ import UnfoldMyMacCore
         } catch { self.error = "System wallpaper background: " + error.localizedDescription }
     }
     private func connectionsChanged() {
-        preferences.save(to: defaults)
+        preferencesStore.save(preferences, for: WallpaperPreferences.key)
         data.stop(); previewData.stop(); sampling = false
         if let active = activePipeline?.template, enabled, !setup.isReady(active) { stopWallpaper() }
         refreshPlayback()
     }
+    private func systemStateChanged(_ state: SystemState) {
+        let previous = lastSystemState; lastSystemState = state
+        refreshPlayback()
+        if let previous, state.displayGeneration != previous.displayGeneration { rebuildDesktop() }
+        if let previous, state.spaceGeneration != previous.spaceGeneration { syncSystemBackdrop() }
+    }
     private func refreshPlayback() {
+        let system = environment.state
         var next = WallpaperPlayback()
-        next.enabled = enabled; next.preview = browsing; next.sleeping = environment.suspended
-        next.reducedMotion = environment.reducedMotion; next.lowPower = environment.lowPower
-        next.thermallyLimited = environment.thermal; next.maximumFPS = preferences.maximumFPS
+        // The desktop cannot be seen while the machine or its screens sleep or another user's session is active.
+        next.enabled = enabled; next.preview = browsing; next.sleeping = system.displaysUnavailable || system.sessionInactive
+        next.reducedMotion = system.reduceMotion; next.lowPower = system.lowPower
+        next.thermallyLimited = system.thermallyLimited; next.maximumFPS = preferences.maximumFPS
         playback = next
-        environment.setRendering(next.enabled && !next.sleeping && next.animates)
+        activity.setRendering(next.enabled && !next.sleeping && next.animates)
         if next.shouldSample {
             data.update(enabled ? providers(for: activePipeline?.template) : [])
             previewData.update(browsing && !isSelectedApplied ? providers(for: selected) : [])

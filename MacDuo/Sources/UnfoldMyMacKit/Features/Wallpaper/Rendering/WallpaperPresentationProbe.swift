@@ -5,7 +5,7 @@ import UnfoldMyMacCore
 
 extension UnfoldMyMacDiagnostics {
     /// Opt-in, on-screen benchmark. Uses temporary surfaces and never changes saved settings.
-    public static func benchmarkWallpaper() {
+    static func benchmarkWallpaper() {
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
         let probe = WallpaperPresentationProbe()
@@ -43,7 +43,7 @@ private struct WallpaperProbeSurface: View {
 }
 
 @MainActor private final class WallpaperPresentationProbe: NSObject, NSApplicationDelegate {
-    private let host = WallpaperDesktopHost()
+    private let host = WallpaperDesktopHost(surfaces: DesktopSurfaceRegistry())
     func applicationDidFinishLaunching(_ notification: Notification) {
         UnfoldMyMacType.register()
         Task { await measure() }

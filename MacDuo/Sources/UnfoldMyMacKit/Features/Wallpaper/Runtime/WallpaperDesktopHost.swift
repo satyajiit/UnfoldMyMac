@@ -3,8 +3,10 @@ import SwiftUI
 
 @MainActor final class WallpaperDesktopHost {
     private(set) var windows: [NSWindow] = []
+    private let surfaces: DesktopSurfaceRegistry
+    init(surfaces: DesktopSurfaceRegistry) { self.surfaces = surfaces }
     func show<Content: View>(@ViewBuilder content: () -> Content) {
-        stop()
+        close()
         for screen in NSScreen.screens {
             let window = DesktopWallpaperWindow(contentRect: screen.frame, styleMask: [.borderless], backing: .buffered, defer: false, screen: screen)
             window.setFrame(screen.frame, display: false)
@@ -23,12 +25,12 @@ import SwiftUI
             window.orderBack(nil)
             windows.append(window)
         }
-        NotificationCenter.default.post(name: .desktopContentWindowsChanged, object: nil)
+        surfaces.update(Set(windows.compactMap { CGWindowID(exactly: $0.windowNumber) }))
     }
-    func stop() {
+    func stop() { close(); surfaces.update([]) }
+    private func close() {
         for window in windows { window.orderOut(nil); window.contentView = nil; window.close() }
         windows.removeAll()
-        NotificationCenter.default.post(name: .desktopContentWindowsChanged, object: nil)
     }
 }
 

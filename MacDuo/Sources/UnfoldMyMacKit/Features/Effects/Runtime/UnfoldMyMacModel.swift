@@ -4,19 +4,8 @@ import QuartzCore
 import UniformTypeIdentifiers
 import UnfoldMyMacCore
 
-@MainActor @Observable public final class UnfoldMyMacModel: NSObject {
+@MainActor @Observable final class UnfoldMyMacModel: NSObject {
     private(set) var settings: UnfoldMyMacSettings
-    var route: AppRoute? = .effects {
-        didSet {
-            if route != .effects {
-                effectsPath = []
-                if isPreviewing { stopPreview() }
-            }
-        }
-    }
-    var effectsPath: [EffectsDestination] = [] {
-        didSet { if !effectsPath.isEmpty && isPreviewing { stopPreview() } }
-    }
     private(set) var enabled = false
     private(set) var status = "Off"
     private(set) var lidAngle: Double?
@@ -33,9 +22,8 @@ import UnfoldMyMacCore
     private(set) var captureFrames = 0
     private(set) var gpuMilliseconds = 0.0
     private(set) var previewClosure: Double = 0
-    var onPreviewChanged: (() -> Void)?
-    var onAppearanceChanged: (() -> Void)?
-    var onStatusChanged: (() -> Void)?
+    /// The app shell, when one is attached; previews started elsewhere bring the library forward through it.
+    @ObservationIgnored weak var navigator: (any EffectsNavigating)?
     let registry: EffectRegistry
     let artworkLibrary: ArtworkLibrary?
     var libraryCategory: EffectCategory?
@@ -44,12 +32,18 @@ import UnfoldMyMacCore
     private(set) var isImporting = false
     var libraryMessage: String?
     @ObservationIgnored private var animationSeconds = 0.0
-    @ObservationIgnored private let store: any SettingsStoring
+    @ObservationIgnored private let store: any PreferencesStore
     @ObservationIgnored private let makeSensor: () -> any LidReading
     @ObservationIgnored private var sensor: any LidReading
     @ObservationIgnored private let displays: any DisplayProviding
     @ObservationIgnored private let session: EffectSession
+    @ObservationIgnored private let environment: any SystemEnvironmentObserving
+    @ObservationIgnored private let filePicker: any FilePicking
+    @ObservationIgnored private let workspace: any WorkspaceOpening
+    @ObservationIgnored private let capturePermission: any ScreenCapturePermissionChecking
     @ObservationIgnored private let clock: () -> TimeInterval
+    @ObservationIgnored private var environmentObservation: Task<Void, Never>?
+    @ObservationIgnored private var lastSystemState: SystemState?
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private var displayLink: CADisplayLink?
     @ObservationIgnored private var safety = DisplaySafetyGate()
@@ -61,18 +55,19 @@ import UnfoldMyMacCore
     @ObservationIgnored private var previousEnabled = false
     @ObservationIgnored private var suspended = false
 
-    init(store: any SettingsStoring, registry: EffectRegistry, sensorFactory: @escaping () -> any LidReading,
-         displays: any DisplayProviding, session: EffectSession, artworkLibrary: ArtworkLibrary? = nil, clock: @escaping () -> TimeInterval = { CACurrentMediaTime() }) {
+    init(dependencies: EffectsDependencies) {
+        let artworkLibrary = dependencies.artworkLibrary, registry = dependencies.registry, store = dependencies.preferences
         self.artworkLibrary = artworkLibrary
         self.libraryMessage = artworkLibrary?.loadError ?? registry.catalogError
-        self.store = store; self.registry = registry; self.makeSensor = sensorFactory; self.clock = clock
-        sensor = sensorFactory(); self.displays = displays; self.session = session
-        var loaded = store.load()
-        loaded.sanitize()
+        self.store = store; self.registry = registry; self.makeSensor = dependencies.makeSensor; self.clock = dependencies.clock
+        sensor = dependencies.makeSensor(); self.displays = dependencies.displays; self.session = dependencies.session
+        environment = dependencies.environment; filePicker = dependencies.filePicker
+        workspace = dependencies.workspace; capturePermission = dependencies.capturePermission
+        var loaded = store.load(UnfoldMyMacSettings.key)
         loaded.effect = registry.entry(for: loaded.effect).descriptor.id
         // Parameters for effects that no longer exist are dropped, unless the artwork index failed to load
         // and their owners may come back once it is repaired.
-        if artworkLibrary?.loadError == nil, loaded.reconcile(effects: registry.descriptors.map(\.id)) { store.save(loaded) }
+        if artworkLibrary?.loadError == nil, loaded.reconcile(effects: registry.descriptors.map(\.id)) { store.save(loaded, for: UnfoldMyMacSettings.key) }
         settings = loaded
         super.init()
         session.onError = { [weak self] error in self?.failed(error) }
@@ -85,14 +80,11 @@ import UnfoldMyMacCore
     var needsCapture: Bool { activeEffect.requiresCapture && !reduceTransparency }
 
     func start() {
-        accessibilityChanged()
-        let workspace = NSWorkspace.shared.notificationCenter
-        workspace.addObserver(self, selector: #selector(sleep), name: NSWorkspace.willSleepNotification, object: nil)
-        workspace.addObserver(self, selector: #selector(sleep), name: NSWorkspace.screensDidSleepNotification, object: nil)
-        workspace.addObserver(self, selector: #selector(wake), name: NSWorkspace.didWakeNotification, object: nil)
-        workspace.addObserver(self, selector: #selector(wake), name: NSWorkspace.screensDidWakeNotification, object: nil)
-        workspace.addObserver(self, selector: #selector(accessibilityChanged), name: NSWorkspace.accessibilityDisplayOptionsDidChangeNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(displaysChanged), name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        systemStateChanged(environment.state)
+        let environment = self.environment
+        environmentObservation = Task { [weak self] in
+            for await state in Observations({ environment.state }) { self?.systemStateChanged(state) }
+        }
         let polling = Timer(timeInterval: 1.0 / 30, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
         }
@@ -103,27 +95,24 @@ import UnfoldMyMacCore
     func shutdown() {
         timer?.invalidate(); timer = nil
         stopLink(); session.stop()
-        NSWorkspace.shared.notificationCenter.removeObserver(self)
-        NotificationCenter.default.removeObserver(self)
+        environmentObservation?.cancel(); environmentObservation = nil
     }
     func setEnabled(_ value: Bool) {
         if isPreviewing {
             // The preview keeps the effect running; the choice applies once the preview ends.
             previousEnabled = value
-            guard !value else { onStatusChanged?(); return }
+            guard !value else { return }
             stopPreview()
         }
         enabled = value; errorMessage = nil; needsPermission = false
         if !value { session.stop(); stopLink(); status = "Off" }
         else { safety.reset(); tick() }
-        onStatusChanged?()
     }
     func selectEffect(_ id: EffectID) {
         if isPreviewing { stopPreview() }
         guard id != settings.effect else { return }
         session.stop(); animationSeconds = 0; settings.effect = registry.entry(for: id).descriptor.id
         persist(); errorMessage = nil; needsPermission = false; tick()
-        onStatusChanged?()
     }
     func setStrength(_ strength: Double) {
         var next = parameters
@@ -137,18 +126,12 @@ import UnfoldMyMacCore
     }
     func chooseArtwork() {
         guard !isImporting, artworkLibrary != nil else { return }
-        let panel = NSOpenPanel()
-        panel.title = "Add an image to \(AppIdentity.name)"
-        panel.prompt = "Add Image"
-        panel.message = "Your image is copied into \(AppIdentity.name). PNG, JPEG, HEIC, and other supported images, up to 50 MB."
-        panel.allowedContentTypes = [.image]
-        panel.canChooseDirectories = false; panel.allowsMultipleSelection = false
-        let completion: (NSApplication.ModalResponse) -> Void = { [weak self] response in
-            guard response == .OK, let url = panel.url else { return }
+        let request = FilePickerRequest(title: "Add an image to \(AppIdentity.name)", prompt: "Add Image",
+            message: "Your image is copied into \(AppIdentity.name). PNG, JPEG, HEIC, and other supported images, up to 50 MB.", types: [.image])
+        filePicker.pick(request) { [weak self] url in
+            guard let url else { return }
             Task { @MainActor in await self?.importArtwork(at: url) }
         }
-        if let window = NSApp.keyWindow { panel.beginSheetModal(for: window, completionHandler: completion) }
-        else { panel.begin(completionHandler: completion) }
     }
     func importArtwork(at url: URL) async {
         guard !isImporting, let artworkLibrary else { return }
@@ -165,7 +148,7 @@ import UnfoldMyMacCore
         do {
             guard let artwork = try artworkLibrary?.update(id: settings.effect, title: title, author: author) else { return }
             registry.removeImported(artwork.id); try registry.register(.artwork(artwork))
-            libraryMessage = nil; onStatusChanged?()
+            libraryMessage = nil
         } catch { libraryMessage = error.localizedDescription }
     }
     @discardableResult func removeArtwork(_ id: EffectID) -> Bool {
@@ -187,18 +170,14 @@ import UnfoldMyMacCore
     var completionAngle: Double { EffectMath.completionAngle(activation: settings.activation, completionFraction: settings.completionFraction) }
     var effectProgress: Double { EffectMath.calibratedClosure(previewClosure, completionFraction: settings.completionFraction) }
     func anchorHere() { if sensorAvailable, let lidAngle { setActivation(lidAngle) } }
-    func setAppearance(_ appearance: AppearancePreference) { settings.appearance = appearance; persist(); onAppearanceChanged?() }
-    func setShowAngle(_ value: Bool) { settings.showAngle = value; persist(); onStatusChanged?() }
-    func persist() { store.save(settings) }
+    func setAppearance(_ appearance: AppearancePreference) { settings.appearance = appearance; persist() }
+    func setShowAngle(_ value: Bool) { settings.showAngle = value; persist() }
+    func persist() { store.save(settings, for: UnfoldMyMacSettings.key) }
 
     func togglePreview(for id: EffectID) {
         if isPreviewing && previewEffectID == id { stopPreview(); return }
         beginPreview(effect: id)
         if !reduceMotion { playPreview() }
-    }
-    func showEffectSettings() {
-        route = .effects
-        effectsPath = [.settings]
     }
     func beginPreview(effect id: EffectID? = nil) {
         let next = registry.entry(for: id ?? settings.effect).descriptor.id
@@ -206,12 +185,11 @@ import UnfoldMyMacCore
             guard previewEffectID != next else { return }
             session.stop(); stopLink()
         } else { previousEnabled = enabled }
-        route = .effects
-        effectsPath = []
+        navigator?.showEffectsLibrary()
         previewEffectID = next; isPreviewing = true; isPlaying = false
         errorMessage = nil; needsPermission = false
         enabled = true; previewClosure = 0; animationSeconds = 0
-        safety.reset(); tick(); onPreviewChanged?()
+        safety.reset(); tick()
     }
     func playPreview() {
         guard !reduceMotion else { return }
@@ -228,11 +206,9 @@ import UnfoldMyMacCore
         previewEffectID = nil; previewClosure = 0; animationSeconds = 0
         session.stop(); stopLink(); safety.reset()
         status = enabled ? "Ready" : "Off"
-        onPreviewChanged?(); onStatusChanged?(); tick()
+        tick()
     }
-    static func openScreenRecordingSettings() {
-        if let url = URL(string: "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_ScreenCapture") { NSWorkspace.shared.open(url) }
-    }
+    func openScreenRecordingSettings() { workspace.openScreenRecordingSettings() }
     private func failed(_ error: Error) {
         let requestedCapture = needsCapture
         // Only a failure of the chosen effect turns effects off. A failed card preview ends the preview
@@ -243,10 +219,9 @@ import UnfoldMyMacCore
             stopPreview()
         }
         if chosenFailed { enabled = false; session.stop(); stopLink() }
-        needsPermission = requestedCapture && !CGPreflightScreenCaptureAccess()
+        needsPermission = requestedCapture && !capturePermission.hasAccess
         errorMessage = needsPermission ? "Allow \(AppIdentity.name) in System Settings → Privacy & Security → Screen Recording, then enable Frost again." : error.localizedDescription
         if chosenFailed { status = needsPermission ? "Screen Recording needed" : "Effect unavailable" }
-        onStatusChanged?()
     }
     private func readLid(now: TimeInterval) {
         if let angle = sensor.read() {
@@ -271,7 +246,6 @@ import UnfoldMyMacCore
             lastUIUpdate = now
             captureFrames = session.captureFrames
             gpuMilliseconds = (session.renderer?.lastGPUTime ?? 0) * 1000
-            onStatusChanged?()
         }
         guard enabled, !suspended else { return }
         // Preview overrides missing angle input, never physical clamshell/display safety.
@@ -322,22 +296,30 @@ import UnfoldMyMacCore
         session.update(.init(closure: progress, parameters: settings.parameters(for: activeEffect.id), reduceTransparency: reduceTransparency,
             time: session.renderer?.animatesWithTime == true ? animationSeconds : 0, reduceMotion: reduceMotion))
     }
-    @objc private func sleep() {
+    /// System or screen sleep suspends live rendering; an inactive login session does not, so the
+    /// effect is ready the moment the user's session resumes on the built-in display.
+    private func systemStateChanged(_ state: SystemState) {
+        let previous = lastSystemState; lastSystemState = state
+        if state.displaysUnavailable != previous?.displaysUnavailable {
+            if state.displaysUnavailable { sleep() } else if previous != nil { wake() }
+        }
+        if let previous, state.displayGeneration != previous.displayGeneration { displaysChanged() }
+        accessibilityChanged(reduceTransparency: state.reduceTransparency, reduceMotion: state.reduceMotion)
+    }
+    private func sleep() {
         suspended = true
         if isPreviewing { stopPreview() }
         session.stop(); stopLink(); safety.reset(); status = enabled ? "Paused · sleeping" : "Off"
     }
-    @objc private func wake() {
+    private func wake() {
         suspended = false; lastReading = -.infinity; reconnectDelay = EffectTuning.sensorReconnectDelay
         sensor = makeSensor(); safety.reset()
     }
-    @objc private func displaysChanged() { session.stop(); stopLink(); safety.reset(); tick() }
-    @objc private func accessibilityChanged() {
-        let workspace = NSWorkspace.shared
-        let next = workspace.accessibilityDisplayShouldReduceTransparency
+    private func displaysChanged() { session.stop(); stopLink(); safety.reset(); tick() }
+    private func accessibilityChanged(reduceTransparency next: Bool, reduceMotion motion: Bool) {
         if next != reduceTransparency { session.stop() }
         reduceTransparency = next
-        reduceMotion = workspace.accessibilityDisplayShouldReduceMotion
+        reduceMotion = motion
         if reduceMotion { pausePreview() }
     }
 }

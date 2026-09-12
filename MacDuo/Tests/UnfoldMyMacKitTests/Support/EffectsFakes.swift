@@ -42,10 +42,12 @@ import UnfoldMyMacCore
     func builtInScreen() -> NSScreen? { screen }
     func lidClosed(now: TimeInterval) -> Bool? { closed }
 }
-@MainActor final class FakeStore: SettingsStoring {
-    var value = UnfoldMyMacSettings()
-    func load() -> UnfoldMyMacSettings { value }
-    func save(_ settings: UnfoldMyMacSettings) { value = settings }
+extension InMemoryPreferencesStore {
+    /// The effect settings as the model will load them; assignments persist immediately.
+    var settings: UnfoldMyMacSettings {
+        get { load(UnfoldMyMacSettings.key) }
+        set { save(newValue, for: UnfoldMyMacSettings.key) }
+    }
 }
 @MainActor func makeRegistry(_ created: @escaping (EffectID, FakeRenderer) -> Void = { _, _ in }) -> EffectRegistry {
     EffectRegistry(entries: [EffectID.frost, .veil, .fade, .curtains, .reverie, .neonCoast, .rise, .current].map { id in
@@ -53,4 +55,37 @@ import UnfoldMyMacCore
             let renderer = FakeRenderer(); renderer.animatesWithTime = id == .current; created(id, renderer); return renderer
         })
     })
+}
+
+@MainActor @Observable final class FakeSystemEnvironment: SystemEnvironmentObserving {
+    var state = SystemState()
+    var started = false
+    func start() { started = true }
+    func stop() { started = false }
+}
+@MainActor final class FakeFilePicker: FilePicking {
+    var requests: [FilePickerRequest] = []
+    var answer: URL?
+    func pick(_ request: FilePickerRequest, completion: @escaping @MainActor (URL?) -> Void) { requests.append(request); completion(answer) }
+}
+@MainActor final class FakeWorkspace: WorkspaceOpening {
+    var opened: [URL] = []
+    func open(_ url: URL) { opened.append(url) }
+}
+@MainActor final class FakeCapturePermission: ScreenCapturePermissionChecking {
+    var hasAccess = true
+}
+/// Builds an effects model on fakes; every seam can be overridden by a test that cares about it.
+@MainActor func makeModel(store: InMemoryPreferencesStore = InMemoryPreferencesStore(), registry: EffectRegistry, sensorFactory: @escaping () -> any LidReading = { FakeSensor() },
+                          displays: any DisplayProviding = FakeDisplay(), session: EffectSession, environment: any SystemEnvironmentObserving = FakeSystemEnvironment(),
+                          filePicker: any FilePicking = FakeFilePicker(), workspace: any WorkspaceOpening = FakeWorkspace(),
+                          capturePermission: any ScreenCapturePermissionChecking = FakeCapturePermission(), artworkLibrary: ArtworkLibrary? = nil,
+                          clock: @escaping () -> TimeInterval = { 0 }) -> UnfoldMyMacModel {
+    UnfoldMyMacModel(dependencies: EffectsDependencies(preferences: store, registry: registry, makeSensor: sensorFactory, displays: displays, session: session,
+        environment: environment, filePicker: filePicker, workspace: workspace, capturePermission: capturePermission, artworkLibrary: artworkLibrary, clock: clock))
+}
+
+@MainActor final class FakeWallpaperBrowsing: WallpaperBrowsing {
+    var browsing = false
+    func setBrowsing(_ value: Bool) { browsing = value }
 }

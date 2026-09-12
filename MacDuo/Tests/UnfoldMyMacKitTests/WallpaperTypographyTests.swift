@@ -11,7 +11,7 @@ import UnfoldMyMacCore
     let suite = "wallpaper-sheet-test-" + UUID().uuidString
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
-    let setup = WallpaperSetupController(defaults: defaults)
+    let setup = WallpaperSetupController(preferences: UserDefaultsPreferencesStore(defaults: defaults))
     let templates = try WallpaperTemplateRegistry(shaders: WallpaperShaderCatalog(), loadUserTemplates: false).templates
     for scheme in [ColorScheme.light, .dark] {
         for id in ["github-after-hours", "codex-mission-control", "codex-foundry"] {

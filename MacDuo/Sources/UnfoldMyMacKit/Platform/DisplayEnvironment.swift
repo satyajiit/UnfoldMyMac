@@ -35,10 +35,6 @@ import IOKit
         }
     }
 
-    static func displayID(of screen: NSScreen) -> CGDirectDisplayID? {
-        screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
-    }
-
     deinit {
         if root != 0 { IOObjectRelease(root) }
     }

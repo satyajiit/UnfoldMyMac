@@ -4,10 +4,10 @@ import QuartzCore
 import UniformTypeIdentifiers
 import UnfoldMyMacCore
 
-public enum AppRoute: String, CaseIterable, Identifiable, Sendable {
+enum AppRoute: String, CaseIterable, Identifiable, Sendable {
     case effects, wallpaper, settings
     static let features: [AppRoute] = [.effects, .wallpaper]
-    public var id: String { rawValue }
+    var id: String { rawValue }
     var title: String { rawValue.capitalized }
     var symbol: String {
         switch self {

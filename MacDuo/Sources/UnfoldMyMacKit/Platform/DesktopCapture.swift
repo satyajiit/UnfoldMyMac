@@ -28,6 +28,10 @@ enum CaptureFailure: LocalizedError {
         includedWindows = includingWindows
         super.init()
     }
+    /// Excludes the app's own desktop surfaces, refreshing the filter when the registry changes.
+    convenience init(surfaces: DesktopSurfaceRegistry) {
+        self.init(includingWindows: { surfaces.windowIDs })
+    }
 
     func start(displayID: CGDirectDisplayID) async throws {
         let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)

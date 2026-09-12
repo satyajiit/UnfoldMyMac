@@ -9,6 +9,7 @@ enum EffectSessionError: LocalizedError, Equatable {
 @MainActor final class EffectSession {
     private let registry: EffectRegistry
     private let host: any EffectHosting
+    private let displays: any DisplayProviding
     private let makeCapture: () -> any DesktopCapturing
     private var capture: (any DesktopCapturing)?
     private var generation = 0
@@ -17,12 +18,12 @@ enum EffectSessionError: LocalizedError, Equatable {
     private(set) var captureFrames = 0
     var onError: ((Error) -> Void)?
 
-    init(registry: EffectRegistry, host: any EffectHosting, makeCapture: @escaping () -> any DesktopCapturing) {
-        self.registry = registry; self.host = host; self.makeCapture = makeCapture
+    init(registry: EffectRegistry, host: any EffectHosting, displays: any DisplayProviding, makeCapture: @escaping () -> any DesktopCapturing) {
+        self.registry = registry; self.host = host; self.displays = displays; self.makeCapture = makeCapture
     }
     func start(effect: EffectID, screen: NSScreen, reduceTransparency: Bool) {
         let actual = reduceTransparency ? EffectID.fade : effect
-        let display = DisplayEnvironment.displayID(of: screen) ?? 0
+        let display = displays.displayID(of: screen) ?? 0
         let nextKey = "\(actual.rawValue):\(display):\(screen.frame):\(screen.backingScaleFactor)"
         guard nextKey != key else { return }
         stop()
