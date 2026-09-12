@@ -3,19 +3,6 @@ import UnfoldMyMacCore
 import CoreMedia
 import ScreenCaptureKit
 
-/// Retains an immutable capture buffer while transferring it to the main actor/GPU.
-final class DesktopFrame: @unchecked Sendable {
-    let buffer: CVPixelBuffer
-    init(_ buffer: CVPixelBuffer) { self.buffer = buffer }
-}
-
-@MainActor protocol DesktopCapturing: AnyObject {
-    var onFrame: ((DesktopFrame) -> Void)? { get set }
-    var onError: ((Error) -> Void)? { get set }
-    func start(displayID: CGDirectDisplayID) async throws
-    func stop() async
-}
-
 enum CaptureFailure: LocalizedError {
     case displayUnavailable, exclusionUnavailable
     var errorDescription: String? {

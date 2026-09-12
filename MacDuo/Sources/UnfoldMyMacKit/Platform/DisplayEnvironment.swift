@@ -1,11 +1,6 @@
 import AppKit
 import IOKit
 
-@MainActor protocol DisplayProviding: AnyObject {
-    func builtInScreen() -> NSScreen?
-    func lidClosed(now: TimeInterval) -> Bool?
-}
-
 @MainActor final class DisplayEnvironment: DisplayProviding {
     func builtInScreen() -> NSScreen? { Self.usableBuiltInScreen() }
     private let root = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("IOPMrootDomain"))

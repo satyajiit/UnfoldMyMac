@@ -1,11 +1,6 @@
 import Foundation
 import IOKit.hid
 
-@MainActor protocol LidReading: AnyObject {
-    var diagnostic: String { get }
-    func read() -> Double?
-}
-
 /// Read-only lid-angle HID. Undocumented Apple report; may be absent on M1/M2.
 @MainActor
 final class LidSensor: LidReading {

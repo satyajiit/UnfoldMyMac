@@ -60,12 +60,12 @@ private actor SlowWallpaperProvider: WallpaperDataProvider {
 
 @Test @MainActor func wallpaperDataHubDiscardsLateResultsAfterStop() async throws {
     let hub = WallpaperDataHub()
-    hub.start([SlowWallpaperProvider()])
+    hub.update([SlowWallpaperProvider()])
     try await Task.sleep(for: .milliseconds(10))
     hub.stop()
     try await Task.sleep(for: .milliseconds(120))
     #expect(hub.snapshot.sources.isEmpty)
-    hub.start([SlowWallpaperProvider()])
+    hub.update([SlowWallpaperProvider()])
     try await Task.sleep(for: .milliseconds(120))
     #expect(hub.snapshot.number("test.number") == 1)
     hub.stop()

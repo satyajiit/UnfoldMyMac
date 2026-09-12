@@ -1,21 +1,15 @@
 import AppKit
 
-final class EffectPanel: NSPanel {
+private final class EffectPanel: NSPanel {
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
     override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect { frameRect }
 }
 
-@MainActor protocol EffectHosting: AnyObject {
-    func install(_ view: NSView, on screen: NSScreen)
-    func show()
-    func hide()
-}
-
 @MainActor final class EffectHost: EffectHosting {
     // Above ordinary desktop windows, below system popup menus and security UI.
     static let level = NSWindow.Level(rawValue: NSWindow.Level.statusBar.rawValue + 1)
-    let panel = EffectPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+    private let panel = EffectPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
     init() {
         panel.ignoresMouseEvents = true
         panel.hidesOnDeactivate = false

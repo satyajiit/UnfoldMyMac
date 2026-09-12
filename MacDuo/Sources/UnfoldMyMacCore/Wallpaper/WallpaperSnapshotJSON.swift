@@ -12,11 +12,3 @@ public enum WallpaperSnapshotJSON {
         return try decoder.decode(WallpaperDataSample.self, from: data).validated(namespace: namespace)
     }
 }
-
-enum WallpaperJSONDate {
-    static func parse(_ value: String?) -> Date? {
-        guard let value else { return nil }
-        return (try? Date.ISO8601FormatStyle(includingFractionalSeconds: true).parse(value)) ??
-               (try? Date.ISO8601FormatStyle().parse(value))
-    }
-}

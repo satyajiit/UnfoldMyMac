@@ -9,7 +9,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "UnfoldMyMacCore"),
-        .target(name: "UnfoldMyMacKit", dependencies: ["UnfoldMyMacCore"], resources: [.copy("Effects/Shaders"), .copy("Wallpaper/Rendering/WallpaperShaders"), .copy("Resources")]),
+        .target(name: "UnfoldMyMacKit", dependencies: ["UnfoldMyMacCore"], resources: [.copy("Shaders"), .copy("Resources")]),
         .executableTarget(name: "UnfoldMyMac", dependencies: ["UnfoldMyMacKit"]),
         .testTarget(name: "UnfoldMyMacCoreTests", dependencies: ["UnfoldMyMacCore"]),
         .testTarget(name: "UnfoldMyMacKitTests", dependencies: ["UnfoldMyMacKit", "UnfoldMyMacCore"]),
