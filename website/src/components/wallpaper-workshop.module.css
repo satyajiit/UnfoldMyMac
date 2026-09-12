@@ -1,0 +1,68 @@
+.connections { padding-top: 72px; scroll-margin-top: 100px; }
+.heading > p { max-width: 65ch; margin-top: 22px; font-size: 16px; }
+.connectionGrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 54px; margin-top: 36px; }
+.connectionGrid article { min-width: 0; }
+.label { display: block; margin-bottom: 13px; font-size: 12px; color: var(--secondary); }
+.connectionGrid h3 { font-size: 24px; line-height: 1.2; }
+.connectionGrid article > p:not(.note) { margin-top: 16px; font-size: 14px; }
+.connectionGrid article > a { margin-top: 20px; font-size: 13px; }
+.hooks { padding-right: 44px; border-right: 1px solid var(--border); }
+.events { width: 100%; border-collapse: collapse; text-align: left; margin: 24px 0 20px; }
+.events th, .events td { padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.events th { color: var(--secondary); font-weight: 400; }
+.events thead th { font-size: 11px; }
+.events th:first-child { padding-right: 22px; }
+.events th:last-child, .events td { text-align: right; }
+.events td { font-weight: 500; white-space: nowrap; }
+.feed { margin-top: 23px; }
+.feed h4 { margin: 0 0 8px; font-size: 15px; font-weight: 500; line-height: 1.5; }
+.feed p { font-size: 14px; }
+.note { font-size: 12px; line-height: 1.7; }
+.publicData > .note { margin-top: 24px; }
+.adapter { display: grid; grid-template-columns: minmax(0, .55fr) minmax(0, 1.45fr); gap: 36px; margin-top: 36px; padding: 28px 32px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+.adapter h3 { font-size: 22px; line-height: 1.25; }
+.adapter p { font-size: 14px; }
+.adapter .note { font-size: 12px; margin-top: 12px; }
+
+.workshop { padding: 0 0 64px; margin-bottom: 64px; border-bottom: 1px solid var(--border); scroll-margin-top: 100px; }
+.workshopIntro { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 44px; align-items: center; }
+.workshopCopy h2 { font-size: clamp(30px, 3.2vw, 42px); line-height: 1.12; }
+.workshopCopy > p { margin-top: 20px; font-size: 14px; max-width: 57ch; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; margin-top: 28px; }
+.actions > a { font-size: 13px; }
+.illustration { margin: 0; min-width: 0; }
+.illustration img { display: block; width: 100%; height: auto; border-radius: 14px; border: 1px solid var(--border); }
+.illustration figcaption { padding-top: 10px; font-size: 11px; color: var(--secondary); }
+.contributionPaths { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 38px; border-top: 1px solid var(--border); padding-top: 30px; margin-top: 36px; }
+.contributionPaths h3 { font-size: 18px; line-height: 1.3; }
+.contributionPaths p { font-size: 13px; margin-top: 11px; }
+.sources { margin-top: 28px; max-width: 100ch; font-size: 12px; }
+.feed a, .note a, .sources a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 1050px) {
+  .connectionGrid { gap: 30px; }
+  .hooks { padding-right: 28px; }
+  .workshopIntro { gap: 30px; }
+  .contributionPaths { gap: 26px; }
+}
+
+@media (max-width: 800px) {
+  .connections { padding-top: 50px; }
+  .heading h2 br { display: none; }
+  .heading > p { font-size: 15px; }
+  .connectionGrid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .hooks { padding: 0 0 32px; border-right: 0; border-bottom: 1px solid var(--border); }
+  .adapter { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 24px; }
+  .workshop { padding-bottom: 45px; margin-bottom: 45px; }
+  .workshopIntro { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .workshopCopy > p { max-width: 65ch; }
+  .illustration { grid-row: 2; }
+  .contributionPaths { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .contributionPaths p { max-width: 65ch; }
+}
+
+@media (max-width: 370px) {
+  .events th:first-child { padding-right: 12px; }
+  .events th, .events td { font-size: 12px; }
+  .adapter { padding: 20px; }
+}

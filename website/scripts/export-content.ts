@@ -10,6 +10,15 @@ function markdown(node: AnyNode): string {
   if (node.type === "text") return node.data.replace(/\s+/g, " ");
   if (!("tagName" in node)) return "";
   const tag = node.tagName;
+  if (tag === "table") {
+    const $ = load(node);
+    const rows = $("tr").toArray().map(row => `| ${$(row).children("th,td").toArray().map(cell =>
+      cell.children.map(markdown).join(" ").trim().replace(/\s+/g, " ").replace(/\|/g, "\\|")
+    ).join(" | ")} |`);
+    const columns = $("tr").first().children("th,td").length;
+    rows.splice(1, 0, `| ${Array(columns).fill("---").join(" | ")} |`);
+    return `\n\n${$("caption").text()}\n\n${rows.join("\n")}\n\n`;
+  }
   const content = node.children.map(markdown).join("").trim();
   if (/^h[1-6]$/.test(tag)) return `\n\n${"#".repeat(Number(tag[1]))} ${content}\n\n`;
   if (tag === "a") return `[${content}](${new URL(node.attribs.href || "/", site.url).href})`;
