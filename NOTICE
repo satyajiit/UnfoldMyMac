@@ -1,5 +1,5 @@
 UnfoldMyMac
-Copyright 2026 Satyajit Pradhan
+Copyright 2026 Satyajit Pradhan / Matterward Labs Private Limited
 
 Created and maintained by Satyajit Pradhan.
 Matterward Labs Private Limited — https://matterwardlabs.com
@@ -30,6 +30,43 @@ license and remain the property of their respective owners:
 - F1: Formula 1. The bundled SVG source is retained in
   Resources/WallpaperMarks/Originals/F1.svg.
   https://www.formula1.com/en/information/guidelines.4EOKE9RRqevL4niTK9kWyt
+
+iPhone Duo Fold Preview
+Copyright 2026 jadon7
+https://github.com/jadon7/iphone-duo
+Licensed under the MIT License. No code or asset from that project ships in
+UnfoldMyMac. Frost's blur parameters, documented in MacDuo/README.md, were
+matched against its published description so the Mac effect reads the same
+way. Credited here because the reading was useful.
+
+README badges
+The four "for the badge" SVGs in .github/media/badges are vendored from
+https://github.com/andrewsbarbaro/for-the-badge (MIT), so the project's front
+page does not depend on a third-party repository staying put.
+
+Grand Theft Auto VI
+The "GTA VI - Vice City Countdown" wallpaper bundles promotional artwork and
+a wordmark belonging to Rockstar Games:
+
+- MacDuo/Sources/UnfoldMyMacKit/Resources/Artwork/GTAVI-Robbery.png
+- MacDuo/Sources/UnfoldMyMacKit/Resources/WallpaperMarks/GTAVI.png
+
+Both files are excluded from the project's Apache license. No part of the
+Apache grant applies to them, and this notice grants no rights to them.
+Grand Theft Auto, GTA and Vice City are trademarks of Take-Two Interactive
+Software, Inc. and Rockstar Games. UnfoldMyMac is not affiliated with,
+sponsored by or endorsed by either company. The scene is included to
+illustrate what the wallpaper template system can do with a countdown and a
+still image; it is not sold, and the app is free and open source.
+
+If you hold rights in this artwork and want it removed, email
+admin@matterwardlabs.com and it will be removed in the next release.
+
+Apple
+iPhone, iOS, macOS, MacBook and Mac are trademarks of Apple Inc. UnfoldMyMac
+is an independent app from Matterward Labs and is not affiliated with,
+endorsed by or sponsored by Apple. References to the iPhone Duo effects
+describe what inspired this project; they do not describe a relationship.
 
 Product names and marks do not imply sponsorship or endorsement of
 UnfoldMyMac by their owners. This notice grants no rights to those marks.
