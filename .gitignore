@@ -50,17 +50,33 @@ playground.xcworkspace
 *.mobileprovision
 *.p12
 *.cer
+*.p8
 *.certSigningRequest
 
-# Packaged app and generated icons
+# Packaged app, installers and generated icons
 dist/
 *.app
 *.app.dSYM
 *.iconset/
+*.dmg
 
 # Test and renderer dumps
 output/
 *.log
+
+# Interrupted encodes left behind by the media render scripts
+*.partial.mp4
+website/public/**/*.partial.*
+
+# Internal QA captures and review notes for the website (screenshots, JSON dumps).
+/website/review/
+
+# Local design and illustration generation prompts; exported artwork stays tracked.
+/website/assets/**/*[Pp][Rr][Oo][Mm][Pp][Tt]*.md
+/website/assets/**/*[Pp][Rr][Oo][Mm][Pp][Tt]*.txt
+/website/assets/**/*[Pp][Rr][Oo][Mm][Pp][Tt]*.json
+/website/assets/**/[Pp][Rr][Oo][Mm][Pp][Tt]*/
+/MacDuo/docs/provenance/*[Pp][Rr][Oo][Mm][Pp][Tt]*
 
 # Local tooling
 .playwright-mcp/
@@ -79,6 +95,10 @@ output/
 .env.*
 !.env.example
 
+# Local film production tree: 18 GB of sources, renders and internal notes.
+# The delivered films live on YouTube; only the posters are published here.
+/videos/
+
 # Third-party checkouts with their own history
 iphone-duo-ref/
 refs/LidSense/
@@ -93,6 +113,13 @@ refs/lid-plane/
 !/MacDuo/DEVELOPING.md
 !/MacDuo/WALLPAPER_ENGINE.md
 !/MacDuo/VALIDATION.md
+!/MacDuo/README.md
+!/MacDuo/SIGNING.md
+!/CONTRIBUTING.md
+!/SECURITY.md
+!/CODE_OF_CONDUCT.md
+!/CHANGELOG.md
+!/.github/PULL_REQUEST_TEMPLATE.md
 /docs/
 /refs/
 
