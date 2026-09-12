@@ -20,6 +20,13 @@ public struct UnfoldMyMacSettings: Codable, Equatable, Sendable {
         sanitize()
     }
     public func parameters(for id: EffectID) -> EffectParameters { parameters[id.rawValue] ?? .init() }
+    /// Drops parameters saved for effects that are no longer registered. Returns whether anything changed.
+    @discardableResult public mutating func reconcile(effects: [EffectID]) -> Bool {
+        let known = Set(effects.map(\.rawValue))
+        let orphaned = parameters.keys.filter { !known.contains($0) }
+        for key in orphaned { parameters[key] = nil }
+        return !orphaned.isEmpty
+    }
     public mutating func sanitize() {
         activation = activation.isFinite ? activation.clamped(to: EffectTuning.activationRange).rounded() : EffectMath.defaultActivation
         completionFraction = completionFraction.isFinite ? completionFraction.clamped(to: EffectTuning.completionRange) : EffectTuning.defaultCompletionFraction

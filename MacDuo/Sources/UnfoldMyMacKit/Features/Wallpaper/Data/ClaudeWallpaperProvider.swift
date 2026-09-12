@@ -5,6 +5,7 @@ actor ClaudeWallpaperProvider: WallpaperDataProvider {
     nonisolated let id = "claude"
     nonisolated let interval: TimeInterval = 2
     private let root: URL
+    nonisolated var fingerprint: String { root.path }
     private let activityDirectory: URL
     private var reader: ClaudeLogReader
     init(root: URL, activityDirectory: URL = WallpaperPaths.claudeActivity) {

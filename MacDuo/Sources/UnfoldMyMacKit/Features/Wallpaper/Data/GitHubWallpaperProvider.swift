@@ -5,28 +5,43 @@ actor GitHubWallpaperProvider: WallpaperDataProvider {
     nonisolated let id = "github"
     nonisolated let interval: TimeInterval = 5
     private let username: String
+    nonisolated var fingerprint: String { username }
     private let client: GitHubProfileClient
     private var cached: WallpaperDataSample?
     private var nextFetch = Date.distantPast
     private var failure: String?
     init(username: String, client: GitHubProfileClient = .init()) { self.username = username; self.client = client }
 
+    /// A transient failure keeps the last good profile on screen and retries sooner than the normal
+    /// refresh; cancellation is never recorded as a failure.
     func sample(at date: Date) async throws -> WallpaperDataSample {
         if date >= nextFetch {
-            nextFetch = date.addingTimeInterval(300)
             do {
                 async let profile = client.profile(username)
-                async let events = try? client.events(username)
-                cached = try await Self.snapshot(profile: profile, events: events, at: date)
-                failure = nil
-            } catch { failure = error.localizedDescription }
+                async let events = client.events(username)
+                let fetchedProfile = try await profile
+                let fetchedEvents: [GitHubPublicEvent]?
+                do { fetchedEvents = try await events }
+                catch is CancellationError { throw CancellationError() }
+                catch { fetchedEvents = nil }
+                cached = Self.snapshot(profile: fetchedProfile, events: fetchedEvents, at: date)
+                failure = nil; nextFetch = date.addingTimeInterval(Self.refreshInterval)
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch {
+                failure = error.localizedDescription; nextFetch = date.addingTimeInterval(Self.retryInterval)
+            }
         }
-        if let failure { throw WallpaperError.unavailable(failure) }
-        guard var sample = cached else { throw WallpaperError.unavailable("Connect a public GitHub profile to bring this city to life.") }
+        guard var sample = cached else {
+            throw WallpaperError.unavailable(failure ?? "Connect a public GitHub profile to bring this city to life.")
+        }
         // Heartbeat keeps cached public values visible between deliberately slow API polls.
         sample.timestamp = date
+        if let failure { sample.status = "Showing the last fetched profile · \(failure) · retrying in 1 min" }
         return sample
     }
+    static let refreshInterval: TimeInterval = 300
+    static let retryInterval: TimeInterval = 60
     static func snapshot(profile: GitHubProfile, events: [GitHubPublicEvent]?, at date: Date) -> WallpaperDataSample {
         let recent = Dictionary((events ?? []).prefix(100).map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a }).values
         let pushes = recent.filter { $0.type == "PushEvent" }.count

@@ -1,5 +1,3 @@
-import CryptoKit
-import Darwin
 import Foundation
 import UnfoldMyMacCore
 
@@ -29,16 +27,10 @@ public enum WallpaperCodexHook {
         guard !input.session_id.isEmpty, input.session_id.count <= 256,
               (input.turn_id?.count ?? 0) <= 256, (input.tool_use_id?.count ?? 0) <= 256,
               CodexHookActivity.events.contains(input.hook_event_name) else { return }
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
-        let name = SHA256.hash(data: Data(input.session_id.utf8)).map { String(format: "%02x", $0) }.joined()
-        let lock = open(directory.appendingPathComponent(name + ".lock").path, O_CREAT | O_RDWR, 0o600)
-        guard lock >= 0 else { throw CocoaError(.fileWriteUnknown) }
-        defer { flock(lock, LOCK_UN); close(lock) }
-        guard flock(lock, LOCK_EX) == 0 else { throw CocoaError(.fileWriteUnknown) }
-        let url = directory.appendingPathComponent(name + ".json")
-        var record = (try? Data(contentsOf: url)).flatMap { try? JSONDecoder().decode(CodexHookActivity.self, from: $0) }
-            ?? CodexHookActivity(session: input.session_id, event: "SessionStart", timestamp: date)
-        record.receive(event: input.hook_event_name, turn: input.turn_id, tool: input.tool_use_id, at: date)
-        try JSONEncoder().encode(record).write(to: url, options: .atomic)
+        try RecordStore(directory: directory).update(CodexHookActivity.self, for: input.session_id) { existing in
+            var record = existing ?? CodexHookActivity(session: input.session_id, event: "SessionStart", timestamp: date)
+            record.receive(event: input.hook_event_name, turn: input.turn_id, tool: input.tool_use_id, at: date)
+            return record
+        }
     }
 }

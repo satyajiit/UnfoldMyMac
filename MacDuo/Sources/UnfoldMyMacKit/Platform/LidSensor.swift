@@ -7,6 +7,7 @@ final class LidSensor: LidReading {
     private let manager = IOHIDManagerCreate(kCFAllocatorDefault, 0)
     private var device: IOHIDDevice?
     private(set) var diagnostic = "No readable lid sensor"
+    private var report = [UInt8](repeating: 0, count: 8)
 
     init() {
         IOHIDManagerSetDeviceMatching(manager, [
@@ -35,7 +36,6 @@ final class LidSensor: LidReading {
 
     func read() -> Double? {
         guard let device else { return nil }
-        var report = [UInt8](repeating: 0, count: 8)
         var length = report.count
         let result = IOHIDDeviceGetReport(device, kIOHIDReportTypeFeature, 1, &report, &length)
         guard result == kIOReturnSuccess, length >= 3 else { return nil }

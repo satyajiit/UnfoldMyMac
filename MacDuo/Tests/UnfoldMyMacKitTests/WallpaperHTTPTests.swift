@@ -33,3 +33,19 @@ private final class WallpaperMockURLProtocol: URLProtocol, @unchecked Sendable {
         try WallpaperHTTPProvider(id: "build", request: URLRequest(url: URL(string: "http://example.com")!))
     }
 }
+
+// P14: bodies stream into a bounded buffer; anything over the limit is rejected, never accumulated.
+@Test func httpBodyReaderRejectsBodiesOverTheLimit() async throws {
+    let configuration = URLSessionConfiguration.ephemeral
+    configuration.protocolClasses = [WallpaperMockURLProtocol.self]
+    let session = URLSession(configuration: configuration)
+    defer { session.invalidateAndCancel() }
+    let reader = HTTPBodyReader(session: session)
+    let fresh = try await reader.body(for: URLRequest(url: URL(string: "https://wallpaper.test/fresh")!), limit: 65_536)
+    #expect(fresh.response.statusCode == 200 && !fresh.data.isEmpty)
+    await #expect(throws: WallpaperError.invalidData) {
+        try await reader.body(for: URLRequest(url: URL(string: "https://wallpaper.test/oversized")!), limit: 65_536)
+    }
+    #expect(HTTPBodyReader().session === HTTPBodyReader.ephemeralSession)
+    #expect(HTTPBodyReader.ephemeralSession !== URLSession.shared)
+}

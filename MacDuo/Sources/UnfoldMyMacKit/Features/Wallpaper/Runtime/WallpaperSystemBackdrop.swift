@@ -1,5 +1,4 @@
 import AppKit
-import CryptoKit
 import UnfoldMyMacCore
 
 /// Supplies the system wallpaper sampler with scene colors, outside the animation loop.
@@ -17,7 +16,9 @@ import UnfoldMyMacCore
     private let access: any WallpaperDesktopImageAccess
     private let directory: URL
     private var journal: Journal?
-    private var applied: [String: (pipeline: WallpaperPipeline, size: CGSize, url: URL, previous: URL)] = [:]
+    private struct Applied { let templateID: String; let imageURL: URL?; let size: CGSize; let url: URL; let previous: URL }
+    /// Identity only: holding the pipeline itself would keep its GPU resources alive after a template switch.
+    private var applied: [String: Applied] = [:]
 
     init(access: any WallpaperDesktopImageAccess = SystemWallpaperDesktopImages(),
          directory: URL = WallpaperPaths.root.appendingPathComponent("SystemBackdrop", isDirectory: true)) {
@@ -29,17 +30,17 @@ import UnfoldMyMacCore
             guard let current = access.current(on: screen.id) else {
                 throw WallpaperError.unavailable("The current system wallpaper could not be saved for restoration.")
             }
-            if let cached = applied[screen.id], cached.pipeline === pipeline,
+            if let cached = applied[screen.id], cached.templateID == pipeline.template.id, cached.imageURL == pipeline.imageURL,
                cached.size == screen.size, cached.url == current.url { continue }
             let previous = journal?.records[current.url.path]
             let original = previous.flatMap { $0.display == screen.id ? $0.original : nil } ?? current
             let image = try WallpaperThumbnailRenderer.image(pipeline: pipeline, size: screen.size)
             guard let tiff = image.tiffRepresentation, let bitmap = NSBitmapImageRep(data: tiff),
-                  let png = bitmap.representation(using: .png, properties: [:]) else { throw CocoaError(.coderInvalidValue) }
+                  let png = bitmap.representation(using: .png, properties: [:]) else { throw WallpaperError.unavailable("The desktop still could not be encoded.") }
             let encoder = JSONEncoder(); encoder.outputFormatting = .sortedKeys
             var signature = png
             signature.append(try encoder.encode(original)); signature.append(Data(screen.id.utf8))
-            let filename = SHA256.hash(data: signature).map { String(format: "%02x", $0) }.joined() + ".png"
+            let filename = RecordStore.digest(signature) + ".png"
             let url = directory.appendingPathComponent(filename)
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             if !FileManager.default.fileExists(atPath: url.path) { try png.write(to: url, options: .atomic) }
@@ -48,7 +49,7 @@ import UnfoldMyMacCore
             // Save the restoration record BEFORE changing any system preference.
             try saveJournal()
             try access.set(installed, on: screen.id)
-            applied[screen.id] = (pipeline, screen.size, url, current.url)
+            applied[screen.id] = Applied(templateID: pipeline.template.id, imageURL: pipeline.imageURL, size: screen.size, url: url, previous: current.url)
         }
     }
     func restore() throws {
@@ -74,7 +75,7 @@ import UnfoldMyMacCore
         let url = directory.appendingPathComponent("restoration.json")
         guard FileManager.default.fileExists(atPath: url.path) else { journal = Journal(); return }
         let decoded = try JSONDecoder().decode(Journal.self, from: Data(contentsOf: url))
-        guard decoded.version == 1 else { throw CocoaError(.coderReadCorrupt) }
+        guard decoded.version == 1 else { throw WallpaperError.invalidData }
         journal = decoded
     }
     private func saveJournal() throws {

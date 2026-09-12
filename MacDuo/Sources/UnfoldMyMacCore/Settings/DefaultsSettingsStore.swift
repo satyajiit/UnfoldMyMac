@@ -12,17 +12,24 @@ import Foundation
         }
         if let data = defaults.data(forKey: Self.legacyKey), var value = try? JSONDecoder().decode(UnfoldMyMacSettings.self, from: data) {
             value.sanitize()
-            save(value)
+            if write(value) { removeLegacyKeys() }
             return value
         }
         var value = UnfoldMyMacSettings()
         if let activation = defaults.object(forKey: "activation") as? Double { value.activation = activation }
         if let raw = defaults.object(forKey: "style") as? Int { value.effect = raw == 2 ? .veil : .frost }
         value.sanitize()
-        save(value)
+        if write(value) { removeLegacyKeys() }
         return value
     }
-    public func save(_ settings: UnfoldMyMacSettings) {
-        if let data = try? JSONEncoder().encode(settings) { defaults.set(data, forKey: Self.key) }
+    public func save(_ settings: UnfoldMyMacSettings) { write(settings) }
+    @discardableResult private func write(_ settings: UnfoldMyMacSettings) -> Bool {
+        guard let data = try? JSONEncoder().encode(settings) else { return false }
+        defaults.set(data, forKey: Self.key)
+        return true
+    }
+    /// Once the current key holds the migrated value, the pre-rename keys only invite confusion.
+    private func removeLegacyKeys() {
+        for key in [Self.legacyKey, "activation", "style"] { defaults.removeObject(forKey: key) }
     }
 }

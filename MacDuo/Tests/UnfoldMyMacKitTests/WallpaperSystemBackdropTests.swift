@@ -125,3 +125,22 @@ import Testing
     try #require((metadata.numbers["codex.tokens"] ?? 0) > 0)
     print("Native wallpaper apply/restore and nonzero local Codex metadata verified.")
 }
+
+// W4: the backdrop remembers what it installed by identity, never by holding the pipeline.
+@Test @MainActor func systemBackdropDoesNotRetainPipelines() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let access = FakeDesktopImages()
+    let catalog = try WallpaperShaderCatalog()
+    let template = try #require(WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false).templates.first)
+    let backdrop = WallpaperSystemBackdrop(access: access, directory: root)
+    weak var released: WallpaperPipeline?
+    try {
+        let pipeline = try WallpaperPipeline(template: template, catalog: catalog)
+        released = pipeline
+        try backdrop.apply(pipeline)
+    }()
+    #expect(released == nil)
+    try backdrop.apply(WallpaperPipeline(template: template, catalog: catalog))
+    #expect(access.writes == 1, "An equivalent pipeline for the same template is recognised without re-rendering")
+}

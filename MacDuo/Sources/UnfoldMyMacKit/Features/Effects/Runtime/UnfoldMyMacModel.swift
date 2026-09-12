@@ -55,6 +55,7 @@ import UnfoldMyMacCore
     @ObservationIgnored private var safety = DisplaySafetyGate()
     @ObservationIgnored private var lastReading = -Double.infinity
     @ObservationIgnored private var lastReconnect = -Double.infinity
+    @ObservationIgnored private var reconnectDelay = EffectTuning.sensorReconnectDelay
     @ObservationIgnored private var lastUIUpdate = -Double.infinity
     @ObservationIgnored private var playSeconds = 0.0
     @ObservationIgnored private var previousEnabled = false
@@ -69,6 +70,9 @@ import UnfoldMyMacCore
         var loaded = store.load()
         loaded.sanitize()
         loaded.effect = registry.entry(for: loaded.effect).descriptor.id
+        // Parameters for effects that no longer exist are dropped, unless the artwork index failed to load
+        // and their owners may come back once it is repaired.
+        if artworkLibrary?.loadError == nil, loaded.reconcile(effects: registry.descriptors.map(\.id)) { store.save(loaded) }
         settings = loaded
         super.init()
         session.onError = { [weak self] error in self?.failed(error) }
@@ -103,7 +107,12 @@ import UnfoldMyMacCore
         NotificationCenter.default.removeObserver(self)
     }
     func setEnabled(_ value: Bool) {
-        if !value && isPreviewing { previousEnabled = false; stopPreview() }
+        if isPreviewing {
+            // The preview keeps the effect running; the choice applies once the preview ends.
+            previousEnabled = value
+            guard !value else { onStatusChanged?(); return }
+            stopPreview()
+        }
         enabled = value; errorMessage = nil; needsPermission = false
         if !value { session.stop(); stopLink(); status = "Off" }
         else { safety.reset(); tick() }
@@ -226,18 +235,27 @@ import UnfoldMyMacCore
     }
     private func failed(_ error: Error) {
         let requestedCapture = needsCapture
-        if isPreviewing { previousEnabled = false; stopPreview() }
-        enabled = false; stopLink()
+        // Only a failure of the chosen effect turns effects off. A failed card preview ends the preview
+        // and lets the chosen effect resume with the user's enabled state intact.
+        let chosenFailed = !isPreviewing || previewEffectID == settings.effect
+        if isPreviewing {
+            if chosenFailed { previousEnabled = false }
+            stopPreview()
+        }
+        if chosenFailed { enabled = false; session.stop(); stopLink() }
         needsPermission = requestedCapture && !CGPreflightScreenCaptureAccess()
         errorMessage = needsPermission ? "Allow \(AppIdentity.name) in System Settings → Privacy & Security → Screen Recording, then enable Frost again." : error.localizedDescription
-        status = needsPermission ? "Screen Recording needed" : "Effect unavailable"
+        if chosenFailed { status = needsPermission ? "Screen Recording needed" : "Effect unavailable" }
         onStatusChanged?()
     }
     private func readLid(now: TimeInterval) {
         if let angle = sensor.read() {
-            lidAngle = angle; lastReading = now
-        } else if now - lastReconnect > 2 {
-            lastReconnect = now; sensor = makeSensor()
+            lidAngle = angle; lastReading = now; reconnectDelay = EffectTuning.sensorReconnectDelay
+        } else if now - lastReconnect >= reconnectDelay {
+            // Rebuilding the HID manager is expensive; back off instead of retrying every two seconds forever.
+            lastReconnect = now
+            reconnectDelay = min(EffectTuning.sensorReconnectCeiling, reconnectDelay * 2)
+            sensor = makeSensor()
         }
         sensorAvailable = now - lastReading <= 1
         if !sensorAvailable { lidAngle = nil }
@@ -309,7 +327,10 @@ import UnfoldMyMacCore
         if isPreviewing { stopPreview() }
         session.stop(); stopLink(); safety.reset(); status = enabled ? "Paused · sleeping" : "Off"
     }
-    @objc private func wake() { suspended = false; lastReading = -.infinity; sensor = makeSensor(); safety.reset() }
+    @objc private func wake() {
+        suspended = false; lastReading = -.infinity; reconnectDelay = EffectTuning.sensorReconnectDelay
+        sensor = makeSensor(); safety.reset()
+    }
     @objc private func displaysChanged() { session.stop(); stopLink(); safety.reset(); tick() }
     @objc private func accessibilityChanged() {
         let workspace = NSWorkspace.shared

@@ -14,3 +14,10 @@ extension Trait where Self == ConditionTrait {
         .enabled(if: ProcessInfo.processInfo.environment["CI"] != "true", "GPU/window tests run on physical Macs")
     }
 }
+
+extension Trait where Self == ConditionTrait {
+    /// Creates real panels or windows; needs a logged-in window server session.
+    static var requiresWindowServer: Self {
+        .enabled(if: ProcessInfo.processInfo.environment["CI"] != "true", "Window tests run on physical Macs")
+    }
+}

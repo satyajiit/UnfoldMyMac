@@ -6,6 +6,7 @@ actor WallpaperJSONProvider: WallpaperDataProvider {
     nonisolated let id = "tool"
     nonisolated let interval: TimeInterval = 1
     private let url: URL
+    nonisolated var fingerprint: String { url.path }
     init(url: URL) { self.url = url }
     func sample(at date: Date) async throws -> WallpaperDataSample {
         let handle = try FileHandle(forReadingFrom: url)

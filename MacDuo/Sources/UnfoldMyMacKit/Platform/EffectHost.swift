@@ -24,6 +24,8 @@ private final class EffectPanel: NSPanel {
         panel.setFrame(screen.frame, display: false)
         panel.contentView = view
     }
+    var isVisible: Bool { panel.isVisible }
     func show() { if !panel.isVisible { panel.orderFrontRegardless() } }
-    func hide() { panel.orderOut(nil) }
+    /// Called every frame the effect is clear; ordering out an already hidden panel would touch the window server each time.
+    func hide() { if panel.isVisible { panel.orderOut(nil) } }
 }

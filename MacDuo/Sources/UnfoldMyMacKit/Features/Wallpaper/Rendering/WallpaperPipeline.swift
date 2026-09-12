@@ -13,12 +13,14 @@ private struct WallpaperUniforms {
 @MainActor final class WallpaperPipeline {
     let catalog: WallpaperShaderCatalog
     let template: WallpaperTemplate
+    /// The personal background this pipeline was built with, if any; part of its identity for caches.
+    let imageURL: URL?
     private let pipeline: MTLRenderPipelineState
     private let texture: MTLTexture
     private let emblem: WallpaperEmblemPipeline?
     private let gridTexture: WallpaperGridTexture
     init(template: WallpaperTemplate, catalog: WallpaperShaderCatalog, imageURL: URL? = nil) throws {
-        self.catalog = catalog; self.template = template
+        self.catalog = catalog; self.template = template; self.imageURL = imageURL
         gridTexture = try WallpaperGridTexture(device: catalog.gpu)
         pipeline = try catalog.pipeline(for: template.shader)
         emblem = try template.emblem.map { try WallpaperEmblemPipeline(placement: $0, catalog: catalog) }

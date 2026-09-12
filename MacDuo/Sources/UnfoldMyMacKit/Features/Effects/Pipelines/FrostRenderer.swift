@@ -41,8 +41,10 @@ private final class GPUFrame: @unchecked Sendable {
         (metalView.layer as? CAMetalLayer)?.colorspace = CGColorSpace(name: CGColorSpace.sRGB)
     }
     func prepare(size: CGSize, scale: CGFloat) {
+        let drawableSize = CGSize(width: size.width * scale, height: size.height * scale)
+        if drawableSize != metalView.drawableSize { releaseCapturedTextures() }
         metalView.frame = CGRect(origin: .zero, size: size)
-        metalView.drawableSize = CGSize(width: size.width * scale, height: size.height * scale)
+        metalView.drawableSize = drawableSize
     }
     func receive(_ frame: DesktopFrame) {
         guard let cache else { return }
@@ -54,7 +56,13 @@ private final class GPUFrame: @unchecked Sendable {
         self.frame = GPUFrame(frame: frame, wrapped: wrapped, texture: texture)
     }
     func update(_ context: EffectContext) { self.context = context; metalView.draw() }
-    func stop() { frame = nil; metalView.removeFromSuperview() }
+    func stop() { releaseCapturedTextures(); metalView.removeFromSuperview() }
+    /// Wrapped capture textures and mip chains are sized to the display; drop them whenever that changes or the effect stops.
+    private func releaseCapturedTextures() {
+        frame = nil
+        mips = [MTLTexture?](repeating: nil, count: GPUTuning.maximumFramesInFlight)
+        if let cache { CVMetalTextureCacheFlush(cache, 0) }
+    }
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
     func draw(in view: MTKView) {
         guard let frame, let slot = busy.firstIndex(of: false) else { skippedFrames += 1; return }
