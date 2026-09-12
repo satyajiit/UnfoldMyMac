@@ -22,6 +22,13 @@ import UnfoldMyMacCore
         super.init()
     }
     public func applicationDidFinishLaunching(_ notification: Notification) {
+        let launchStart = ContinuousClock.now
+        defer {
+            if ProcessInfo.processInfo.environment["UNFOLDMYMAC_LAUNCH_TIMING"] == "1" {
+                let elapsed = launchStart.duration(to: .now)
+                print("LAUNCH applicationDidFinishLaunching→showWindow: \(elapsed)"); fflush(nil)
+            }
+        }
         UnfoldMyMacType.register()
         if let logo = BrandAssets.logo { NSApp.applicationIconImage = logo }
         installMenu()
