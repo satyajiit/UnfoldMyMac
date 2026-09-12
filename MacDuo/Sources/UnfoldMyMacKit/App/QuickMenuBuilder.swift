@@ -17,6 +17,8 @@ enum QuickMenuBuilder {
         items.append(.action("Open \(AppIdentity.name)…", .openApp))
         items.append(.action("Settings…", .showSettings))
         items.append(.separator)
+        items.append(.action("Star \(AppIdentity.name) on GitHub", .starRepository))
+        items.append(.separator)
         items.append(.action("Quit \(AppIdentity.name)", .quit))
         return QuickMenu(items: items)
     }

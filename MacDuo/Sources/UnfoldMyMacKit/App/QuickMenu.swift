@@ -3,7 +3,7 @@ import UnfoldMyMacCore
 /// The menu-bar menu as a value, so its contents can be tested without AppKit.
 struct QuickMenu: Equatable, Sendable {
     enum Action: Equatable, Sendable {
-        case toggleEffect, selectEffect(EffectID), stopPreview, showWallpaper, stopWallpaper, openApp, showSettings, quit
+        case toggleEffect, selectEffect(EffectID), stopPreview, showWallpaper, stopWallpaper, openApp, showSettings, starRepository, quit
     }
     indirect enum Item: Equatable, Sendable {
         case label(String)

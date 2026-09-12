@@ -27,7 +27,7 @@ import UnfoldMyMacCore
         }
         self.effects = effects; self.wallpaper = wallpaper; self.shell = shell; self.window = window
         menu = MainMenuController(showSettings: { shell.show(.settings); window.show() })
-        statusMenu = StatusMenuController(effects: effects, wallpaper: wallpaper, shell: shell, window: window)
+        statusMenu = StatusMenuController(effects: effects, wallpaper: wallpaper, shell: shell, window: window, workspace: dependencies.workspace)
         previewPanel = PreviewPanelController(model: effects, displays: dependencies.displays)
         appearance = AppearanceController(model: effects)
         super.init()

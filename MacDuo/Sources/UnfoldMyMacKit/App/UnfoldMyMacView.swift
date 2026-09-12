@@ -31,18 +31,22 @@ struct UnfoldMyMacView: View {
                 .padding(.horizontal, 20).padding(.vertical, 16)
             }
             .safeAreaInset(edge: .bottom, spacing: 0) {
-                Button { shell.show(.settings) } label: {
-                    Label("Settings", icon: .appSettings)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 12).padding(.vertical, 10)
-                        .contentShape(.rect(cornerRadius: 8))
+                VStack(alignment: .leading, spacing: 0) {
+                    Divider().padding(.horizontal, 12).padding(.bottom, 4)
+                    SidebarSupport()
+                    Button { shell.show(.settings) } label: {
+                        Label("Settings", icon: .appSettings)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 12).padding(.vertical, 10)
+                            .contentShape(.rect(cornerRadius: 8))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(palette.ink)
+                    .background(shell.route == .settings ? palette.ink.opacity(0.1) : .clear, in: .rect(cornerRadius: 8))
+                    .accessibilityAddTraits(shell.route == .settings ? [.isSelected] : [])
+                    .accessibilityIdentifier("route.settings")
                 }
-                .buttonStyle(.plain)
-                .foregroundStyle(palette.ink)
-                .background(shell.route == .settings ? palette.ink.opacity(0.1) : .clear, in: .rect(cornerRadius: 8))
-                .accessibilityAddTraits(shell.route == .settings ? [.isSelected] : [])
-                .accessibilityIdentifier("route.settings")
-                .padding(12)
+                .padding(.horizontal, 12).padding(.bottom, 12)
             }
             .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 240)
         } detail: {

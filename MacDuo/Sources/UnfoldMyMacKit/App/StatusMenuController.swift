@@ -9,11 +9,14 @@ import UnfoldMyMacCore
     private let wallpaper: WallpaperModel
     private let shell: AppShellModel
     private let window: MainWindowController
+    private let workspace: any WorkspaceOpening
     private var item: NSStatusItem?
     private var observation: Task<Void, Never>?
 
-    init(effects: EffectsModel, wallpaper: WallpaperModel, shell: AppShellModel, window: MainWindowController) {
+    init(effects: EffectsModel, wallpaper: WallpaperModel, shell: AppShellModel, window: MainWindowController,
+         workspace: any WorkspaceOpening) {
         self.effects = effects; self.wallpaper = wallpaper; self.shell = shell; self.window = window
+        self.workspace = workspace
     }
     func install() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -70,6 +73,7 @@ import UnfoldMyMacCore
         case .stopWallpaper: wallpaper.stopWallpaper()
         case .openApp: window.show()
         case .showSettings: shell.show(.settings); window.show()
+        case .starRepository: if let url = URL(string: AppIdentity.repository) { workspace.open(url) }
         case .quit: NSApp.terminate(nil)
         }
     }

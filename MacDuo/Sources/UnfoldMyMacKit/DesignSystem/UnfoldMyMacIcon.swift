@@ -28,6 +28,11 @@ enum UnfoldMyMacIcon: String, CaseIterable {
     case privacy = "lock.shield"
     case warning = "exclamationmark.circle"
     case accessibility = "accessibility"
+    case star = "star"
+    case contribute = "arrow.triangle.branch"
+    case reportIssue = "exclamationmark.bubble"
+    case website = "globe"
+    case externalLink = "arrow.up.right"
 }
 
 extension Label where Title == Text, Icon == Image {

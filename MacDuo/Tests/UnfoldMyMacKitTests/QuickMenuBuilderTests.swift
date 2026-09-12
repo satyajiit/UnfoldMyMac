@@ -2,7 +2,7 @@ import Testing
 import UnfoldMyMacCore
 @testable import UnfoldMyMacKit
 
-@Test @MainActor func quickMenuReflectsEffectPreviewAndWallpaperState() {
+@Test @MainActor func quickMenuReflectsEffectPreviewAndWallpaperState() throws {
     let effects = EffectRegistry.builtIn().descriptors
     let category = effects[0].category
     let subset = effects.filter { $0.category == category }
@@ -17,6 +17,13 @@ import UnfoldMyMacCore
     #expect(submenus.first?.1 == subset.map { .action($0.title, .selectEffect($0.id), checked: $0.id == subset[0].id) })
     #expect(!menu.items.contains(.action("Stop Preview", .stopPreview)) && !menu.items.contains(.action("Stop Wallpaper", .stopWallpaper)))
     #expect(menu.items.contains(.action("Wallpaper…", .showWallpaper)) && menu.items.contains(.action("Settings…", .showSettings)))
+    // The open-source ask sits between Settings and Quit, so it is visible without being the
+    // thing your cursor lands on when you reach for Quit.
+    let star = QuickMenu.Item.action("Star \(AppIdentity.name) on GitHub", .starRepository)
+    let starIndex = try #require(menu.items.firstIndex(of: star))
+    let settingsIndex = try #require(menu.items.firstIndex(of: .action("Settings…", .showSettings)))
+    let quitIndex = try #require(menu.items.firstIndex(of: .action("Quit \(AppIdentity.name)", .quit)))
+    #expect(settingsIndex < starIndex && starIndex < quitIndex)
     #expect(menu.items.last == .action("Quit \(AppIdentity.name)", .quit))
     state.effectEnabled = true; state.isPreviewing = true; state.wallpaperEnabled = true
     let live = QuickMenuBuilder.menu(for: state)

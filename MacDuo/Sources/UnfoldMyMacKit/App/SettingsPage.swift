@@ -5,6 +5,7 @@ import UnfoldMyMacCore
 struct SettingsPage: View {
     @Bindable var model: EffectsModel
     @Environment(\.appInfo) private var appInfo
+    @Environment(\.workspace) private var workspace
     var body: some View {
         FeaturePage(title: "Settings") {
             PageHeading(title: "Settings", subtitle: "Make \(AppIdentity.name) feel at home on your Mac.")
@@ -55,7 +56,25 @@ struct SettingsPage: View {
                 }
                 Text("Closing the window keeps the app in your Dock and menu bar. Click its Dock icon to reopen it, or choose Quit from the app menu to exit.")
                     .font(UnfoldMyMacType.callout).modifier(SecondaryTextStyle()).fixedSize(horizontal: false, vertical: true)
+                Divider()
+                Text("\(AppIdentity.name) is free and open source under Apache-2.0. Stars and bug reports both help.")
+                    .font(UnfoldMyMacType.callout).modifier(SecondaryTextStyle()).fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: 8) {
+                    link("Star on GitHub", icon: .star, to: AppIdentity.repository, id: "about.star")
+                    link("Contribute", icon: .contribute, to: AppIdentity.contributing, id: "about.contribute")
+                    link("Report a bug", icon: .reportIssue, to: AppIdentity.newIssue, id: "about.report")
+                    link("Website", icon: .website, to: AppIdentity.website, id: "about.website")
+                }
             }
         }
+    }
+
+    private func link(_ title: String, icon: UnfoldMyMacIcon, to address: String, id: String) -> some View {
+        Button { if let url = URL(string: address) { workspace.open(url) } } label: {
+            Label(title, icon: icon).font(UnfoldMyMacType.callout)
+        }
+        .buttonStyle(.link)
+        .accessibilityIdentifier(id)
+        .accessibilityLabel("\(title). Opens in your browser.")
     }
 }
