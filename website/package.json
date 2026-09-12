@@ -16,7 +16,8 @@
     "test:browser": "node node_modules/@playwright/test/cli.js test",
     "check:release": "node --import tsx scripts/check-release.ts",
     "prepare:assets": "node --import tsx scripts/prepare-assets.ts",
-    "prepare:media": "bash scripts/render-media.sh && node --import tsx scripts/finish-media.ts"
+    "prepare:media": "bash scripts/render-media.sh && node --import tsx scripts/finish-media.ts",
+    "films:youtube": "node --import tsx scripts/set-film-youtube.ts"
   },
   "dependencies": {
     "@mdx-js/mdx": "3.1.1",
@@ -43,6 +44,7 @@
     "@types/react-dom": "19.3.0",
     "@typescript/native": "npm:typescript@7.0.2",
     "cheerio": "1.2.0",
+    "esbuild": "0.28.2",
     "eslint": "10.10.0",
     "eslint-config-next": "16.3.5",
     "sharp": "0.35.4",

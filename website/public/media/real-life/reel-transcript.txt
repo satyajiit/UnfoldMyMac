@@ -1,0 +1,30 @@
+UnfoldMyMac — Watch the lid
+Full transcript · 2 min 30 sec
+
+00:00:00.850  It started with the iPhone Duo. Watch what happens when it opens.
+
+00:00:06.700  That gave me an idea. Unfold My Mac is an app that makes your desktop react when you move your MacBook's lid.
+
+00:00:16.750  Lower the lid, and your desktop blurs. Lift it, and everything comes back. Stop halfway, and the effect stops with you.
+
+00:00:28.750  It also adds animated wallpapers. Little scenes that keep moving behind your windows while you work.
+
+00:00:36.300  I started with one effect. Then came curtains, peeking characters, and a whole collection to choose from.
+
+00:00:45.200  There are twenty-three templates in here now. Pick one. Change it whenever you feel like it.
+
+00:00:55.400  Thirteen lid effects. Curtains, Peekaboo, Frost, Tab Goblin. They're all driven by the same movement: your hand on the lid.
+
+00:01:09.400  Ten live wallpapers. A race circuit, a coding factory, a city built from your GitHub profile. Even an aurora forecast.
+
+00:01:23.300  Close the lid and Claude takes over your screen. Open it, and you're back to work.
+
+00:01:30.983  Frost blurs the desktop as the lid comes down. Stop halfway and the blur stops there too.
+
+00:01:43.850  Those cars are on the desktop. Lights Out turns the wallpaper into a race circuit.
+
+00:01:54.317  Local Codex sessions and token counts feed this tiny factory. Finally, somewhere to put all those tokens.
+
+00:02:09.567  Neon Coast puts the artwork behind the desktop. Lower the lid to reveal it; lift it to bring your windows back.
+
+00:02:23.750  Unfold My Mac. Download it at unfold my mac dot com.

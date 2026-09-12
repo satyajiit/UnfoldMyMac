@@ -1,45 +1,43 @@
 import { test, expect } from "@playwright/test";
+import { realLifeReel, formatFilmTime } from "../../src/lib/real-footage";
 
-test("real films are additive, opt-in, keyboard playable, seekable, and pause offscreen", async ({ page }) => {
-  const requests: string[] = [];
-  page.on("request", request => { if (request.url().includes("/media/real-life/") && request.url().endsWith(".mp4")) requests.push(request.url()); });
+test("the reel can jump directly into the all-preview chapter", async ({ page }) => {
+  await page.route("https://www.youtube-nocookie.com/**", route => route.fulfill({ contentType: "text/html", body: "<!doctype html><title>Stub player</title>" }));
+  await page.route("https://www.youtube.com/iframe_api", route => route.fulfill({ contentType: "application/javascript", body: `
+    window.YT = { Player: class {
+      constructor(frame, options) { this.options = options; queueMicrotask(() => options.events.onReady()); }
+      seekTo(time) { document.body.dataset.youtubeSeek = String(time); }
+      playVideo() { this.options.events.onStateChange({data:1}); }
+      pauseVideo() {}
+      destroy() {}
+    } };
+    window.onYouTubeIframeAPIReady();
+  ` }));
+  await page.goto("/");
+  const chapter = realLifeReel.chapters!.find(chapter => chapter.label === "The collection")!;
+  await expect(page.locator("#real-reel iframe")).toHaveCount(0);
+  await page.getByRole("button", { name: `${formatFilmTime(chapter.start)} · The collection` }).click();
+  const frame = page.locator("#real-reel iframe");
+  await expect(frame).toHaveAttribute("src", new RegExp(`/embed/${realLifeReel.youtubeId}\\?`));
+  expect(new URL((await frame.getAttribute("src"))!).searchParams.get("start")).toBe(String(Math.floor(chapter.start)));
+  await expect(page.locator("body")).toHaveAttribute("data-youtube-seek", String(chapter.start));
+  await page.getByRole("button", { name: "00:00 · How it started" }).click();
+  await expect(page.locator("body")).toHaveAttribute("data-youtube-seek", "0");
+});
+
+test("the collection carousel contains every scene, wraps, and only plays on request", async ({ page }) => {
   await page.goto("/showcase/");
-  await expect(page.locator(".real-film")).toHaveCount(6);
-  await expect(page.locator(".showcase-grid article")).toHaveCount(23);
-  expect(requests).toEqual([]);
-  const button = page.getByRole("button", { name: "Play Frost real-life video" });
-  await button.focus();
-  await button.press("Enter");
-  const video = page.locator("#real-frost video");
-  await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime)).toBeGreaterThan(0);
-  expect(await video.evaluate((element: HTMLVideoElement) => element.muted && element.controls)).toBe(true);
-  await video.evaluate((element: HTMLVideoElement) => { element.currentTime = 4; element.muted = false; });
-  await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime)).toBeGreaterThanOrEqual(4);
-  expect(await video.evaluate((element: HTMLVideoElement) => element.muted)).toBe(false);
-  await page.locator("footer").scrollIntoViewIfNeeded();
-  await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.paused)).toBe(true);
-});
-
-test("real films keep posters on failure and can retry", async ({ page }) => {
-  await page.route("**/media/real-life/reel.mp4", route => route.abort());
-  await page.goto("/");
-  await page.getByRole("button", { name: "Play Lid down. Drama up. real-life video" }).click();
-  await expect(page.locator("#real-reel [role=status]")).toContainText("couldn’t load");
-  await expect(page.locator("#real-reel img")).toBeVisible();
-  await page.unroute("**/media/real-life/reel.mp4");
-  await page.getByRole("button", { name: "Retry Lid down. Drama up. real-life video" }).click();
-  await expect.poll(() => page.locator("#real-reel video").evaluate((element: HTMLVideoElement) => element.currentTime)).toBeGreaterThan(0);
-});
-
-test("reduced motion keeps films still and changing the preference pauses playback", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
-  const video = page.locator("#real-reel video");
-  expect(await video.getAttribute("src")).toBeNull();
-  expect(await video.evaluate((element: HTMLVideoElement) => element.paused && !element.autoplay)).toBe(true);
-  await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.getByRole("button", { name: "Play Lid down. Drama up. real-life video" }).click();
-  await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.paused)).toBe(false);
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.paused)).toBe(true);
+  const carousel = page.locator("#every-preview");
+  await expect(carousel.locator(".collection-rail button")).toHaveCount(23);
+  await expect(carousel.locator("video")).not.toHaveAttribute("src");
+  await carousel.getByRole("button", { name: "Show Aurora Observatory" }).click();
+  await expect(carousel.getByRole("heading", { name: "Aurora Observatory" })).toBeVisible();
+  await expect(carousel.locator("video")).not.toHaveAttribute("src");
+  await carousel.getByRole("button", { name: "Next animation" }).click();
+  await expect(carousel.getByRole("heading", { name: "Curtains" })).toBeVisible();
+  await carousel.getByRole("button", { name: "Play Curtains collection preview" }).click();
+  await expect.poll(() => carousel.locator("video").evaluate((element: HTMLVideoElement) => element.paused)).toBe(false);
+  await carousel.getByRole("button", { name: "Next animation" }).click();
+  await expect(carousel.getByRole("heading", { name: "Peekaboo" })).toBeVisible();
+  expect(await carousel.locator("video").evaluate((element: HTMLVideoElement) => element.paused)).toBe(true);
 });

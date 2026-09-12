@@ -1,19 +1,16 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
-import { createHash } from "node:crypto";
 import path from "node:path";
 import { load } from "cheerio";
 import { catalog } from "../src/lib/catalog";
 import { realLifeClips, realLifeReel } from "../src/lib/real-footage";
+import timings from "../src/lib/film-timings.json" with { type: "json" };
 
-test("real footage exports retain the original collection and ship verified media", () => {
-  const clips = [realLifeReel, ...realLifeClips];
-  const manifest = JSON.parse(readFileSync("../videos/real-life/delivery.json", "utf8")) as {
-    id: string; file: string; sha256: string; width: number; height: number;
-    fps: string; frames: number; duration: number; bytes: number;
-  }[];
-  assert.equal(manifest.length, 6);
+const clips = [realLifeReel, ...realLifeClips];
+
+test("every film plays from YouTube and no video file ships with the site", () => {
+  assert.equal(clips.length, 6);
   const home = load(readFileSync("out/index.html", "utf8"));
   const showcase = load(readFileSync("out/showcase/index.html", "utf8"));
   assert.equal(home(".real-film").length, 1);
@@ -21,34 +18,66 @@ test("real footage exports retain the original collection and ship verified medi
   assert.equal(showcase(".showcase-grid article").length, catalog.length);
   for (const item of catalog) assert.equal(showcase(`#${item.id}`).length, 1);
   for (const clip of clips) {
-    const entry = manifest.find(entry => entry.file === clip.video)!;
-    assert.ok(entry, clip.video);
-    assert.equal(entry.width, 1920);
-    assert.equal(entry.height, 1080);
-    assert.equal(entry.fps, "60/1");
-    assert.equal(entry.frames, clip.duration * 60);
-    assert.ok(Math.abs(entry.duration - clip.duration) < 0.1);
-    const bytes = readFileSync(path.join("out", clip.video));
-    assert.equal(bytes.length, entry.bytes);
-    assert.ok(bytes.length < (clip.duration === 24 ? 15_000_000 : 6_000_000));
-    assert.equal(createHash("sha256").update(bytes).digest("hex"), entry.sha256);
-    assert.ok(existsSync(path.join("out", clip.poster)));
-    assert.equal(showcase(`#${clip.id} video`).attr("preload"), "none");
-    assert.equal(showcase(`#${clip.id} video`).attr("src"), undefined);
-    assert.equal(showcase(`#${clip.id} a[download]`).attr("href"), clip.video);
+    assert.ok(clip.youtubeId, `${clip.id} needs a YouTube upload`);
+    assert.equal(showcase(`#${clip.id}`).attr("data-provider"), "youtube");
+    // The iframe is created on Play, so the exported page must not embed one.
+    assert.equal(showcase(`#${clip.id} video, #${clip.id} iframe`).length, 0);
+    assert.equal(showcase(`#${clip.id} a[href='https://www.youtube.com/watch?v=${clip.youtubeId}']`).length, 1);
+    assert.equal(showcase(`#${clip.id} track`).length, 0);
+    assert.ok(existsSync(path.join("out", clip.poster)), clip.poster);
+    for (const file of [clip.video, clip.hdrVideo, clip.video.replace(".mp4", ".vtt")]) {
+      assert.equal(existsSync(path.join("out", file)), false, `${file} must not ship`);
+    }
   }
 });
 
-test("README posters and MP4 fallbacks exist and point to real showcase anchors", () => {
+test("three collection scenes and the website carousel include every current preview", () => {
+  const effects = catalog.filter(item => item.kind === "effect");
+  const wallpapers = catalog.filter(item => item.kind === "wallpaper");
+  assert.deepEqual([catalog.length, effects.length, wallpapers.length], [23, 13, 10]);
+  assert.equal(new Set(catalog.map(item => item.id)).size, catalog.length);
+  for (const route of ["out/index.html", "out/showcase/index.html"]) {
+    const $ = load(readFileSync(route, "utf8"));
+    assert.equal($(".collection-rail button").length, catalog.length);
+    for (const item of catalog) assert.equal($(`#collection-tab-${item.id}`).length, 1);
+    const ids = $("[id]").map((_, element) => $(element).attr("id")).get();
+    assert.equal(new Set(ids).size, ids.length, `Duplicate anchors in ${route}`);
+  }
+});
+
+test("camera films cover the original recording and the story has three chapters without subtitles", () => {
+  const recordings = Object.entries(timings.clips);
+  assert.equal(realLifeClips.length, 5);
+  assert.equal(recordings.length, 5);
+  for (const [id, recording] of recordings) {
+    const clip = realLifeClips.find(clip => clip.id === `real-${id}`)!;
+    assert.ok(clip, id);
+    assert.equal(clip.duration, recording.duration);
+    // Each clip gets a one-second transition before and after the complete recording.
+    assert.ok(Math.abs(recording.duration - recording.sourceDuration - 2) < 1 / 60, id);
+  }
+  const transcript = readFileSync("out/media/real-life/reel-transcript.txt", "utf8");
+  assert.ok(transcript.includes("iPhone Duo"));
+  assert.ok(transcript.includes("an app that makes your desktop react"));
+  assert.ok(transcript.includes("twenty-three templates"));
+  assert.deepEqual(realLifeReel.chapters?.map(chapter => chapter.label), ["How it started", "The collection", "Café recordings · 1.5×"]);
+  assert.equal(realLifeReel.duration, 149.6);
+  assert.deepEqual(realLifeReel.chapters?.map(chapter => chapter.start), [0, 44, 82]);
+  assert.ok(transcript.includes("Download it at unfold my mac dot com."));
+  assert.ok(!transcript.includes("Grab the source"));
+});
+
+test("README posters link to the uploads and to real showcase anchors", () => {
   const markdown = readFileSync("../README.md", "utf8");
   const showcase = load(readFileSync("out/showcase/index.html", "utf8"));
   assert.ok(markdown.includes("## Filmed on a real MacBook"));
-  for (const item of [realLifeReel, ...realLifeClips]) {
-    const filename = item.video.split("/").at(-1)!.replace(".mp4", ".jpg");
-    assert.ok(existsSync(`../.github/media/real-life/${filename}`));
-    assert.ok(markdown.includes(`.github/media/real-life/${filename}`));
-    assert.ok(markdown.includes(`website/public${item.video}`));
-    assert.ok(markdown.includes(`/showcase/#${item.id}`));
-    assert.equal(showcase(`#${item.id}`).length, 1);
+  assert.ok(!/website\/public\/media\/real-life\/[\w-]+\.mp4/.test(markdown), "No links to deleted video files");
+  for (const clip of clips) {
+    const filename = `${clip.id.replace(/^real-/, "")}.jpg`;
+    assert.ok(existsSync(`../.github/media/real-life/${filename}`), filename);
+    assert.ok(markdown.includes(`.github/media/real-life/${filename}`), filename);
+    assert.ok(markdown.includes(clip.youtubeId!), clip.id);
+    assert.ok(markdown.includes(`/showcase/#${clip.id}`), clip.id);
+    assert.equal(showcase(`#${clip.id}`).length, 1);
   }
 });

@@ -1,0 +1,41 @@
+{
+  "reel": {
+    "duration": 149.6,
+    "chapters": [
+      {
+        "label": "How it started",
+        "start": 0
+      },
+      {
+        "label": "The collection",
+        "start": 44
+      },
+      {
+        "label": "Café recordings · 1.5×",
+        "start": 82
+      }
+    ]
+  },
+  "clips": {
+    "lights-out": {
+      "duration": 14.7,
+      "sourceDuration": 12.693104
+    },
+    "codex-foundry": {
+      "duration": 21.866666666666667,
+      "sourceDuration": 19.861021
+    },
+    "claude-has-notes": {
+      "duration": 10.516666666666667,
+      "sourceDuration": 8.511875
+    },
+    "frost": {
+      "duration": 18.3,
+      "sourceDuration": 16.298417
+    },
+    "neon-coast": {
+      "duration": 20.5,
+      "sourceDuration": 18.495708
+    }
+  }
+}

@@ -12,6 +12,6 @@ export function RealLifeSection({ collection = false }: { collection?: boolean }
     </div>{!collection && <Link className="text-link" href="/showcase/#in-real-life">Watch all five clips <ArrowUpRight size={17} aria-hidden="true" /></Link>}</div>
     <RealFootagePlayer item={realLifeReel} featured />
     {collection && <div className="real-life-grid">{realLifeClips.map(item => <RealFootagePlayer key={item.id} item={item} />)}</div>}
-    <p className="real-life-note">Sound is optional. These films start muted; turn it on for the original soundtrack.</p>
+    <p className="real-life-note">The full film plays the complete recordings at 1.5×. Individual clips play at their original speed. Press play for sound; HDR is available on compatible screens.</p>
   </section>;
 }
