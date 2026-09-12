@@ -1,0 +1,59 @@
+---
+title: "What your wallpaper knows"
+description: "A practical guide to local activity, Mac metrics, public GitHub data, NOAA forecasts, and the connections you choose."
+author: "Matterward Labs"
+date: "2026-09-12"
+image: "/media/codex-mission-control.webp"
+topic: "Data connections"
+---
+A wallpaper can show coding activity without pretending to know what you are working on. In UnfoldMyMac, data connections provide specific inputs: Mac metrics, local session metadata, lifecycle events, public GitHub data, NOAA space weather, or your own snapshots.
+
+Personal data connections are optional and live in **Data & settings**. Choose a scene first, then connect the input you want it to use. The [README’s data section](https://github.com/satyajiit/UnfoldMyMac#living-wallpapers) describes the available sources.
+
+## Mac metrics come from your Mac
+
+Pulse can respond to CPU load, memory estimates, and battery information. These values give the scene something to react to. Treat the memory figure as an estimate, as the app documentation does, rather than substituting it for a diagnostic tool.
+
+## Local coding activity needs an explicit connection
+
+Claude and Codex sources read activity metadata from local files. Lifecycle connections require their own hook setup so a scene can respond to states such as working, waiting for approval, and finished.
+
+Codex Mission Control uses those states to animate its robot. That is different from a static session counter: the hook says something happened, and the scene responds. Start with the app’s setup flow rather than copying a command from an unrelated tutorial; hook integrations can change as the connected tools evolve.
+
+The relevant implementation is available in the [wallpaper data sources](https://github.com/satyajiit/UnfoldMyMac/tree/main/MacDuo/Sources/UnfoldMyMacKit/Wallpaper/Data).
+
+## GitHub uses public information
+
+Connect a GitHub username to use public repositories, followers, and recent public events. GitHub After Hours turns that profile into a small city. This connection makes network requests for profile data and avatars; it is not an offline source.
+
+Public events are not a complete record of someone’s work. Private activity is outside this connection, and API availability affects the data a wallpaper can obtain. See [GitHub’s public events API documentation](https://docs.github.com/en/rest/activity/events) for the service’s behavior.
+
+## Aurora Observatory reads public space weather
+
+Previewing or running Aurora Observatory fetches NOAA's public OVATION aurora forecast and planetary Kp readings. No account or personal data connection is needed. The app shares a five-minute cache across the preview and desktop views, and labels cached or stale readings when a feed is unavailable. The [NOAA provider](https://github.com/satyajiit/UnfoldMyMac/blob/main/MacDuo/Sources/UnfoldMyMacKit/Wallpaper/Data/AuroraWallpaperProvider.swift) defines those states.
+
+The auroral curtains are an artistic interpretation of the [NOAA forecast](https://www.swpc.noaa.gov/products/aurora-30-minute-forecast), drawn around bundled NASA Earth Observatory imagery. This website plays a recording with a synthetic forecast and a sample Kp reading; it does not fetch live NOAA data.
+
+## The GTA VI countdown uses your calendar
+
+GTA VI — Vice City Countdown calculates the remaining calendar days in your time zone from the release date bundled with the template. It does not contact Rockstar to update that date or require an account. The [countdown implementation](https://github.com/satyajiit/UnfoldMyMac/blob/main/MacDuo/Sources/UnfoldMyMacCore/Wallpaper/WallpaperCountdown.swift) handles the date locally; [Rockstar's site](https://www.rockstargames.com/VI) is the source for the current release announcement. The website recording freezes the calendar at September 12, 2026.
+
+## Custom data goes where you configure it
+
+Local JSON and JSONL snapshots can provide your own input. A custom HTTP provider contacts its configured endpoint. Before enabling one, know who runs the endpoint and what your configuration sends to it.
+
+The app’s [extension guide](https://github.com/satyajiit/UnfoldMyMac/blob/main/MacDuo/DEVELOPING.md) is the source for implementing providers and templates.
+
+## Some numbers are part of the scene
+
+Grok’s hot takes and Lights Out’s lap counters are playful wallpaper-session counters. They are not Grok usage records or live race results. On this website, wallpaper previews use sample data throughout.
+
+You can review the app’s capture, storage, and connection behavior on the [privacy page](/privacy/), then enable only the connections you want.
+
+## Sources
+
+- [UnfoldMyMac connections and permissions](https://github.com/satyajiit/UnfoldMyMac#get-started)
+- [Wallpaper data provider implementation](https://github.com/satyajiit/UnfoldMyMac/tree/main/MacDuo/Sources/UnfoldMyMacKit/Wallpaper/Data)
+- [GitHub REST API: events](https://docs.github.com/en/rest/activity/events)
+- [Aurora forecast — NOAA Space Weather Prediction Center](https://www.swpc.noaa.gov/products/aurora-30-minute-forecast)
+- [GTA VI release information — Rockstar Games](https://www.rockstargames.com/VI)

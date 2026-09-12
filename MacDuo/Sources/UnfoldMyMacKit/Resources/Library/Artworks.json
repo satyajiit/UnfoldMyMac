@@ -1,0 +1,44 @@
+[
+  {
+    "id": "reverie", "title": "Reverie", "asset": "Reverie", "reveal": "curved",
+    "subtitle": "A little world, opening to yours.",
+    "detail": "Celestial koi circle a golden moon in a sculpted paper landscape. Two curved halves drift apart to reveal your desktop, then reunite as the lid closes.",
+    "author": "UnfoldMyMac", "credit": "", "tags": ["Illustration", "Paper Art", "Calm", "Celestial"]
+  },
+  {
+    "id": "neon-coast", "title": "Neon Coast", "asset": "NeonCoast", "reveal": "diagonal",
+    "subtitle": "Your desktop, after hours.",
+    "detail": "An illustrated coastal city at sunset. Angled panels part with cyan and pink edge light, opening onto your desktop.",
+    "author": "UnfoldMyMac", "credit": "", "tags": ["Game Art", "Illustration", "Neon", "City"]
+  },
+  {
+    "id": "rise", "title": "Rise", "asset": "Rise", "reveal": "burst",
+    "subtitle": "Make it happen.",
+    "detail": "Cobalt steps, a rising sun, and a bold reminder to get moving. A bright, sculpted split opens with an energetic sweep. Your next chapter starts here.",
+    "author": "UnfoldMyMac", "credit": "", "tags": ["Motivation", "Energetic", "Typography", "Illustration"]
+  },
+  {
+    "id": "tab-goblin", "title": "Tab Goblin", "asset": "TabGoblin", "reveal": "straight",
+    "subtitle": "Bro. Close a tab.",
+    "detail": "Your Mac has seen your browser habits. A weary little laptop, a mountain of tabs, and one reasonable request. The comic splits cleanly in two as you open the lid.",
+    "author": "UnfoldMyMac", "credit": "", "tags": ["Humor", "Mac", "Comic", "Illustration", "Typography"]
+  },
+  {
+    "id": "fcuk-it", "title": "FCUK It. Ship It.", "asset": "FCUKIt", "reveal": "diagonal",
+    "subtitle": "Less overthinking. More shipping.",
+    "detail": "An unapologetic orange-and-cobalt print with a smug laptop riding a cursor rocket. FCUK IT. SHIP IT. Angled panels pull the poster apart with a burst of attitude.",
+    "author": "UnfoldMyMac", "credit": "", "tags": ["Humor", "Mac", "Typography", "Energetic", "Illustration"]
+  },
+  {
+    "id": "codex-after-dark", "title": "Codex After Dark", "asset": "CodexAfterDark", "reveal": "diagonal",
+    "subtitle": "One more fix.",
+    "detail": "A determined little robot, an oversized wrench, and one very evasive bug. Codex's midnight workshop glows in cyan and lime as the pixel-art scene parts in two.",
+    "author": "UnfoldMyMac", "credit": "", "tags": ["Coding", "Humor", "Pixel Art", "Neon", "AI"]
+  },
+  {
+    "id": "claude-has-notes", "title": "Claude Has Notes", "asset": "ClaudeHasNotes", "reveal": "curved",
+    "subtitle": "Just one small change.",
+    "detail": "Claude has a few notes. And a few more. A calm paper creature, an amused laptop, and a spectacular mountain of revisions drift apart in a warm, sculpted paper reveal.",
+    "author": "UnfoldMyMac", "credit": "", "tags": ["Coding", "Humor", "Paper Art", "Calm", "AI"]
+  }
+]

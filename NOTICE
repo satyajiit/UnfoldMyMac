@@ -1,0 +1,35 @@
+UnfoldMyMac
+Copyright 2026 Satyajit Pradhan
+
+Created and maintained by Satyajit Pradhan.
+Matterward Labs Private Limited — https://matterwardlabs.com
+
+UnfoldMyMac is licensed under the Apache License, Version 2.0.
+See LICENSE for the full terms.
+
+Third-party materials
+---------------------
+
+Space Grotesk
+Copyright 2020 The Space Grotesk Project Authors
+https://github.com/floriankarsten/space-grotesk
+Licensed under the SIL Open Font License, Version 1.1. The full license
+ships with the fonts in Resources/Fonts/OFL.txt within the app's resource
+bundle, and at MacDuo/Sources/UnfoldMyMacKit/Resources/Fonts/OFL.txt in source.
+
+Product marks in Resources/WallpaperMarks identify the products featured
+in the wallpaper collection. They are excluded from the project's Apache
+license and remain the property of their respective owners:
+
+- Codex: OpenAI. The bundled PNG comes from the ChatGPT application's
+  icon-codex-dark-color.png resource.
+  https://openai.com/brand/
+- Grok: xAI. The bundled PNG comes from
+  https://grok.com/images/android-chrome-512x512.png
+  https://x.ai/legal/brand-guidelines
+- F1: Formula 1. The bundled SVG source is retained in
+  Resources/WallpaperMarks/Originals/F1.svg.
+  https://www.formula1.com/en/information/guidelines.4EOKE9RRqevL4niTK9kWyt
+
+Product names and marks do not imply sponsorship or endorsement of
+UnfoldMyMac by their owners. This notice grants no rights to those marks.

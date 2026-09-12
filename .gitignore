@@ -1,0 +1,105 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Packages/
+Package.pins
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+xcuserdata/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM
+*.dSYM.zip
+timeline.xctimeline
+playground.xcworkspace
+
+# Xcode / signing leftovers
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.moved-aside
+*.xccheckout
+*.xcscmblueprint
+*.xcuserstate
+*.xcuserdatad
+*.provisionprofile
+*.mobileprovision
+*.p12
+*.cer
+*.certSigningRequest
+
+# Packaged app and generated icons
+dist/
+*.app
+*.app.dSYM
+*.iconset/
+
+# Test and renderer dumps
+output/
+*.log
+
+# Local tooling
+.playwright-mcp/
+.grok/sessions/
+.grok/cache/
+.claude/settings.local.json
+.idea/
+.ripwire-map.txt
+*.swp
+*.swo
+*~
+*.tmp
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Third-party checkouts with their own history
+iphone-duo-ref/
+refs/LidSense/
+refs/LidAngleSensor/
+refs/lid-plane/
+
+# Keep the public repository focused on the app and its README.
+# Local notes remain on disk. License and third-party notices are not Markdown.
+*.md
+!/README.md
+/docs/
+/refs/
+
+# Local editor and assistant configuration
+/.cursor/
+/.grok/
+/.claude/
+/.codex/
+/.agents/
+/.mcp.json
+/.windsurfrules
+/opencode.json
+/.github/copilot-instructions.md
+.ripwire*

@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "id": "grok-horizon",
+  "title": "Grok Event Horizon",
+  "subtitle": "A black hole with absolutely no chill. Rotating hot takes and playful wallpaper-session counters.",
+  "author": "UnfoldMyMac",
+  "tags": [
+    "3D",
+    "Grok",
+    "Original logo",
+    "Humor",
+    "Rotating lines"
+  ],
+  "shader": "grok-horizon",
+  "accent": 16757344,
+  "background": 395019,
+  "reactiveMetric": "scene.energy",
+  "reactiveScale": 1,
+  "channels": [
+    {
+      "metric": "scene.remarks",
+      "scale": 10
+    },
+    {
+      "metric": "tool.value",
+      "scale": 100
+    }
+  ],
+  "emblem": {
+    "asset": "Grok",
+    "x": 0.072,
+    "y": 0.102,
+    "width": 0.074
+  },
+  "layers": [
+    {
+      "id": "name",
+      "kind": "text",
+      "content": "GROK",
+      "binding": null,
+      "format": "text",
+      "x": 0.165,
+      "y": 0.12,
+      "width": 0.35,
+      "size": 0.026,
+      "color": 16774373,
+      "rotation": 0
+    },
+    {
+      "id": "edition",
+      "kind": "text",
+      "content": "E V E N T  H O R I Z O N",
+      "binding": null,
+      "format": "text",
+      "x": 0.167,
+      "y": 0.175,
+      "width": 0.45,
+      "size": 0.009,
+      "color": 16757344,
+      "rotation": 0
+    },
+    {
+      "id": "headline",
+      "kind": "text",
+      "content": "TRUST ME.\nI'M A VORTEX.",
+      "binding": null,
+      "format": "text",
+      "x": 0.08,
+      "y": 0.39,
+      "width": 0.39,
+      "size": 0.043,
+      "color": 16774373,
+      "rotation": 0,
+      "cycleSeconds": 8,
+      "phrases": [
+        "TRUST ME.\nI'M A VORTEX.",
+        "ZERO CHILL.\nINFINITE SPACE.",
+        "HOT TAKES.\nCOLD VACUUM.",
+        "YOUR DOUBTS?\nSPAGHETTIFIED.",
+        "FACT-CHECK\nMY EVENT HORIZON.",
+        "I BEND LIGHT.\nAND THE VIBE."
+      ],
+      "height": 0.2,
+      "maxLines": 2
+    },
+    {
+      "id": "caption",
+      "kind": "text",
+      "content": "A perfectly unreasonable desktop.",
+      "binding": null,
+      "format": "text",
+      "x": 0.084,
+      "y": 0.65,
+      "width": 0.4,
+      "size": 0.013,
+      "color": 13153701,
+      "rotation": 0
+    },
+    {
+      "id": "cpu-label",
+      "kind": "text",
+      "content": "HOT TAKES DELIVERED",
+      "binding": null,
+      "format": "text",
+      "x": 0.6,
+      "y": 0.765,
+      "width": 0.18,
+      "size": 0.01,
+      "color": 13153701,
+      "rotation": 0
+    },
+    {
+      "id": "cpu",
+      "kind": "metric",
+      "content": "—",
+      "binding": "scene.remarks",
+      "format": "compact",
+      "x": 0.595,
+      "y": 0.81,
+      "width": 0.18,
+      "size": 0.036,
+      "color": 16774373,
+      "rotation": 0
+    },
+    {
+      "id": "memory-label",
+      "kind": "text",
+      "content": "MINUTES UNSUPERVISED",
+      "binding": null,
+      "format": "text",
+      "x": 0.8,
+      "y": 0.765,
+      "width": 0.17,
+      "size": 0.01,
+      "color": 13153701,
+      "rotation": 0
+    },
+    {
+      "id": "memory",
+      "kind": "metric",
+      "content": "—",
+      "binding": "scene.minutes",
+      "format": "compact",
+      "x": 0.795,
+      "y": 0.81,
+      "width": 0.17,
+      "size": 0.036,
+      "color": 16774373,
+      "rotation": 0
+    },
+    {
+      "id": "signal",
+      "kind": "text",
+      "content": "UNSUPERVISED. UNBOTHERED.",
+      "binding": "tool.status",
+      "format": "text",
+      "x": 0.084,
+      "y": 0.81,
+      "width": 0.41,
+      "size": 0.01,
+      "color": 16757344,
+      "rotation": 0
+    },
+    {
+      "id": "footer",
+      "kind": "text",
+      "content": "WALLPAPER SESSION · JUST FOR FUN",
+      "binding": "scene.scope",
+      "format": "text",
+      "x": 0.084,
+      "y": 0.915,
+      "width": 0.65,
+      "size": 0.009,
+      "color": 13153701,
+      "rotation": 0
+    }
+  ],
+  "setup": [
+    {
+      "kind": "tool-file",
+      "required": false
+    }
+  ]
+}

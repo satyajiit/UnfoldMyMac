@@ -1,0 +1,69 @@
+{
+  "zone": "unfoldmymac.com",
+  "purpose": "Desired website records; inspect and reconcile existing DNS before applying. Domain verification TXT value is issued separately by GitHub.",
+  "records": [
+    {
+      "type": "A",
+      "name": "unfoldmymac.com",
+      "content": "185.199.108.153",
+      "ttl": 1,
+      "proxied": false
+    },
+    {
+      "type": "A",
+      "name": "unfoldmymac.com",
+      "content": "185.199.109.153",
+      "ttl": 1,
+      "proxied": false
+    },
+    {
+      "type": "A",
+      "name": "unfoldmymac.com",
+      "content": "185.199.110.153",
+      "ttl": 1,
+      "proxied": false
+    },
+    {
+      "type": "A",
+      "name": "unfoldmymac.com",
+      "content": "185.199.111.153",
+      "ttl": 1,
+      "proxied": false
+    },
+    {
+      "type": "AAAA",
+      "name": "unfoldmymac.com",
+      "content": "2606:50c0:8000::153",
+      "ttl": 1,
+      "proxied": false
+    },
+    {
+      "type": "AAAA",
+      "name": "unfoldmymac.com",
+      "content": "2606:50c0:8001::153",
+      "ttl": 1,
+      "proxied": false
+    },
+    {
+      "type": "AAAA",
+      "name": "unfoldmymac.com",
+      "content": "2606:50c0:8002::153",
+      "ttl": 1,
+      "proxied": false
+    },
+    {
+      "type": "AAAA",
+      "name": "unfoldmymac.com",
+      "content": "2606:50c0:8003::153",
+      "ttl": 1,
+      "proxied": false
+    },
+    {
+      "type": "CNAME",
+      "name": "www.unfoldmymac.com",
+      "content": "satyajiit.github.io",
+      "ttl": 1,
+      "proxied": false
+    }
+  ]
+}

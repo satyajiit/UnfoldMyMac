@@ -1,0 +1,11 @@
+{
+  "status": "pending",
+  "version": null,
+  "tag": null,
+  "assetUrl": null,
+  "sha256": null,
+  "architectures": [],
+  "minimumMacOS": "26",
+  "signing": "unverified",
+  "verifiedAt": null
+}

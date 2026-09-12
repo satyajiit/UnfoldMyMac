@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleExecutable</key>
+	<string>UnfoldMyMac</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.unfoldmymac</string>
+	<key>CFBundleName</key>
+	<string>UnfoldMyMac</string>
+	<key>CFBundleDisplayName</key>
+	<string>UnfoldMyMac</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2026 Satyajit Pradhan. Licensed under Apache-2.0.</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>26.0</string>
+	<key>LSUIElement</key>
+	<false/>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>NSScreenCaptureUsageDescription</key>
+	<string>UnfoldMyMac uses the built-in display in memory to apply Frost. Frames are never saved or sent. Veil and Fade do not capture the screen.</string>
+	<key>CFBundleIconFile</key>
+	<string>UnfoldMyMac</string>
+</dict>
+</plist>

@@ -1,0 +1,53 @@
+{
+  "name": "unfoldmymac-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "node node_modules/next/dist/bin/next dev --hostname 127.0.0.1",
+    "build": "node node_modules/next/dist/bin/next build && node --import tsx scripts/export-content.ts",
+    "preview": "node scripts/serve.mjs",
+    "lint": "node node_modules/eslint/bin/eslint.js .",
+    "typecheck": "node node_modules/next/dist/bin/next typegen && node node_modules/@typescript/native/bin/tsc --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "test:browser": "node node_modules/@playwright/test/cli.js test",
+    "check:release": "node --import tsx scripts/check-release.ts",
+    "prepare:assets": "node --import tsx scripts/prepare-assets.ts",
+    "prepare:media": "bash scripts/render-media.sh && node --import tsx scripts/finish-media.ts"
+  },
+  "dependencies": {
+    "@mdx-js/mdx": "3.1.1",
+    "@mdx-js/react": "3.1.1",
+    "@radix-ui/react-slot": "1.3.3",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "gray-matter": "4.0.3",
+    "lucide-react": "1.45.0",
+    "next": "16.3.5",
+    "next-themes": "0.4.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tailwind-merge": "3.6.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@eslint/compat": "2.1.1",
+    "@playwright/test": "1.63.0",
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/mdx": "2.0.14",
+    "@types/node": "22.20.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@typescript/native": "npm:typescript@7.0.2",
+    "cheerio": "1.2.0",
+    "eslint": "10.10.0",
+    "eslint-config-next": "16.3.5",
+    "sharp": "0.35.4",
+    "tailwindcss": "4.3.3",
+    "tsx": "4.23.13",
+    "typescript": "npm:@typescript/typescript6@6.0.2"
+  }
+}

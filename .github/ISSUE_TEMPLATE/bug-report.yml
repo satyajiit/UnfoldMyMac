@@ -1,0 +1,32 @@
+name: Bug report
+description: Report an app, rendering, or hardware compatibility issue.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Include what you expected and which effect or wallpaper you were using.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Effects
+        2. Choose a design
+        3. …
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: Mac model and macOS version
+      placeholder: MacBook Pro 14-inch, M4, macOS 26.6
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics or images
+      description: Paste relevant output from ./script/build_and_run.sh --probe, or attach a screenshot or recording. Remove any personal information first.

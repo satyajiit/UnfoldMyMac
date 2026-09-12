@@ -1,0 +1,48 @@
+name: macOS build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build app and test core
+    runs-on: macos-26
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: MacDuo
+    env:
+      UNFOLDMYMAC_SIGN_IDENTITY: "-"
+    steps:
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Show toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+      - name: Build all test targets
+        run: swift build --build-tests
+      # GPU, capture, and lid-sensor checks run on physical Macs.
+      - name: Test core models
+        run: swift test --skip-build --filter UnfoldMyMacCoreTests
+      - name: Build app bundle
+        run: ./script/build_and_run.sh --build
+      - name: Verify signature and bundled notices
+        run: |
+          codesign --verify --strict dist/UnfoldMyMac.app
+          cmp ../LICENSE dist/UnfoldMyMac.app/Contents/Resources/LICENSE
+          cmp ../NOTICE dist/UnfoldMyMac.app/Contents/Resources/NOTICE
+          test -f dist/UnfoldMyMac.app/Contents/Resources/UnfoldMyMac_UnfoldMyMacKit.bundle/Resources/Fonts/OFL.txt
+          test -z "$(find dist/UnfoldMyMac.app -type f -name '*.md' -print -quit)"

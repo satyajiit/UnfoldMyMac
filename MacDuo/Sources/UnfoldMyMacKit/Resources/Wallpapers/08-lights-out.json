@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "id": "lights-out",
+  "title": "Lights Out",
+  "subtitle": "A red open-wheel machine, flowing circuit and five-light countdown. Racing energy for a desk-bound daydream.",
+  "author": "UnfoldMyMac",
+  "tags": [
+    "3D",
+    "F1",
+    "Motorsport",
+    "Simulation"
+  ],
+  "shader": "lights-out",
+  "accent": 16726349,
+  "background": 1378576,
+  "reactiveMetric": "scene.energy",
+  "reactiveScale": 1,
+  "channels": [
+    {
+      "metric": "scene.laps",
+      "scale": 100
+    }
+  ],
+  "layers": [
+    {
+      "id": "edition",
+      "kind": "text",
+      "content": "L I G H T S   O U T",
+      "binding": null,
+      "format": "text",
+      "x": 0.08,
+      "y": 0.195,
+      "width": 0.43,
+      "size": 0.01,
+      "color": 16726349,
+      "rotation": 0
+    },
+    {
+      "id": "headline",
+      "kind": "text",
+      "content": "BORN TO RACE.\nFORCED TO EMAIL.",
+      "binding": null,
+      "format": "text",
+      "x": 0.08,
+      "y": 0.36,
+      "width": 0.405,
+      "size": 0.039,
+      "color": 16773613,
+      "rotation": 0,
+      "height": 0.19,
+      "maxLines": 2,
+      "phrases": [
+        "BORN TO RACE.\nFORCED TO EMAIL.",
+        "BOX, BOX.\nCOFFEE STOP.",
+        "ZERO MEETINGS.\nFULL THROTTLE.",
+        "MY DESK.\nMY GRAND PRIX.",
+        "LIGHTS OUT.\nINBOX LATER."
+      ],
+      "cycleSeconds": 8
+    },
+    {
+      "id": "status",
+      "kind": "text",
+      "content": "FIVE LIGHTS. ONE VERY FAST DAYDREAM.",
+      "binding": null,
+      "format": "text",
+      "x": 0.083,
+      "y": 0.6,
+      "width": 0.41,
+      "size": 0.011,
+      "color": 16726349,
+      "rotation": 0,
+      "height": 0.065,
+      "maxLines": 2
+    },
+    {
+      "id": "laps-label",
+      "kind": "text",
+      "content": "VIRTUAL LAPS",
+      "binding": null,
+      "format": "text",
+      "x": 0.083,
+      "y": 0.755,
+      "width": 0.18,
+      "size": 0.009,
+      "color": 10333870,
+      "rotation": 0
+    },
+    {
+      "id": "laps",
+      "kind": "metric",
+      "content": "\u2014",
+      "binding": "scene.laps",
+      "format": "compact",
+      "x": 0.08,
+      "y": 0.801,
+      "width": 0.18,
+      "size": 0.034,
+      "color": 16773613,
+      "rotation": 0
+    },
+    {
+      "id": "minutes-label",
+      "kind": "text",
+      "content": "MINUTES OFF THE GRID",
+      "binding": null,
+      "format": "text",
+      "x": 0.313,
+      "y": 0.755,
+      "width": 0.23,
+      "size": 0.009,
+      "color": 10333870,
+      "rotation": 0
+    },
+    {
+      "id": "minutes",
+      "kind": "metric",
+      "content": "\u2014",
+      "binding": "scene.minutes",
+      "format": "compact",
+      "x": 0.31,
+      "y": 0.801,
+      "width": 0.23,
+      "size": 0.034,
+      "color": 16773613,
+      "rotation": 0
+    },
+    {
+      "id": "scope",
+      "kind": "text",
+      "content": "FAN ART \u00b7 ANIMATED SIMULATION \u00b7 NO LIVE RACE DATA",
+      "binding": null,
+      "format": "text",
+      "x": 0.083,
+      "y": 0.915,
+      "width": 0.85,
+      "size": 0.0088,
+      "color": 12364465,
+      "rotation": 0,
+      "height": 0.045,
+      "maxLines": 1
+    }
+  ],
+  "emblem": {
+    "asset": "F1",
+    "x": 0.08,
+    "y": 0.108,
+    "width": 0.15
+  }
+}
