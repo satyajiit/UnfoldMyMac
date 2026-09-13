@@ -6,7 +6,7 @@ if (problems.length) { console.error(problems.join("\n")); process.exit(1); }
 const headers: Record<string, string> = { Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2026-03-10" };
 if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
 // Citations and source-build instructions must resolve when the site launches.
-for (const file of ["README.md", "LICENSE", "NOTICE", "MacDuo/README.md", "MacDuo/DEVELOPING.md", "MacDuo/Sources/UnfoldMyMacCore/Effects/EffectManifest.swift", "MacDuo/Sources/UnfoldMyMacCore/Wallpaper/WallpaperPlayback.swift"]) {
+for (const file of ["README.md", "LICENSE", "NOTICE", "UnfoldMyMac/README.md", "UnfoldMyMac/DEVELOPING.md", "UnfoldMyMac/Sources/UnfoldMyMacCore/Effects/EffectManifest.swift", "UnfoldMyMac/Sources/UnfoldMyMacCore/Wallpaper/WallpaperPlayback.swift"]) {
   const source = await fetch(`https://api.github.com/repos/satyajiit/UnfoldMyMac/contents/${file}?ref=main`, { headers, signal: AbortSignal.timeout(30_000) });
   if (!source.ok) throw new Error(`Public source citation is unavailable: ${file} (${source.status})`);
 }

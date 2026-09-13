@@ -62,7 +62,11 @@ dist/
 
 # Test and renderer dumps
 output/
+.artifacts/
 *.log
+
+# Local UI rebuild research, asset prompts, and native review screenshots.
+/UnfoldMyMac/docs/ui-rebuild/
 
 # Interrupted encodes left behind by the media render scripts
 *.partial.mp4
@@ -76,7 +80,7 @@ website/public/**/*.partial.*
 /website/assets/**/*[Pp][Rr][Oo][Mm][Pp][Tt]*.txt
 /website/assets/**/*[Pp][Rr][Oo][Mm][Pp][Tt]*.json
 /website/assets/**/[Pp][Rr][Oo][Mm][Pp][Tt]*/
-/MacDuo/docs/provenance/*[Pp][Rr][Oo][Mm][Pp][Tt]*
+/UnfoldMyMac/docs/provenance/*[Pp][Rr][Oo][Mm][Pp][Tt]*
 
 # Local tooling
 .playwright-mcp/
@@ -110,11 +114,11 @@ refs/lid-plane/
 *.md
 !/README.md
 !/SPEC.md
-!/MacDuo/DEVELOPING.md
-!/MacDuo/WALLPAPER_ENGINE.md
-!/MacDuo/VALIDATION.md
-!/MacDuo/README.md
-!/MacDuo/SIGNING.md
+!/UnfoldMyMac/DEVELOPING.md
+!/UnfoldMyMac/WALLPAPER_ENGINE.md
+!/UnfoldMyMac/VALIDATION.md
+!/UnfoldMyMac/README.md
+!/UnfoldMyMac/SIGNING.md
 !/CONTRIBUTING.md
 !/SECURITY.md
 !/CODE_OF_CONDUCT.md

@@ -56,6 +56,27 @@ test("dragging the Mac adjusts the lid and releasing leaves it in place", async 
   await expect(slider).toHaveValue(String(angle));
 });
 
+test("pointer gestures hide the box outline while keyboard focus stays visible", async ({ page }) => {
+  const surface = page.getByRole("slider", { name: "MacBook lid gesture" });
+  const hint = page.locator("#gesture-hint");
+  await page.getByRole("button", { name: "Play wallpaper loop" }).focus();
+  await page.keyboard.press("Tab");
+  await expect(surface).toBeFocused();
+  await expect(surface).toHaveCSS("outline-style", "none");
+  await expect(hint).toHaveCSS("outline-style", "solid");
+  await expect(hint.getByText("Use ↑ ↓ to move. Home / End for limits.")).toBeVisible();
+  const box = (await surface.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 3);
+  await page.mouse.down();
+  await expect(surface).toHaveCSS("outline-style", "none");
+  await expect(hint).toHaveCSS("outline-style", "none");
+  await expect(hint.getByText("Drag or swipe down to close. Up to open.")).toBeVisible();
+  await page.mouse.up();
+  await page.keyboard.press("Tab"); await page.keyboard.press("Shift+Tab");
+  await expect(surface).toBeFocused();
+  await expect(hint).toHaveCSS("outline-style", "solid");
+});
+
 test("quick swipes close and reopen the lid", async ({ page }) => {
   const surface = page.getByRole("slider", { name: "MacBook lid gesture" });
   const slider = page.getByRole("slider", { name: "Lid angle", exact: true });
@@ -133,5 +154,7 @@ test("touch swipes change the lid without scrolling the page", async ({ page, is
   await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x, y: y + 90 }] });
   await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
   await expect(surface).toHaveAttribute("aria-valuenow", "30");
+  await expect(surface).toHaveCSS("outline-style", "none");
+  await expect(page.locator("#gesture-hint")).toHaveCSS("outline-style", "none");
   expect(await page.evaluate(() => scrollY)).toBe(scroll);
 });

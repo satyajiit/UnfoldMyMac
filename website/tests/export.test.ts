@@ -57,7 +57,7 @@ test("search snippets are unique and the featured social image is export-ready",
   assert.ok(missing("meta[name=robots]").toArray().some(element => missing(element).attr("content")?.includes("noindex")));
 });
 test("catalog assets and search discovery are complete", () => {
-  assert.equal(catalog.length, 23);
+  assert.equal(catalog.length, 24);
   assert.equal(new Set(catalog.map(item => item.id)).size, catalog.length);
   const sitemap = readFileSync("out/sitemap.xml", "utf8");
   const llms = readFileSync("out/llms.txt", "utf8");
@@ -83,7 +83,7 @@ test("native previews have consistent 60 fps provenance", () => {
   assert.equal(manifest.length, catalog.filter(item => item.video).length);
   for (const item of manifest) {
     assert.equal(item.avg_frame_rate, "60/1");
-    assert.equal(item.nb_frames, "240");
+    assert.equal(item.nb_frames, item.file === "hinge-garden.mp4" ? "1320" : "240");
     assert.equal(createHash("sha256").update(readFileSync(path.join("public/media", item.file))).digest("hex"), item.sha256);
   }
 });

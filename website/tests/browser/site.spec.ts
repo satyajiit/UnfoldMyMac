@@ -51,7 +51,7 @@ test("showcase filters and stops offscreen video", async ({ page }) => {
     await expect.poll(() => page.locator(`#${name.toLowerCase()} video`).evaluate((video: HTMLVideoElement) => video.currentTime)).toBeGreaterThan(0);
     await page.getByRole("button", { name: `Pause ${name} preview` }).click();
   }
-  await page.getByRole("button", { name: "Live wallpaper", exact: true }).click();
+  await page.getByRole("button", { name: "Dynamic Wallpapers", exact: true }).click();
   await expect(page.locator(".showcase-grid article")).toHaveCount(10);
   for (const [id, name] of [["gta-vi-countdown", "GTA VI — Vice City Countdown"], ["aurora-observatory", "Aurora Observatory"]]) {
     await page.getByRole("button", { name: `Play ${name} preview` }).click();
@@ -62,6 +62,34 @@ test("showcase filters and stops offscreen video", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Pause Pulse preview" })).toBeVisible();
   await page.locator("footer").scrollIntoViewIfNeeded();
   await expect.poll(() => page.locator("#pulse video").evaluate((video: HTMLVideoElement) => video.paused)).toBe(true);
+});
+test("the three collections switch app screenshots and filter their own designs", async ({ page }) => {
+  await page.goto("/");
+  const discovery = page.getByRole("group", { name: "Explore app collections" });
+  await discovery.getByRole("button", { name: "Creative Scenes" }).click();
+  await expect(discovery.getByRole("button", { name: "Creative Scenes" })).toHaveAttribute("aria-pressed", "true");
+  for (const theme of ["Light", "Dark"]) {
+    await page.getByRole("button", { name: `${theme} appearance` }).click();
+    const screenshot = page.locator("#collection-screen img:visible");
+    await expect(screenshot).toHaveAttribute("src", `/media/discovery/scenes-${theme.toLowerCase()}.webp`);
+    await expect.poll(() => screenshot.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+  }
+  await page.goto("/showcase/");
+  const filters = page.getByRole("group", { name: "Filter showcase", exact: true });
+  await filters.getByRole("button", { name: "Creative Scenes" }).click();
+  await expect(page.locator(".showcase-grid article")).toHaveCount(1);
+  await expect(page.locator(".showcase-grid #hinge-garden")).toBeVisible();
+  await page.getByRole("button", { name: "Play Hinge Garden preview", exact: true }).click();
+  await expect.poll(() => page.locator("#hinge-garden video").evaluate((video: HTMLVideoElement) => video.currentTime)).toBeGreaterThan(0);
+  await filters.getByRole("button", { name: "Lid Effects" }).click();
+  await expect(page.locator(".showcase-grid article")).toHaveCount(13);
+  await page.getByRole("group", { name: "Filter lid effect styles" }).getByRole("button", { name: "Glass & Light" }).click();
+  await expect(page.locator(".showcase-grid article")).toHaveCount(3);
+  await filters.getByRole("button", { name: "Dynamic Wallpapers" }).click();
+  await expect(page.locator(".showcase-grid article")).toHaveCount(10);
+  await expect(page.getByRole("group", { name: "Filter lid effect styles" })).toHaveCount(0);
+  await filters.getByRole("button", { name: "All designs" }).click();
+  await expect(page.locator(".showcase-grid article")).toHaveCount(24);
 });
 test("reduced motion starts with still media and allows manual lid input", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });

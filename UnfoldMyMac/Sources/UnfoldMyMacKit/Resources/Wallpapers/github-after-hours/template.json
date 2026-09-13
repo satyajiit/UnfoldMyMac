@@ -1,0 +1,222 @@
+{
+  "version": 2,
+  "id": "github-after-hours",
+  "title": "GitHub After Hours",
+  "subtitle": "Your public profile becomes a floating city. Repo hoards, internet friends and public push-ups.",
+  "author": "UnfoldMyMac",
+  "category": "code",
+  "order": 60,
+  "tags": [
+    "3D",
+    "GitHub",
+    "Profile",
+    "Humor"
+  ],
+  "accent": 8122779,
+  "background": 268058,
+  "reactiveMetric": "github.energy",
+  "reactiveScale": 1,
+  "channels": [
+    {
+      "metric": "github.crowd",
+      "scale": 1
+    }
+  ],
+  "layers": [
+    {
+      "id": "name",
+      "kind": "text",
+      "content": "GITHUB / AFTER HOURS",
+      "binding": null,
+      "format": "text",
+      "x": 0.08,
+      "y": 0.12,
+      "width": 0.7,
+      "size": 0.019,
+      "color": 15794165,
+      "rotation": 0
+    },
+    {
+      "id": "handle",
+      "kind": "text",
+      "content": "YOUR CITY. YOUR COMMITS.",
+      "binding": "github.handle",
+      "format": "text",
+      "x": 0.083,
+      "y": 0.177,
+      "width": 0.55,
+      "size": 0.012,
+      "color": 8122779,
+      "rotation": 0,
+      "height": 0.055,
+      "maxLines": 1
+    },
+    {
+      "id": "headline",
+      "kind": "text",
+      "content": "COMMIT.\nNAP. REPEAT.",
+      "binding": null,
+      "format": "text",
+      "x": 0.08,
+      "y": 0.33,
+      "width": 0.4,
+      "size": 0.043,
+      "color": 15794165,
+      "rotation": 0,
+      "height": 0.2,
+      "maxLines": 2,
+      "phrases": [
+        "COMMIT.\nNAP. REPEAT.",
+        "FORK AROUND.\nFIND OUT.",
+        "GREEN SQUARES.\nBIG DREAMS.",
+        "GIT GOOD.\nSTAY WEIRD.",
+        "IT WORKS\nON MY BRANCH."
+      ],
+      "cycleSeconds": 8
+    },
+    {
+      "id": "status",
+      "kind": "text",
+      "content": "CONNECT A PROFILE. BUILD YOUR SKYLINE.",
+      "binding": "github.status",
+      "format": "text",
+      "x": 0.083,
+      "y": 0.57,
+      "width": 0.43,
+      "size": 0.011,
+      "color": 8122779,
+      "rotation": 0,
+      "height": 0.075,
+      "maxLines": 2
+    },
+    {
+      "id": "repos-label",
+      "kind": "text",
+      "content": "REPO HOARD",
+      "binding": null,
+      "format": "text",
+      "x": 0.083,
+      "y": 0.74,
+      "width": 0.18,
+      "size": 0.009,
+      "color": 10333870,
+      "rotation": 0
+    },
+    {
+      "id": "repos",
+      "kind": "metric",
+      "content": "—",
+      "binding": "github.repos",
+      "format": "compact",
+      "x": 0.08,
+      "y": 0.786,
+      "width": 0.18,
+      "size": 0.034,
+      "color": 15794165,
+      "rotation": 0
+    },
+    {
+      "id": "friends-label",
+      "kind": "text",
+      "content": "INTERNET FRIENDS",
+      "binding": null,
+      "format": "text",
+      "x": 0.293,
+      "y": 0.74,
+      "width": 0.18,
+      "size": 0.009,
+      "color": 10333870,
+      "rotation": 0
+    },
+    {
+      "id": "friends",
+      "kind": "metric",
+      "content": "—",
+      "binding": "github.followers",
+      "format": "compact",
+      "x": 0.29,
+      "y": 0.786,
+      "width": 0.18,
+      "size": 0.034,
+      "color": 15794165,
+      "rotation": 0
+    },
+    {
+      "id": "pushes-label",
+      "kind": "text",
+      "content": "PUBLIC PUSH-UPS",
+      "binding": null,
+      "format": "text",
+      "x": 0.7,
+      "y": 0.78,
+      "width": 0.18,
+      "size": 0.009,
+      "color": 10333870,
+      "rotation": 0
+    },
+    {
+      "id": "pushes",
+      "kind": "metric",
+      "content": "—",
+      "binding": "github.pushes",
+      "format": "compact",
+      "x": 0.697,
+      "y": 0.8260000000000001,
+      "width": 0.18,
+      "size": 0.034,
+      "color": 15794165,
+      "rotation": 0
+    },
+    {
+      "id": "scope",
+      "kind": "text",
+      "content": "PUBLIC PROFILE · LATEST 100 EVENTS · MAY BE DELAYED",
+      "binding": "github.scope",
+      "format": "text",
+      "x": 0.083,
+      "y": 0.915,
+      "width": 0.8,
+      "size": 0.0088,
+      "color": 10333870,
+      "rotation": 0,
+      "height": 0.045,
+      "maxLines": 1
+    }
+  ],
+  "setup": [
+    {
+      "kind": "github-profile",
+      "required": true
+    }
+  ],
+  "scene": {
+    "source": "Scene.metal",
+    "fragment": "githubCityFragment"
+  },
+  "metadata": {
+    "version": 1,
+    "collection": "wallpapers",
+    "overview": "Your public GitHub profile becomes a floating city. A little celebration of repositories, community, and the work you share.",
+    "sections": [
+      {
+        "title": "Connect a public profile",
+        "body": "Enter a GitHub username in Customize. The scene reads **public profile data through GitHub’s API**; no access token or private-repository access is needed."
+      },
+      {
+        "title": "A changing desktop",
+        "body": "The composition follows the available public data. Network availability and API limits can affect freshness; the design keeps its visual character between updates."
+      }
+    ],
+    "authors": [
+      {
+        "name": "UnfoldMyMac",
+        "role": "Design & development",
+        "url": "https://unfoldmymac.com",
+        "logo": "UnfoldMyMacMark"
+      }
+    ],
+    "relatedBrands": [
+      "GitHub"
+    ]
+  }
+}

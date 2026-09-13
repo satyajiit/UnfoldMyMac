@@ -4,11 +4,11 @@
 
 # UnfoldMyMac
 
-Desktop effects that follow your lid. Live wallpapers with something going on.
+Lid Effects. Dynamic Wallpapers. Creative Scenes. A little more life on your Mac.
 
 <p>
   <a href="#get-started"><img src="https://img.shields.io/badge/macOS-26%2B-111827?style=for-the-badge&amp;logo=apple&amp;logoColor=white" alt="macOS 26 or later"></a>
-  <a href="MacDuo/Package.swift"><img src="https://img.shields.io/badge/Swift-6.2%2B-F05138?style=for-the-badge&amp;logo=swift&amp;logoColor=white" alt="Swift 6.2 or later"></a>
+  <a href="UnfoldMyMac/Package.swift"><img src="https://img.shields.io/badge/Swift-6.2%2B-F05138?style=for-the-badge&amp;logo=swift&amp;logoColor=white" alt="Swift 6.2 or later"></a>
   <a href="#the-effects"><img src="https://img.shields.io/badge/Rendered_with-Metal-334155?style=for-the-badge" alt="Rendered with Metal"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-2563EB?style=for-the-badge" alt="Apache 2.0 license"></a>
 </p>
@@ -23,13 +23,13 @@ Desktop effects that follow your lid. Live wallpapers with something going on.
   <a href="#the-effects"><img src="https://img.shields.io/badge/Lid-closed_for_dramatic_effect-7C3AED?style=for-the-badge&amp;labelColor=172554" alt="Lid: closed for dramatic effect"></a>
 </p>
 <p>
-  <a href="MacDuo/Package.swift"><img src="https://img.shields.io/badge/Package_dependencies-0-22C55E?style=flat-square" alt="Zero third-party package dependencies"></a>
+  <a href="UnfoldMyMac/Package.swift"><img src="https://img.shields.io/badge/Package_dependencies-0-22C55E?style=flat-square" alt="Zero third-party package dependencies"></a>
   <a href="#contributing"><img src="https://img.shields.io/badge/Contributions-welcome-2563EB?style=flat-square" alt="Contributions welcome"></a>
   <a href="https://github.com/satyajiit/UnfoldMyMac"><img src="https://img.shields.io/badge/GitHub-UnfoldMyMac-181717?style=flat-square&amp;logo=github&amp;logoColor=white" alt="UnfoldMyMac on GitHub"></a>
   <a href="https://matterwardlabs.com"><img src="https://img.shields.io/badge/Matterward-Labs-111827?style=flat-square" alt="Matterward Labs"></a>
 </p>
 
-[Real-life films](#filmed-on-a-real-macbook) · [Effects](#the-effects) · [Live wallpapers](#living-wallpapers) · [The story](#how-it-started) · [Native stack](#native-down-to-the-pixels) · [Get started](#get-started)
+[Real-life films](#filmed-on-a-real-macbook) · [Lid Effects](#lid-effects) · [Dynamic Wallpapers](#dynamic-wallpapers) · [Creative Scenes](#creative-scenes) · [The story](#how-it-started) · [Native stack](#native-down-to-the-pixels) · [Get started](#get-started)
 
 From [Matterward Labs](https://matterwardlabs.com).
 
@@ -38,6 +38,23 @@ From [Matterward Labs](https://matterwardlabs.com).
 Close your MacBook and curtains meet across the desktop. Open it and they pull apart. Or choose blur, glowing ribbons, blinking characters, and artwork that opens with the lid.
 
 Leave the laptop open and the wallpapers take over: a chrome sculpture reacts to system load, a robot follows coding activity, and your public GitHub profile becomes a small city. All native SwiftUI, AppKit, and Metal.
+
+## A new home for every design
+
+| Collection | What you’ll find |
+| --- | --- |
+| **[Lid Effects](#lid-effects)** | 13 designs that follow your MacBook lid, plus your own imported artwork. |
+| **[Dynamic Wallpapers](#dynamic-wallpapers)** | 10 moving desktops, from coding activity and Mac metrics to public space weather. |
+| **[Creative Scenes](#creative-scenes) · New** | Interactive worlds that respond to your Mac, beginning with **Hinge Garden**. |
+
+The redesigned library brings category tabs, visible tag filters, search by creator or feature, and grid/list browsing for wallpapers and scenes. Brand marks and capability badges explain what each design uses. Creator names link to their work.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="website/public/media/discovery/wallpaper-dark.webp">
+  <img src="website/public/media/discovery/wallpaper-light.webp" width="1000" alt="The redesigned Dynamic Wallpapers library, with collection navigation, category tabs, tag filters, and design cards.">
+</picture>
+
+Open a wallpaper or scene for its own detail page: name, short description, usage badges, and the **actual design preview**. Actions follow the preview. Read the full description and credits, try **Preview**, then choose **Use wallpaper** or **Use scene**. **Customize** groups the design’s appearance and connections; the title stays in the toolbar while you scroll. Lid effects have grouped **Adjust** controls for their appearance and artwork.
 
 ## Filmed on a real MacBook
 
@@ -63,11 +80,13 @@ A café table. A moving lid. A desktop with a little character. These real-life 
   </tr>
 </table>
 
-UnfoldMyMac makes your desktop react when you move your MacBook’s lid, and adds live wallpapers behind your windows. Start with the **00:00 origin and app introduction**, explore the **00:44 collection**, then watch the **01:22 café recordings at 1.5×**. All 23 templates appear in three scenes: an overview mosaic, a moving grid of 13 effects, and a moving grid of 10 wallpapers. [Browse every scene in the interactive carousel ↗](https://unfoldmymac.com/showcase/#every-preview)
+UnfoldMyMac makes your desktop react when you move your MacBook’s lid, and adds live wallpapers behind your windows. Start with the **00:00 origin and app introduction**, explore the **00:44 collection**, then watch the **01:22 café recordings at 1.5×**. The film’s original 23 templates appear in three scenes: an overview mosaic, a moving grid of 13 effects, and a moving grid of 10 wallpapers. [Browse every scene in the interactive carousel ↗](https://unfoldmymac.com/showcase/#every-preview)
 
 All five recordings play from beginning to end: **1.5× in the full film**, **original speed in the individual clips**. Each has a one-second transition before and after. All six films include a spoken voiceover, an original funk score, and a 4K 60 fps HDR upload on YouTube. The playful coffee bubbles, icon stickers, and UnfoldMyMac badge are back; large caption panels stay off the footage. Press play on the website to watch with sound. The complete effects and wallpaper collection follows.
 
-## The effects
+<a id="the-effects"></a>
+
+## Lid Effects
 
 All 13 effects, shown over a macOS demo desktop with a menu bar, Dock, and sample windows. The animations use the app's actual Metal and AppKit renderers.
 
@@ -160,9 +179,11 @@ All 13 effects, shown over a macOS demo desktop with a menu bar, Dock, and sampl
 - **Keep control.** Effects start disabled. Overlays let clicks through; the Dock and menu-bar controls stay available.
 - **Use your system preferences.** Reduce Motion stills continuous animation. Reduce Transparency uses dimming without screen capture.
 
-## Living wallpapers
+<a id="living-wallpapers"></a>
 
-Ten scenes, optional personal data connections, and 30 or 60 fps playback across your displays. Choose a scene, try its preview, then select **Use wallpaper**.
+## Dynamic Wallpapers
+
+Ten designs with 30 or 60 fps playback across your displays. Browse in a grid or list, use category and tag filters, then open a design to see its full description, creator, related brands, and inputs. Try **Preview**, then select **Use wallpaper** below the preview. Required setup opens before applying a design.
 
 The GIFs below use the app's Metal shaders and SwiftUI text layers with **sample data**. They are exported at 12 fps to keep the README lighter.
 
@@ -226,7 +247,22 @@ The GIFs below use the app's Metal shaders and SwiftUI text layers with **sample
 - **Public GitHub data:** connect a username to bring repositories, followers, and recent public events into the scene.
 - **Your own input:** import a background or connect local JSON/JSONL snapshots. Developers can extend the data providers and wallpaper templates.
 
-Connections live in **Data & settings**. Grok's hot takes and the racing scene's laps are playful wallpaper-session counters, not service usage or live race telemetry.
+Connections live in **Customize** on each design’s detail page. Grok's hot takes and the racing scene's laps are playful wallpaper-session counters, not service usage or live race telemetry.
+
+## Creative Scenes
+
+**New: Hinge Garden**, created by [UnfoldMyMac](https://unfoldmymac.com) from [Matterward Labs](https://matterwardlabs.com). A glass snail carries a tiny greenhouse above reflective water. This is the first design in a collection for interactive desktop worlds.
+
+<img src="website/public/media/hinge-garden.webp" width="1000" alt="Hinge Garden rendered by the app with representative inputs: a glass snail, greenhouse, and flowers reflected in a pool.">
+
+- **Lid movement:** the snail emerges when you open your MacBook and retreats as you close it.
+- **Charger connection:** connect power while the scene is running to send a nine-second ripple through the pool and roots, up the shell, and into the greenhouse lantern. Flowers open further. A soft glow remains while plugged in, even at full battery; unplugging fades it away.
+- **Your Mac’s atmosphere:** battery level, local daylight, and CPU activity influence the light and water.
+- **Optional interaction:** pointer parallax and supported tilt/gyroscope input move the view and stir the scene. Enable sound reactions to let nearby sound release pollen; microphone processing stays local.
+- **Optional one-liners:** choose a 15, 45, or 120-second interval. With sound and the blow option enabled, sustained sound can advance the line.
+- **A quieter view:** Reduce Motion holds an open, still pose and pauses sound reactions while preserving the connected-power glow.
+
+Open **Creative Scenes → Hinge Garden** for the full description, then **Preview**, **Use scene**, or **Customize** below the main preview. Motion, Sound, and One-liners have their own controls. Save keeps changes; Cancel restores the previous choices.
 
 ## How it started
 
@@ -244,7 +280,7 @@ Swift 6, SwiftUI, AppKit, and Apple's Metal APIs do the work. The curtains are l
 
 | Apple stack | What it does here |
 | --- | --- |
-| **Swift 6.2+ & SwiftUI** | App state, settings, the effect library, and wallpaper typography. |
+| **Swift 6.2+ & SwiftUI** | App state, settings, three discovery collections, design details, and scene typography. |
 | **AppKit** | Native windows, Dock and menu-bar controls, and desktop surfaces across displays. |
 | **Metal & MetalKit** | Custom GPU pipelines for blur, cloth, image reveals, characters, and procedural wallpapers. |
 | **IOKit** | Read-only access to the MacBook's lid-angle HID report. |
@@ -270,17 +306,17 @@ You need **macOS 26 or later** and **Xcode 26 or later** with Swift 6.2+. Select
 
 ```sh
 git clone https://github.com/satyajiit/UnfoldMyMac.git
-cd UnfoldMyMac/MacDuo
+cd UnfoldMyMac/UnfoldMyMac
 ./script/build_and_run.sh
 ```
 
-The script builds and opens `MacDuo/dist/UnfoldMyMac.app`. It uses an available Apple Development signing identity or falls back to ad-hoc signing. You can copy the app to `/Applications` after building.
+The script builds and opens `UnfoldMyMac/dist/UnfoldMyMac.app`. It uses an available Apple Development signing identity or falls back to ad-hoc signing. You can copy the app to `/Applications` after building.
 
-1. Open **Effects** and choose a design.
+1. Open **Lid Effects** and choose a design.
 2. Try **Preview** to play or scrub it on your desktop.
 3. Turn on lid effects. Use **Effect settings** to adjust the activation angle and completion point.
 
-Lid control needs a MacBook with a readable lid-angle sensor. The app uses an undocumented Apple HID report, so support varies by model. Run `cd MacDuo && ./script/build_and_run.sh --probe` from a clone to check your Mac. Manual preview remains available when the sensor is missing, subject to built-in display safety checks.
+Lid control needs a MacBook with a readable lid-angle sensor. The app uses an undocumented Apple HID report, so support varies by model. Run `cd UnfoldMyMac && ./script/build_and_run.sh --probe` from a clone to check your Mac. Manual preview remains available when the sensor is missing, subject to built-in display safety checks.
 
 Lid effects target the built-in display and pause when it is closed, asleep, unavailable, or mirrored. Wallpapers can use external displays.
 
@@ -291,13 +327,15 @@ Frost needs **Screen Recording** to blur your desktop. Capture starts when you e
 
 Personal data connections are optional. Local activity sources read metadata from the files you select; lifecycle connections require their setup step. GitHub wallpapers fetch public profile data and avatars over the network. Aurora Observatory fetches public NOAA forecasts and geomagnetic readings when previewed or active, without account setup. Its cache refreshes every five minutes. The GTA VI countdown uses your local calendar and a bundled release date. Custom HTTP providers contact their configured endpoint.
 
+Hinge Garden’s sound reactions are optional and request **Microphone** permission only when enabled. Audio is measured locally as a level; it is never recorded or transcribed. Motion sensing and pointer response have separate controls. One-liners are bundled text.
+
 Artwork imports are stored in `~/Library/Application Support/UnfoldMyMac/Artwork/`. Removing an import deletes the app's copy and leaves your original file alone.
 
 </details>
 
 ## Contributing
 
-[Bug reports](https://github.com/satyajiit/UnfoldMyMac/issues/new/choose), hardware compatibility reports, new effects, wallpapers, artwork, and fixes are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) has the four checks to run before a pull request, the file map, and the rules on dependencies and artwork rights. [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) applies here. Security problems go through [SECURITY.md](SECURITY.md) rather than the issue tracker.
+[Bug reports](https://github.com/satyajiit/UnfoldMyMac/issues/new/choose), hardware compatibility reports, new lid effects, dynamic wallpapers, creative scenes, artwork, and fixes are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) has the four checks to run before a pull request, the file map, and the rules on dependencies and artwork rights. [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) applies here. Security problems go through [SECURITY.md](SECURITY.md) rather than the issue tracker.
 
 ## Contributors
 

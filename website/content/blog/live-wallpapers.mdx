@@ -1,14 +1,18 @@
 ---
 title: "Give your desktop something to do"
-description: "Pick a scene, decide what it reacts to, and make a live wallpaper your own."
+description: "Pick a scene, decide what it reacts to, and explore Dynamic Wallpapers and Creative Scenes."
 author: "Matterward Labs"
 date: "2026-09-12"
 image: "/media/pulse.webp"
-topic: "Live wallpapers"
+topic: "Dynamic Wallpapers"
 ---
 Pulse turns system load into a moving chrome sculpture. Codex Mission Control gives coding activity a small robot. GitHub After Hours turns a public profile into a floating city. Each is a scene in UnfoldMyMac’s wallpaper library, with a visual template and optional data behind it.
 
-The app includes ten wallpaper scenes. You can try a preview before choosing **Use wallpaper**, and you can leave the personal data connections alone until you want them. The [project overview](https://github.com/satyajiit/UnfoldMyMac#living-wallpapers) describes the collection.
+Open **Dynamic Wallpapers** for ten designs, or **Creative Scenes** for Hinge Garden. You can try a preview before choosing **Use wallpaper**, and you can leave the personal data connections alone until you want them. The [project overview](https://github.com/satyajiit/UnfoldMyMac#living-wallpapers) describes the collection.
+
+## Find your design in the new library
+
+Switch between grid and list, explore category tabs, and narrow the results with tag filters. Cards show the related brands and features a design uses. Open a card for the full description, author links, and an actual design preview. The name and usage badges sit above the preview; **Preview**, **Use wallpaper** or **Use scene**, and **Customize** follow below. The title stays in the toolbar as you scroll.
 
 ## Start with the scene
 
@@ -20,29 +24,35 @@ Aurora Observatory takes the view into orbit. Public [NOAA OVATION forecasts](ht
 
 The Grok and racing counters are wallpaper-session counters. They do not report Grok service usage or live race telemetry. The website’s wallpaper recordings also use sample data, so their numbers are demonstrations, not measurements of your machine.
 
+## Creative Scenes: Hinge Garden
+
+Hinge Garden has its own home in **Creative Scenes**. A glass snail emerges as the lid opens and retreats as it closes. Connect a charger while the scene is running and a nine-second pulse crosses the pool, follows the roots, climbs the shell, and lights the greenhouse. A softer glow remains while external power is connected, even at full battery.
+
+Battery level, local time, and CPU activity shape the atmosphere. **Customize** has separate Motion, Sound, and One-liners controls. Pointer parallax, supported tilt and gyroscope input, and microphone reactions are optional. Audio is measured locally, never recorded or transcribed. Reduce Motion holds the garden still and pauses sound reactions.
+
 ## Add data when it serves the scene
 
 Some scenes can react to Mac metrics, such as CPU load, memory estimates, and battery information. Others can use local Claude or Codex metadata or a public GitHub profile.
 
-The visual template and data provider are separate pieces. That lets the renderer use a snapshot without needing to know how the data was collected. It also gives contributors a way to add a provider or a scene without replacing the wallpaper engine. The [extension guide](https://github.com/satyajiit/UnfoldMyMac/blob/main/MacDuo/DEVELOPING.md) explains the native architecture.
+The visual template and data provider are separate pieces. That lets the renderer use a snapshot without needing to know how the data was collected. It also gives contributors a way to add a provider or a scene without replacing the wallpaper engine. The [extension guide](https://github.com/satyajiit/UnfoldMyMac/blob/main/UnfoldMyMac/DEVELOPING.md) explains the native architecture.
 
 ## Set playback for your Mac
 
 Wallpapers support 30 or 60 fps playback across displays. The playback policy lowers the maximum to 30 fps under low-power or thermal limits. Sleep stops playback. Reduce Motion disables continuous animation and limits updates.
 
-These are the app’s playback rules, not a promise that every GPU and display combination will sustain the same frame rate. The policy is visible in [WallpaperPlayback.swift](https://github.com/satyajiit/UnfoldMyMac/blob/main/MacDuo/Sources/UnfoldMyMacCore/Wallpaper/WallpaperPlayback.swift).
+These are the app’s playback rules, not a promise that every GPU and display combination will sustain the same frame rate. The policy is visible in [WallpaperPlayback.swift](https://github.com/satyajiit/UnfoldMyMac/blob/main/UnfoldMyMac/Sources/UnfoldMyMacCore/Wallpaper/WallpaperPlayback.swift).
 
 ## Bring your own picture or snapshot
 
 Scenes that support custom backgrounds let you import an image; GTA VI and Aurora Observatory keep their bundled artwork. You can also connect local JSON/JSONL data. Start with the built-in scenes to learn what the library already supports, then change the input that matters to you.
 
-The app stores its own copy of imported artwork, so moving the original does not break the design. Optional connections live in **Data & settings**. The [data connection guide](/blog/connecting-your-data/) covers what each source reads and which ones use the network.
+The app stores its own copy of imported artwork, so moving the original does not break the design. Optional connections live in **Customize** on each design page. The [data connection guide](/blog/connecting-your-data/) covers what each source reads and which ones use the network.
 
 ## Sources
 
 - [Built-in wallpaper collection and data sources](https://github.com/satyajiit/UnfoldMyMac#living-wallpapers)
-- [Playback policy](https://github.com/satyajiit/UnfoldMyMac/blob/main/MacDuo/Sources/UnfoldMyMacCore/Wallpaper/WallpaperPlayback.swift)
-- [Developer extension guide](https://github.com/satyajiit/UnfoldMyMac/blob/main/MacDuo/DEVELOPING.md)
+- [Playback policy](https://github.com/satyajiit/UnfoldMyMac/blob/main/UnfoldMyMac/Sources/UnfoldMyMacCore/Wallpaper/WallpaperPlayback.swift)
+- [Developer extension guide](https://github.com/satyajiit/UnfoldMyMac/blob/main/UnfoldMyMac/DEVELOPING.md)
 - [GTA VI release information and artwork — Rockstar Games](https://www.rockstargames.com/VI)
 - [Aurora forecast — NOAA Space Weather Prediction Center](https://www.swpc.noaa.gov/products/aurora-30-minute-forecast)
 - [Blue Marble: Next Generation — NASA Earth Observatory](https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/)

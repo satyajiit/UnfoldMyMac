@@ -1,6 +1,6 @@
 # UnfoldMyMac specification
 
-What the app does and the rules it keeps. Implementation notes are in [MacDuo/DEVELOPING.md](MacDuo/DEVELOPING.md) and [MacDuo/WALLPAPER_ENGINE.md](MacDuo/WALLPAPER_ENGINE.md); measured results are in [MacDuo/VALIDATION.md](MacDuo/VALIDATION.md).
+What the app does and the rules it keeps. Implementation notes are in [UnfoldMyMac/DEVELOPING.md](UnfoldMyMac/DEVELOPING.md) and [UnfoldMyMac/WALLPAPER_ENGINE.md](UnfoldMyMac/WALLPAPER_ENGINE.md); measured results are in [UnfoldMyMac/VALIDATION.md](UnfoldMyMac/VALIDATION.md).
 
 ## Platform
 
@@ -10,11 +10,12 @@ What the app does and the rules it keeps. Implementation notes are in [MacDuo/DE
 
 ## Interface
 
-- One resizable window with a native sidebar: **Effects**, **Wallpaper**, and **Settings** at the bottom. Large page headings scroll away and a compact title appears in the toolbar.
-- Effects is a searchable library of cover cards in three collections, **Glass & Light**, **Image Art** and **Motion & 3D**, with tag filtering and author credits. Each card selects, previews or adjusts its design. The page header owns the enable switch, the selected design's status and an **Effect settings** page for lid timing, the menu-bar angle, Screen Recording and diagnostics. Global Settings holds appearance, accessibility status and app information.
-- Preview plays directly on the desktop with floating play, pause, scrub and stop controls; there is no separate preview screen. Escape stops it.
+- One resizable window with a native sidebar: **Lid Effects**, **Dynamic Wallpapers**, **Creative Scenes** (with a New badge), and **Settings** at the bottom. Large page headings scroll away and a compact title appears in the toolbar.
+- Lid Effects is a searchable library of cover cards in three collections, **Glass & Light**, **Image Art** and **Motion & 3D**, with visible tag chips and author credits. Each card selects, previews or customizes its design. Customization groups declared parameters and separates About and imported Artwork management. The page header owns the enable switch, the selected design's status and an **Effect settings** page for lid timing, the menu-bar angle, Screen Recording and diagnostics. Global Settings holds appearance, accessibility status and app information.
+- Wallpaper and Creative Scenes galleries have category tabs, search, tag chips, and grid/list layouts. Each design opens a detail page with a labeled editorial banner, actual preview, formatted description, creator links, original credits, related-product marks, and capability badges. Browsing does not apply a design or start its data feeds. Hinge Garden is a Creative Scene under Nature & atmosphere; its stable template ID and settings are preserved.
+- Lid-effect preview plays directly on the desktop with floating play, pause, scrub and stop controls; there is no separate preview screen. Escape stops it.
 - The menu-bar item offers turning the effect on or off, stopping a preview or the wallpaper, opening the Wallpaper page and Settings, opening the window, and quitting.
-- Typography is bundled Space Grotesk; symbols are SF Symbols. Text sits on opaque surfaces; Liquid Glass is limited to navigation and key actions. Contrast targets are WCAG AA for text (AAA for primary text) with calculated ratios for the custom tokens.
+- Typography uses bundled Space Grotesk with system type for editorial display headings; symbols are SF Symbols. Text sits on opaque surfaces; Liquid Glass is limited to navigation and key actions. Contrast targets are WCAG AA for text (AAA for primary text) with calculated ratios for the custom tokens.
 
 ## Lid effects
 
@@ -46,7 +47,7 @@ All designs share calibration, scrubbing, playback and safety. Static designs re
 
 ## Living wallpapers
 
-One Metal window per display below the desktop icons, paced by `CAMetalDisplayLink` at 30 or 60 fps, with text layers composited at native resolution. Ten bundled scenes are template folders (`template.json` plus `Scene.metal`) validated by a versioned schema; data comes from local providers (Mac metrics, Claude Code logs, Codex history and hooks, GitHub's public API, NOAA space weather, a calendar countdown, session timers, a JSON file, an HTTPS adapter), declared per template. A matching still is handed to macOS so the menu bar samples correctly and the original wallpaper is journaled and restored. Low Power Mode and thermal pressure drop to 30 fps; Reduce Motion shows a still pose with live data; display sleep and inactive sessions pause everything. Details, limits and privacy boundaries of every source: [MacDuo/WALLPAPER_ENGINE.md](MacDuo/WALLPAPER_ENGINE.md).
+One Metal window per display below the desktop icons, paced by `CAMetalDisplayLink` at 30 or 60 fps, with text layers composited at native resolution. Eleven bundled designs are template folders (`template.json` plus `Scene.metal`) validated by a versioned schema; data comes from local providers (Mac metrics, Claude Code logs, Codex history and hooks, GitHub's public API, NOAA space weather, a calendar countdown, session timers, a JSON file, an HTTPS adapter), declared per template. A matching still is handed to macOS so the menu bar samples correctly and the original wallpaper is journaled and restored. Low Power Mode and thermal pressure drop to 30 fps; Reduce Motion shows a still pose with live data; display sleep and inactive sessions pause everything. Details, limits and privacy boundaries of every source: [UnfoldMyMac/WALLPAPER_ENGINE.md](UnfoldMyMac/WALLPAPER_ENGINE.md).
 
 ## Privacy
 

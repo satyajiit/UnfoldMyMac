@@ -13,7 +13,7 @@ export function LidSetupSection() {
         <Link href="/blog/lid-effects/" className="text-link">How lid control works <ArrowUpRight size={16} aria-hidden="true" /></Link>
       </div>
       <ol className={styles.steps}>
-        <li><h3>Find your closing scene</h3><p>Choose an effect and scrub through its preview. Try the curtains halfway closed, or see where a character first peeks into view.</p></li>
+        <li><h3>Find your closing scene</h3><p>Open Lid Effects, choose a design, and scrub through its preview. Try the curtains halfway closed, or see where a character first peeks into view.</p></li>
         <li><h3>Set the angles</h3><p>Choose where the effect starts and where it finishes. Adjust the range until the movement feels right for the way you close your Mac.</p></li>
         <li><h3>Turn it on when you’re ready</h3><p>Effects start disabled. Enable your choice from the app; the overlay lets clicks through, and the menu-bar controls stay within reach.</p></li>
       </ol>
@@ -27,7 +27,7 @@ export function NativeMacSection() {
       <div className={styles.nativeHeading}>
         <span className="section-context">Under the hood</span>
         <h2 id="native-mac-heading">Swift for the app.<br />Metal for the motion.</h2>
-        <p>UnfoldMyMac is written in Swift 6 for macOS 26 and later. SwiftUI handles the interface, AppKit places the desktop windows, and Metal renders the live wallpapers and shader effects on the GPU.</p>
+        <p>UnfoldMyMac is written in Swift 6 for macOS 26 and later. SwiftUI handles the interface, AppKit places the desktop windows, and Metal renders dynamic wallpapers, creative scenes, and lid effects on the GPU.</p>
       </div>
       <div className={styles.engineGrid}>
         <div className={styles.engineNotes}>
@@ -41,7 +41,7 @@ export function NativeMacSection() {
           </div>
           <div>
             <h3>A limit on the pixels, too</h3>
-            <p>Wallpaper rendering is capped at 1,920 pixels on the longest edge before scaling to the display. Each Metal surface allows at most three frames in flight, keeping queued GPU work bounded.</p>
+            <p>Most wallpaper scenes cap rendering at 1,920 pixels on the longest edge. Hinge Garden uses native display resolution for its fine geometry. Each Metal surface allows at most three frames in flight, keeping queued GPU work bounded.</p>
           </div>
         </div>
         <div className={styles.playback}>
@@ -62,7 +62,7 @@ export function NativeMacSection() {
         <div><span className={styles.noteLabel}>The Frost effect</span><h3>Your desktop becomes the texture.</h3></div>
         <p>Frost uses ScreenCaptureKit to receive desktop frames in memory. Core Video exposes those frames as Metal textures without copying the pixels. Screen Recording permission is needed for Frost; the other lid effects work without it.</p>
       </div>
-      <p className={styles.references}>Read the <a href={`${site.repo}/tree/main/MacDuo/Sources/UnfoldMyMacKit/Rendering`}>rendering code</a>, the <a href={`${site.repo}/blob/main/MacDuo/Sources/UnfoldMyMacCore/Wallpaper/WallpaperPlayback.swift`}>wallpaper playback policy</a>, or <a href="https://developer.apple.com/metal/">Apple’s Metal overview</a>.</p>
+      <p className={styles.references}>Read the <a href={`${site.repo}/tree/main/UnfoldMyMac/Sources/UnfoldMyMacKit/Rendering`}>rendering code</a>, the <a href={`${site.repo}/blob/main/UnfoldMyMac/Sources/UnfoldMyMacCore/Wallpaper/WallpaperPlayback.swift`}>wallpaper playback policy</a>, or <a href="https://developer.apple.com/metal/">Apple’s Metal overview</a>.</p>
     </section>
   );
 }
@@ -77,7 +77,7 @@ export function HomeQuestions() {
       </div>
       <div className={styles.answers}>
         <div><h3>Will my Mac’s lid work?</h3><p>Lid control needs a readable angle sensor, and support varies by MacBook model. The app requires macOS 26 or later. Check the <Link href="/download/">requirements</Link> before installing.</p></div>
-        <div><h3>What about an external display?</h3><p>Lid effects stay on the MacBook’s built-in display. Live wallpapers can run across your displays, including external monitors.</p></div>
+        <div><h3>What about an external display?</h3><p>Lid effects stay on the MacBook’s built-in display. Dynamic Wallpapers and Creative Scenes can run across your displays, including external monitors.</p></div>
         <div><h3>Can I add my own artwork?</h3><p>Import an image and try the Sculpted, Diagonal, Slide, or Burst reveal. The app keeps a local copy. You can also build a wallpaper template using the <a href={sources.developing}>extension guide</a>.</p></div>
       </div>
     </section>

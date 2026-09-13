@@ -4,7 +4,7 @@
 
 ## Checks
 
-Run from `MacDuo/`. Tick what you ran and paste the output in a collapsed block.
+Run from `UnfoldMyMac/`. Tick what you ran and paste the output in a collapsed block.
 
 - [ ] `swift test`
 - [ ] `./script/build_and_run.sh --build`

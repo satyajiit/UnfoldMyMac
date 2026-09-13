@@ -1,13 +1,18 @@
 export interface ShowcaseItem {
-  id: string; name: string; kind: "effect" | "wallpaper"; category: string;
+  id: string; name: string; kind: "effect" | "wallpaper" | "scene"; category: string;
   description: string; poster: string; video?: string; sampleData?: boolean;
 }
 const effect = (id: string, name: string, category: string, description: string, video = true): ShowcaseItem => ({
   id, name, category, description, kind: "effect", poster: `/media/${id}.webp`, ...(video ? { video: `/media/${id}.mp4` } : {}),
 });
 const wallpaper = (id: string, name: string, description: string): ShowcaseItem => ({
-  id, name, description, kind: "wallpaper", category: "Live wallpaper", poster: `/media/${id}.webp`, video: `/media/${id}.mp4`, sampleData: true,
+  id, name, description, kind: "wallpaper", category: "Dynamic Wallpapers", poster: `/media/${id}.webp`, video: `/media/${id}.mp4`, sampleData: true,
 });
+export const collections = [
+  { id: "effect", name: "Lid Effects", anchor: "lid-effects", description: "13 effects that follow your lid. Browse by style, filter by tags, and arrange every detail in Adjust." },
+  { id: "wallpaper", name: "Dynamic Wallpapers", anchor: "wallpapers", description: "10 moving desktops. Explore by category and see each design’s connections before you use it." },
+  { id: "scene", name: "Creative Scenes", anchor: "creative-scenes", description: "Interactive worlds shaped by your Mac. Meet Hinge Garden, the first creative scene." },
+] as const;
 export const catalog: ShowcaseItem[] = [
   effect("curtains", "Curtains", "Motion & 3D", "Velvet folds and stage lighting. A curtain call for your tabs."),
   effect("peekaboo", "Peekaboo", "Motion & 3D", "Blinking, curious characters. Your desktop has acquired witnesses."),
@@ -32,5 +37,6 @@ export const catalog: ShowcaseItem[] = [
   wallpaper("lights-out", "Lights Out", "An open-wheel car, a flowing circuit, and a five-light countdown. Session counters, not live race telemetry."),
   wallpaper("gta-vi-countdown", "GTA VI — Vice City Countdown", "Official Rockstar artwork and a calendar-day countdown to the announced console release. Artwork © Rockstar Games."),
   wallpaper("aurora-observatory", "Aurora Observatory", "NOAA space weather shapes auroral curtains around a 3D Earth. NASA Earth Observatory imagery; an artistic interpretation."),
+  { id: "hinge-garden", name: "Hinge Garden", kind: "scene", category: "Creative Scenes", description: "A glass snail tends a tiny greenhouse. Lid movement, charger power, and optional sound bring the garden to life.", poster: "/media/hinge-garden.webp", video: "/media/hinge-garden.mp4", sampleData: true },
 ];
 export const featured = ["curtains", "peekaboo", "reverie"].map(id => catalog.find(item => item.id === id)!);

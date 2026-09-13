@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "mac",
+      "title": "Your Mac"
+    },
+    {
+      "id": "ai",
+      "title": "AI companions"
+    },
+    {
+      "id": "code",
+      "title": "Code & community"
+    },
+    {
+      "id": "art",
+      "title": "Art & image"
+    },
+    {
+      "id": "play",
+      "title": "Games & sport"
+    },
+    {
+      "id": "space",
+      "title": "Space & science"
+    },
+    {
+      "id": "nature",
+      "title": "Nature & atmosphere"
+    }
+  ]
+}

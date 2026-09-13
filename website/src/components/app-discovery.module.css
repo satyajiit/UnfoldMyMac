@@ -1,0 +1,30 @@
+.discovery { padding: 78px 0; }
+.heading { display: grid; grid-template-columns: 1fr 1fr; align-items: end; gap: 48px; margin-bottom: 36px; }
+.heading p { max-width: 52ch; margin: 0; color: var(--secondary); }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px 28px; border-bottom: 1px solid var(--border); margin-bottom: 26px; }
+.tabs button { display: inline-flex; align-items: center; gap: 9px; padding: 14px 0; border: 0; border-bottom: 3px solid transparent; background: none; color: var(--secondary); font: inherit; font-weight: 600; cursor: pointer; }
+.tabs button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.badge { border-radius: 20px; padding: 3px 8px; font-size: 11px; line-height: 1.5; background: var(--ink); color: var(--card); }
+.screen { margin: 0; }
+.screen > img { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 18px; }
+.dark { display: none; }
+:global(.dark) .dark { display: block; }
+:global(.dark) .light { display: none; }
+.screen figcaption { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; padding: 18px 0; color: var(--secondary); font-size: 14px; }
+.screen figcaption a { color: var(--accent); white-space: nowrap; }
+.details { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 64px; margin-top: 52px; }
+.detailScreen { max-height: 540px; overflow: hidden; border: 1px solid var(--border); border-radius: 14px; }
+.detailScreen img { width: 100%; height: auto; }
+.detailCopy h3 { font-size: clamp(26px, 3vw, 36px); line-height: 1.16; letter-spacing: -1px; margin-bottom: 22px; }
+.detailCopy p { max-width: 48ch; color: var(--secondary); }
+@media (max-width: 700px) {
+  .discovery { padding: 48px 0; }
+  .heading, .details { grid-template-columns: 1fr; gap: 24px; }
+  .heading { margin-bottom: 22px; }
+  .tabs { gap: 0 18px; }
+  .tabs button { font-size: 14px; }
+  .screen figcaption { flex-direction: column; gap: 8px; }
+  .details { margin-top: 32px; }
+  .detailScreen { max-height: 460px; }
+  .detailCopy { grid-row: 1; }
+}

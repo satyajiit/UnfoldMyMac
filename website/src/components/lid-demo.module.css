@@ -7,19 +7,21 @@
 .wallpaperName { display: block; font-size: 14px; font-weight: 500; }
 .playbackButton { display: inline-flex; gap: 7px; align-items: center; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--ink); padding: 9px 12px; font-size: 12px; min-height: 38px; }
 .viewport { padding-top: 18px; }
-.gestureSurface { padding: 12px 12% 24%; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; border-radius: 10px; }
+.gestureSurface { padding: 12px 12% 24%; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
 .gestureSurface[data-dragging=true] { cursor: grabbing; }
 .gestureSurface img { -webkit-user-drag: none; pointer-events: none; }
-.gestureSurface:focus-visible { outline-offset: -3px; }
+.gestureSurface:focus { outline: none; }
 .stage { perspective: 1800px; perspective-origin: 50% 100%; aspect-ratio: 16 / 10; max-width: 760px; margin: auto; }
 .model { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transform: rotateY(-5deg); }
 .screen { position: absolute; inset: 0; transform: rotateX(15deg); transform-origin: 50% 100%; transform-style: preserve-3d; }
-.screenFront, .screenBack { position: absolute; inset: 0; border: 2px solid #43454b; border-radius: 13px 13px 5px 5px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-.screenFront { padding: 2% 1.5% 3.5%; background: #141417; transform: translateZ(2px); }
+.screenFront, .screenBack { position: absolute; inset: 0; border: 1px solid #51535a; border-radius: 12px 12px 5px 5px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.screenFront { padding: 1% .9% 1.8%; background: #090b0e; transform: translateZ(2px); box-shadow: inset 0 1px 0 #ffffff18, 0 0 0 1px #0d0e12; }
 .screenBack { display: grid; place-items: center; transform: rotateY(180deg) translateZ(2px); background: linear-gradient(135deg, #303238, #16181c 50%, #27292f); }
 .screenBack > span { font-size: 44px; color: #090a0d; }
-.camera { position: absolute; top: 4px; left: calc(50% - 2px); width: 4px; height: 4px; background: #404047; border-radius: 50%; }
-.screenContent { height: 100%; position: relative; overflow: hidden; border-radius: 4px; isolation: isolate; background: #10131a; container-type: inline-size; }
+.camera { position: absolute; top: 1.4%; left: 44%; width: 12%; height: 4.3%; background: #080a0d; border-radius: 0 0 5px 5px; z-index: 4; }
+.camera::before { content: ""; position: absolute; width: 4px; height: 4px; left: calc(50% - 2px); top: 30%; border: 1px solid #242934; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #45677a, #101923 60%); box-shadow: 0 0 0 1px #05060a; }
+.camera::after { content: ""; position: absolute; width: 2px; height: 2px; top: 39%; right: 23%; background: #1b1e23; border-radius: 50%; }
+.screenContent { height: 100%; position: relative; overflow: hidden; border-radius: 7px 7px 3px 3px; isolation: isolate; background: #10131a; container-type: inline-size; }
 .wallpaper { position: absolute; inset: 0; opacity: 0; transition: opacity 350ms ease; }
 .wallpaper[data-active=true] { opacity: 1; }
 .wallpaper > img, .video { object-fit: cover; }
@@ -35,16 +37,33 @@
 .right { clip-path: inset(0 0 0 50%); transform: translateX(52%); }
 .glass { position: absolute; inset: 0; opacity: 0; background: #101014; }
 .cover[data-treatment=frost] .glass { background: #d7e0ef50; backdrop-filter: blur(18px) saturate(.6); }
-.wordmark { position: absolute; bottom: 5px; inset-inline: 0; text-align: center; font-size: 6px; color: #aaaab2; }
-.deck { position: absolute; top: 100%; width: 100%; height: 100%; transform: rotateX(70deg); transform-origin: 50% 0; border: 2px solid #45474e; border-radius: 4px 4px 16px 16px; background: linear-gradient(110deg, #24262c, #35373d 48%, #1c1e24); box-shadow: 0 5px 0 #16181e, 0 9px 0 #090b10; }
-.deck::before, .deck::after { content: ""; position: absolute; top: 12%; bottom: 38%; width: 6%; background: repeating-linear-gradient(0deg, #090a0d90 0 1px, transparent 1px 3px); }
-.deck::before { left: 4%; } .deck::after { right: 4%; }
-.keyboard { position: absolute; inset: 8% 13% 38%; display: grid; grid-template-columns: repeat(13, 1fr); grid-template-rows: repeat(5, 1fr); gap: 4%; padding: 1.5%; background: #15171c; border-radius: 5px; }
-.keyboard i, .keyboard span { display: block; border-radius: 2px; background: #090b10; box-shadow: inset 0 1px 0 #ffffff12; }
-.keyboard span { grid-column: 4 / 11; }
-.trackpad { position: absolute; bottom: 7%; left: 34%; width: 32%; height: 26%; border: 1px solid #15171d; border-radius: 5px; background: #ffffff03; }
-.hinge { position: absolute; top: calc(100% - 3px); left: 3%; width: 94%; height: 6px; border-radius: 3px; background: #36363e; transform: translateZ(1px); }
-.gestureHint { display: flex; justify-content: center; align-items: center; gap: 7px; font-size: 10px; margin: 5px 0 16px; }
+.deck { position: absolute; top: 100%; width: 100%; height: 100%; transform: rotateX(70deg); transform-origin: 50% 0; border: 1px solid #4b4d54; border-radius: 4px 4px 13px 13px; background: linear-gradient(110deg, #282a30, #373a40 48%, #22242a); box-shadow: inset 0 1px 0 #ffffff14, inset 0 -1px 0 #ffffff0a, 0 3px 0 #17191f, 0 6px 0 #090b10, 0 17px 24px #0003; }
+.deck::before, .deck::after { content: ""; position: absolute; top: 10%; bottom: 38%; width: 5.5%; border-radius: 2px; background: radial-gradient(circle, #0a0c11 0 .65px, transparent .85px) 0 0 / 2.6px 2.6px; box-shadow: inset 0 0 3px #0002; }
+.deck::before { left: 4.4%; } .deck::after { right: 4.4%; }
+.keyboard { position: absolute; inset: 6.5% 12% 36%; display: flex; flex-direction: column; gap: 3.1%; padding: 1.1%; border: 1px solid #0a0c11; background: #111318; border-radius: 5px; box-shadow: inset 0 1px 4px #0008, 0 1px 0 #ffffff08; container-type: inline-size; }
+.keyRow { display: flex; flex: 1; gap: 1.1%; min-height: 0; }
+.key { display: grid; place-items: center; position: relative; flex-basis: 0; min-width: 0; border: .5px solid #34363d; border-radius: 3px; background: linear-gradient(#202229, #121419); color: #bdc0c9; font: 500 1.7cqw/1 ui-sans-serif, system-ui, sans-serif; box-shadow: 0 1px 1px #000b, inset 0 1px 0 #ffffff0a; }
+.keyRow:first-child .key { font-size: 1.35cqw; }
+.key[data-key="tab"], .key[data-key="caps lock"], .key[data-key="delete"], .key[data-key="return"], .key[data-key="shift"], .keyRow:last-child .key { font-size: 1.25cqw; }
+.key[data-key="caps lock"]::before { content: ""; position: absolute; width: 2px; height: 2px; left: 10%; top: 15%; border-radius: 50%; background: #626650; }
+.key[data-key="⏻"] { color: #696c74; }
+.key[data-key="⏻"]::before { content: ""; position: absolute; inset: 11%; border: 1px solid #555860; border-radius: 50%; }
+.key[data-key="arrows"] { display: grid; grid-template-rows: 1fr 1fr; gap: 2px; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.key[data-key="arrows"] > span { display: grid; place-items: center; align-self: stretch; justify-self: stretch; border: .5px solid #34363d; border-radius: 2px; background: #181a21; }
+.key[data-key="←"], .key[data-key="→"] { align-self: flex-end; height: calc(50% - 1px); }
+.trackpad { position: absolute; bottom: 6.5%; left: 32%; width: 36%; height: 26.5%; border: 1px solid #121419; border-radius: 6px; background: linear-gradient(120deg, #ffffff03, #00000003); box-shadow: 0 1px 0 #ffffff12, inset 0 0 0 1px #ffffff03; }
+.sticker { position: absolute; right: 11%; bottom: 11%; width: 9.5%; height: auto; transform: rotate(6deg); pointer-events: none; filter: drop-shadow(0 1px .5px #0008); }
+.fingerNotch { position: absolute; left: 45%; bottom: -1px; width: 10%; height: 2.1%; border: 1px solid #090b10; border-top: 0; border-radius: 0 0 9px 9px; background: #181a20; box-shadow: inset 0 1px 2px #0005; }
+.hinge { position: absolute; top: calc(100% - 3px); left: 4%; width: 92%; height: 6px; border: 1px solid #080a0e; border-radius: 2px; background: linear-gradient(#363941, #101217 55%, #22252c); transform: translateZ(1px); }
+.hinge::before, .hinge::after { content: ""; position: absolute; top: 0; width: 3%; height: 100%; background: #080a0e; }
+.hinge::before { left: 0; } .hinge::after { right: 0; }
+.gestureHint { width: fit-content; max-width: 100%; padding: 4px 8px; font-size: 10px; margin: 1px auto 12px; border-radius: 6px; }
+.pointerHint, .keyboardHint { align-items: center; justify-content: center; gap: 7px; }
+.pointerHint { display: flex; }
+.keyboardHint { display: none; }
+.viewport:has(.gestureSurface:focus-visible:not([data-input=pointer])) + .gestureHint { outline: 2px solid var(--accent); outline-offset: 2px; color: var(--ink); background: var(--card); }
+.viewport:has(.gestureSurface:focus-visible:not([data-input=pointer])) + .gestureHint .pointerHint { display: none; }
+.viewport:has(.gestureSurface:focus-visible:not([data-input=pointer])) + .gestureHint .keyboardHint { display: flex; }
 .desktopChrome { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 .menuBar { position: absolute; inset: 0 0 auto; height: 5%; display: flex; align-items: center; gap: 2%; padding: 0 2%; background: #171721b3; color: #fff; font-size: 1.3cqw; line-height: 1; }
 .menuApp { font-size: 1.9cqw; }
@@ -118,9 +137,15 @@
   .gestureSurface { padding-inline: 8%; padding-bottom: 24%; }
   .screenFront, .screenBack { border-radius: 7px 7px 3px 3px; border-width: 1px; }
   .screenBack > span { font-size: 24px; }
-  .camera { width: 3px; height: 3px; top: 3px; }
-  .wordmark { font-size: 4px; bottom: 3px; }
-  .deck { border-width: 1px; border-radius: 3px 3px 8px 8px; box-shadow: 0 3px 0 #16181e, 0 5px 0 #090b10; }
+  .camera { border-radius: 0 0 3px 3px; }
+  .camera::before { width: 2px; height: 2px; left: calc(50% - 1px); border: 0; }
+  .camera::after { width: 1px; height: 1px; }
+  .screenContent { border-radius: 4px 4px 2px 2px; }
+  .deck { border-radius: 3px 3px 8px 8px; box-shadow: inset 0 1px 0 #ffffff14, 0 2px 0 #17191f, 0 4px 0 #090b10, 0 8px 12px #0003; }
+  .deck::before, .deck::after { background-size: 1.5px 1.5px; }
+  .keyboard { border-radius: 3px; }
+  .key { border-radius: 1px; }
+  .trackpad { border-radius: 3px; }
   .hinge { height: 4px; top: calc(100% - 2px); }
   .gestureHint { font-size: 9px; gap: 5px; margin-bottom: 12px; }
   .wallpaperPicker { gap: 6px; }

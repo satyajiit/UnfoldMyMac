@@ -1,0 +1,133 @@
+{
+  "version": 2,
+  "author": "UnfoldMyMac",
+  "category": "art",
+  "order": 30,
+  "reactiveScale": 100,
+  "id": "daydream",
+  "title": "Daydream",
+  "subtitle": "Art, floating glass, and a sticker with something to say. Bring your own image.",
+  "tags": [
+    "Image",
+    "Refraction",
+    "Tool data"
+  ],
+  "accent": 15649535,
+  "background": 2104114,
+  "image": "Reverie",
+  "reactiveMetric": "mac.cpu",
+  "layers": [
+    {
+      "id": "eyebrow",
+      "kind": "text",
+      "content": "OFF THE CLOCK. ON TO SOMETHING.",
+      "binding": null,
+      "format": "text",
+      "x": 0.075,
+      "y": 0.12,
+      "width": 0.6,
+      "size": 0.015,
+      "color": 16774383,
+      "rotation": 0
+    },
+    {
+      "id": "headline",
+      "kind": "text",
+      "content": "MAKE SPACE\nFOR PLAY.",
+      "binding": null,
+      "format": "text",
+      "x": 0.075,
+      "y": 0.27,
+      "width": 0.54,
+      "size": 0.068,
+      "color": 16774383,
+      "rotation": 0
+    },
+    {
+      "id": "tool-label",
+      "kind": "text",
+      "content": "YOUR NEXT GOOD IDEA",
+      "binding": "tool.label",
+      "format": "text",
+      "x": 0.08,
+      "y": 0.7,
+      "width": 0.47,
+      "size": 0.014,
+      "color": 16048116,
+      "rotation": 0
+    },
+    {
+      "id": "tool-status",
+      "kind": "text",
+      "content": "IS ALREADY LOADING…",
+      "binding": "tool.status",
+      "format": "text",
+      "x": 0.075,
+      "y": 0.75,
+      "width": 0.54,
+      "size": 0.026,
+      "color": 16774383,
+      "rotation": 0
+    },
+    {
+      "id": "sticker",
+      "kind": "sticker",
+      "content": "TOUCH GRASS.\nOR PIXELS.",
+      "binding": null,
+      "format": "text",
+      "x": 0.66,
+      "y": 0.735,
+      "width": 0.3,
+      "size": 0.021,
+      "color": 13892531,
+      "rotation": 7
+    },
+    {
+      "id": "footer",
+      "kind": "text",
+      "content": "STAY CURIOUS. STAY A LITTLE WEIRD.",
+      "binding": null,
+      "format": "text",
+      "x": 0.08,
+      "y": 0.9,
+      "width": 0.75,
+      "size": 0.012,
+      "color": 16774383,
+      "rotation": 0
+    }
+  ],
+  "setup": [
+    {
+      "kind": "tool-file",
+      "required": false
+    }
+  ],
+  "scene": {
+    "source": "Scene.metal",
+    "fragment": "daydreamFragment"
+  },
+  "metadata": {
+    "version": 1,
+    "collection": "wallpapers",
+    "overview": "A floating composition of art, glass, and a sticker with something to say. A personal corner of your desktop, ready for your own image.",
+    "sections": [
+      {
+        "title": "Bring your own image",
+        "body": "Use the background controls in Playback settings to choose an image. The design retains its glass treatment and layered composition."
+      },
+      {
+        "title": "Room for your tools",
+        "body": "An optional **local JSON feed** can bring tool data into the scene. Mac activity provides a local source of energy without an account."
+      }
+    ],
+    "authors": [
+      {
+        "name": "UnfoldMyMac",
+        "role": "Design & development",
+        "url": "https://unfoldmymac.com",
+        "logo": "UnfoldMyMacMark"
+      }
+    ],
+    "relatedBrands": []
+  }
+}

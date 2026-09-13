@@ -28,11 +28,16 @@ test("the reel can jump directly into the all-preview chapter", async ({ page })
 test("the collection carousel contains every scene, wraps, and only plays on request", async ({ page }) => {
   await page.goto("/showcase/");
   const carousel = page.locator("#every-preview");
-  await expect(carousel.locator(".collection-rail button")).toHaveCount(23);
+  await expect(carousel.locator(".collection-rail button")).toHaveCount(24);
   await expect(carousel.locator("video")).not.toHaveAttribute("src");
   await carousel.getByRole("button", { name: "Show Aurora Observatory" }).click();
   await expect(carousel.getByRole("heading", { name: "Aurora Observatory" })).toBeVisible();
   await expect(carousel.locator("video")).not.toHaveAttribute("src");
+  await carousel.getByRole("button", { name: "Next animation" }).click();
+  await expect(carousel.getByRole("heading", { name: "Hinge Garden" })).toBeVisible();
+  await expect(carousel.locator("video")).not.toHaveAttribute("src");
+  await carousel.getByRole("button", { name: "Play Hinge Garden collection preview" }).click();
+  await expect.poll(() => carousel.locator("video").evaluate((video: HTMLVideoElement) => video.currentTime)).toBeGreaterThan(0);
   await carousel.getByRole("button", { name: "Next animation" }).click();
   await expect(carousel.getByRole("heading", { name: "Curtains" })).toBeVisible();
   await carousel.getByRole("button", { name: "Play Curtains collection preview" }).click();

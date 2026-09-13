@@ -2,6 +2,8 @@ import Image from "next/image";
 import type { RefObject } from "react";
 import { heroWallpapers, type heroCovers } from "@/lib/hero-demo";
 import { MacDesktopChrome } from "./mac-desktop-chrome";
+import { MacKeyboard } from "./mac-keyboard";
+import { MacStickers } from "./mac-stickers";
 import styles from "./lid-demo.module.css";
 
 export function HeroMac({ cover, wallpaperIndex, ready, videos, lid, left, right, glass, onReady, onError }: {
@@ -28,11 +30,10 @@ export function HeroMac({ cover, wallpaperIndex, ready, videos, lid, left, right
             </> : <div ref={glass} className={styles.glass} />}
           </div>
         </div>
-        <span className={styles.wordmark}>MacBook</span>
       </div>
       <div className={styles.screenBack} aria-hidden="true"><span>◈</span></div>
     </div>
-    <div className={styles.deck} data-mac-base="true" aria-hidden="true"><div className={styles.keyboard}>{Array.from({ length: 52 }, (_, index) => <i key={index} />)}<span /></div><div className={styles.trackpad} /></div>
+    <div className={styles.deck} data-mac-base="true" aria-hidden="true"><MacKeyboard /><div className={styles.trackpad} /><MacStickers /><span className={styles.fingerNotch} /></div>
     <div className={styles.hinge} aria-hidden="true" />
   </div></div>;
 }

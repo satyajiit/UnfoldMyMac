@@ -31,7 +31,7 @@ export function MediaCard({ item, featured = false, previewLabel }: { item: Show
   }
   return <article className={`media-card${featured ? " featured-card" : ""}`} id={item.id}>
     <div className="media-frame">
-      <Image src={item.poster} alt={`${item.name} ${item.kind === "effect" ? "effect over a demo Mac desktop" : "wallpaper with sample data"}`} fill sizes="(max-width: 700px) 92vw, (max-width: 1000px) 45vw, 380px" />
+      <Image src={item.poster} alt={`${item.name} ${item.kind === "effect" ? "effect over a demo Mac desktop" : item.kind === "scene" ? "creative scene with representative inputs" : "dynamic wallpaper with sample data"}`} fill sizes="(max-width: 700px) 92vw, (max-width: 1000px) 45vw, 380px" />
       {item.video && <><video ref={video} className={loaded ? "media-video loaded" : "media-video"} aria-label={`${item.name} app recording`} muted loop playsInline preload="none" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onError={() => { setError(true); setLoaded(false); setPlaying(false); }} />
         <button className="play-button" type="button" aria-label={`${playing ? "Pause" : "Play"} ${previewLabel ?? item.name} preview`} onClick={toggle}>{playing ? <Pause size={17} aria-hidden="true" /> : <Play size={17} aria-hidden="true" />}<span>{playing ? "Pause" : "Preview"}</span></button></>}
     </div><div className="media-caption"><span className="small muted">{item.category}</span><h3>{item.name}</h3><p>{item.description}</p><span className="media-note">App render · {item.sampleData ? "Sample data" : "Demo desktop"}</span>{error && <p role="status">Preview could not play. The artwork is still available above.</p>}</div>

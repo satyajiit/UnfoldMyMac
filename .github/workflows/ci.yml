@@ -15,15 +15,15 @@ on:
   push:
     branches: [main]
     paths:
-      # Prose under MacDuo/ changes nothing this workflow builds or runs, and a macOS runner
+      # Prose under UnfoldMyMac/ changes nothing this workflow builds or runs, and a macOS runner
       # costs ten times a Linux one. A comma in a README is not worth a build.
-      - 'MacDuo/**'
-      - '!MacDuo/**.md'
+      - 'UnfoldMyMac/**'
+      - '!UnfoldMyMac/**.md'
       - '.github/workflows/ci.yml'
   pull_request:
     paths:
-      - 'MacDuo/**'
-      - '!MacDuo/**.md'
+      - 'UnfoldMyMac/**'
+      - '!UnfoldMyMac/**.md'
       - '.github/workflows/ci.yml'
   workflow_dispatch:
     inputs:
@@ -46,7 +46,7 @@ jobs:
     timeout-minutes: 15
     defaults:
       run:
-        working-directory: MacDuo
+        working-directory: UnfoldMyMac
     env:
       UNFOLDMYMAC_SIGN_IDENTITY: "-"
     steps:

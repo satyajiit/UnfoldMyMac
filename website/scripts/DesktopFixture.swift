@@ -4,7 +4,7 @@ import SwiftUI
 /// Anonymous desktop content shared with the updated README previews. All names and window contents are fixtures.
 @MainActor
 struct DesktopFixture: View {
-    private let resources = URL(fileURLWithPath: "MacDuo/Sources/UnfoldMyMacKit/Resources")
+    private let resources = URL(fileURLWithPath: "UnfoldMyMac/Sources/UnfoldMyMacKit/Resources")
     private let ink = Color(red: 0.13, green: 0.15, blue: 0.19)
 
     var body: some View {

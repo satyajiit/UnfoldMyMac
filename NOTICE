@@ -15,7 +15,7 @@ Copyright 2020 The Space Grotesk Project Authors
 https://github.com/floriankarsten/space-grotesk
 Licensed under the SIL Open Font License, Version 1.1. The full license
 ships with the fonts in Resources/Fonts/OFL.txt within the app's resource
-bundle, and at MacDuo/Sources/UnfoldMyMacKit/Resources/Fonts/OFL.txt in source.
+bundle, and at UnfoldMyMac/Sources/UnfoldMyMacKit/Resources/Fonts/OFL.txt in source.
 
 Product marks in Resources/WallpaperMarks identify the products featured
 in the wallpaper collection. They are excluded from the project's Apache
@@ -35,7 +35,7 @@ iPhone Duo Fold Preview
 Copyright 2026 jadon7
 https://github.com/jadon7/iphone-duo
 Licensed under the MIT License. No code or asset from that project ships in
-UnfoldMyMac. Frost's blur parameters, documented in MacDuo/README.md, were
+UnfoldMyMac. Frost's blur parameters, documented in UnfoldMyMac/README.md, were
 matched against its published description so the Mac effect reads the same
 way. Credited here because the reading was useful.
 
@@ -48,8 +48,8 @@ Grand Theft Auto VI
 The "GTA VI - Vice City Countdown" wallpaper bundles promotional artwork and
 a wordmark belonging to Rockstar Games:
 
-- MacDuo/Sources/UnfoldMyMacKit/Resources/Artwork/GTAVI-Robbery.png
-- MacDuo/Sources/UnfoldMyMacKit/Resources/WallpaperMarks/GTAVI.png
+- UnfoldMyMac/Sources/UnfoldMyMacKit/Resources/Artwork/GTAVI-Robbery.png
+- UnfoldMyMac/Sources/UnfoldMyMacKit/Resources/WallpaperMarks/GTAVI.png
 
 Both files are excluded from the project's Apache license. No part of the
 Apache grant applies to them, and this notice grants no rights to them.

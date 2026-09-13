@@ -23,6 +23,7 @@ export function useLidGestures(move: (angle: number, animated?: boolean) => void
   function onPointerDown(event: PointerEvent<HTMLDivElement>) {
     if (!event.isPrimary || event.button !== 0) return;
     stop(); move(getAngle());
+    event.currentTarget.dataset.input = "pointer";
     event.currentTarget.focus({ preventScroll: true });
     event.currentTarget.setPointerCapture(event.pointerId);
     event.currentTarget.dataset.dragging = "true";
@@ -42,6 +43,7 @@ export function useLidGestures(move: (angle: number, animated?: boolean) => void
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   }
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    event.currentTarget.dataset.input = "keyboard";
     const target = { ArrowUp: getAngle() + 5, ArrowRight: getAngle() + 5, ArrowDown: getAngle() - 5, ArrowLeft: getAngle() - 5, Home: lidAngles.min, End: lidAngles.max }[event.key];
     if (target === undefined) return;
     event.preventDefault(); stop(); move(target);
@@ -61,7 +63,7 @@ export function useLidGestures(move: (angle: number, animated?: boolean) => void
   }
 
   return {
-    gestureEvents: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: stop, onLostPointerCapture: stop, onKeyDown },
+    gestureEvents: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: stop, onLostPointerCapture: stop, onKeyDown, onBlur: (event: React.FocusEvent<HTMLDivElement>) => { delete event.currentTarget.dataset.input; stop(); } },
     holdEvents: (direction: number) => ({
       onPointerDown: (event: PointerEvent<HTMLButtonElement>) => hold(event, direction),
       onPointerUp: stop, onPointerCancel: stop, onLostPointerCapture: stop, onBlur: stop,

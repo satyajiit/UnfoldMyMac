@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Hand, Pause, Play } from "lucide-react";
+import { Hand, Keyboard, Pause, Play } from "lucide-react";
 import { HeroCoverControls } from "./hero-cover-controls";
 import { HeroMac } from "./hero-mac";
 import { useLidMotion } from "./use-lid-motion";
@@ -32,7 +32,7 @@ export function LidDemo() {
               <HeroMac cover={cover} wallpaperIndex={wallpaperIndex} ready={ready} videos={videos} lid={lid} left={left} right={right} glass={glass} onReady={onReady} onError={onError} />
             </div>
           </div>
-          <p id="gesture-hint" className={styles.gestureHint}><Hand size={13} aria-hidden="true" />Drag or swipe down to close. Up to open.</p>
+          <p id="gesture-hint" className={styles.gestureHint}><span className={styles.pointerHint}><Hand size={13} aria-hidden="true" />Drag or swipe down to close. Up to open.</span><span className={styles.keyboardHint}><Keyboard size={14} aria-hidden="true" />Use ↑ ↓ to move. Home / End for limits.</span></p>
           <div className={styles.wallpaperPicker} role="group" aria-label="Preview wallpapers">
             {heroWallpapers.map((item, index) => <button key={item.id} type="button" aria-label={`Show ${item.label} wallpaper`} aria-pressed={wallpaperIndex === index} onClick={() => select(index)}>
               <span className={styles.sceneNumber} aria-hidden="true">0{index + 1}</span>{item.label}<span className={styles.progress} aria-hidden="true" />

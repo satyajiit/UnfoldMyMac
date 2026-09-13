@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 SITE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-APP_DIR="$SITE_DIR/../MacDuo"
+APP_DIR="$SITE_DIR/../UnfoldMyMac"
 FFMPEG_BIN="$(command -v ffmpeg)"
 cd "$APP_DIR"
 swift build
@@ -17,7 +17,7 @@ for target in ['UnfoldMyMacCore', 'UnfoldMyMacKit']:
     objects += [entry['object'] for entry in mapping.values() if 'object' in entry]
 pathlib.Path(sys.argv[2]).write_text('\n'.join('"' + item + '"' for item in objects))
 PYTHON
-swiftc -parse-as-library -I "$SWIFT_BIN/Modules" \
+swiftc -swift-version 6 -parse-as-library -I "$SWIFT_BIN/Modules" \
   "$SITE_DIR/scripts/RenderMedia.swift" \
   "$SITE_DIR/scripts/DesktopFixture.swift" \
   @"$SITE_DIR/.cache/renderer-objects.txt" \

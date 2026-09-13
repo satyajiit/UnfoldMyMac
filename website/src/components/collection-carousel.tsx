@@ -18,7 +18,7 @@ export function CollectionCarousel() {
     <div className="section-heading"><div>
       <span className="real-life-eyebrow"><Layers size={16} aria-hidden="true" />The whole collection</span>
       <h2 id="collection-title">Every mood. Every preview.</h2>
-      <p>All {catalog.filter(item => item.kind === "effect").length} lid effects and {catalog.filter(item => item.kind === "wallpaper").length} live wallpapers. Find your desktop personality.</p>
+      <p>All {catalog.filter(item => item.kind === "effect").length} lid effects and {catalog.filter(item => item.kind === "wallpaper").length} dynamic wallpapers, plus Hinge Garden in Creative Scenes. Find your desktop personality.</p>
     </div><div className="collection-controls">
       <button type="button" aria-label="Previous animation" onClick={() => select(index - 1)}><ArrowLeft size={20} aria-hidden="true" /></button>
       <span aria-live="polite" aria-atomic="true">{String(index + 1).padStart(2, "0")} / {catalog.length}</span>
@@ -33,6 +33,6 @@ export function CollectionCarousel() {
         <span>{preview.name}</span>
       </button>)}
     </div>
-    <p className="collection-note">Choose a scene, then press Preview to play. Wallpaper recordings show sample data.</p>
+    <p className="collection-note">Choose a design. Where a recording is available, press Preview to play. Wallpapers and Hinge Garden show representative data.</p>
   </section>;
 }

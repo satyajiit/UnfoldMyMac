@@ -12,7 +12,7 @@ import UnfoldMyMacCore
 @MainActor
 struct RenderMedia {
     static let size = CGSize(width: 960, height: 600)
-    static let frames = 240
+    nonisolated static let frames = 240
     static let fps = 60.0
     static let output = URL(fileURLWithPath: CommandLine.arguments[1], isDirectory: true)
     // Same synthetic oval as the native observatory tests; no live NOAA request.
@@ -31,47 +31,20 @@ struct RenderMedia {
         _ = NSApplication.shared
         NSApplication.shared.setActivationPolicy(.accessory)
         UnfoldMyMacType.register()
-        let catalog = try WallpaperShaderCatalog()
+        let gpu = try GPUContext()
+        let catalog = WallpaperShaderCatalog()
         let registry = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false)
         for template in registry.templates where CommandLine.arguments.count < 3 || template.id == CommandLine.arguments[2] {
-            let pipeline = try WallpaperPipeline(template: template, catalog: catalog)
-            for frame in 0..<frames {
-                try autoreleasepool {
-                    let time = Double(frame) / fps
-                    var snapshot = demoSnapshot(time: time)
-                    if let countdown = template.countdown {
-                        // Freeze the recording's calendar date so exports remain reproducible.
-                        let date = ISO8601DateFormatter().date(from: "2026-09-12T12:00:00Z")!
-                        var sample = countdown.sample(at: date, timeZone: TimeZone(secondsFromGMT: 0)!)
-                        sample.timestamp = .now
-                        snapshot.sources["countdown"] = sample
-                    }
-                    var channels = SIMD4<Float>.zero
-                    for (index, binding) in (template.channels ?? []).prefix(4).enumerated() {
-                        channels[index] = Float(min(1, max(0, (snapshot.number(binding.metric) ?? 0) / binding.scale)))
-                    }
-                    let energy = (snapshot.number(template.reactiveMetric) ?? 0) / template.reactiveScale
-                    let background = try gpuImage(gpu: catalog.gpu, queue: catalog.queue, format: .bgra8Unorm) { command, pass in
-                        pipeline.encode(command: command, pass: pass, size: size, time: 4 + time, energy: energy, channels: channels,
-                                        grid: template.gridBinding.flatMap { snapshot.grid($0) })
-                    }
-                    let scene = ZStack {
-                        Image(nsImage: background).resizable()
-                        WallpaperLayers(template: template, snapshot: snapshot, animated: false)
-                    }.frame(width: size.width, height: size.height)
-                    try save(scene, directory: "wallpapers/" + template.id, frame: frame)
-                }
-            }
-            print("Exported wallpaper: " + template.id)
+            try renderWallpaper(template, gpu: gpu, catalog: catalog)
         }
 
-        var effects: [(String, any MetalEffectPipeline)] = [
-            ("curtains", try CurtainsPipeline()),
-            ("current", try CurrentPipeline()),
-            ("peekaboo", try PeekabooPipeline())
+        var effects: [(String, any EffectPipeline)] = [
+            ("curtains", try CurtainsPipeline(gpu: gpu)),
+            ("current", try CurrentPipeline(gpu: gpu)),
+            ("peekaboo", try PeekabooPipeline(gpu: gpu))
         ]
-        for artwork in try LibraryAssets.artworks() {
-            effects.append((artwork.id.rawValue, try ArtRevealPipeline(artwork: artwork)))
+        for artwork in try EffectAssets.artworks() {
+            effects.append((artwork.id.rawValue, try ArtRevealPipeline(artwork: artwork, gpu: gpu)))
         }
         let desktopRenderer = ImageRenderer(content: DesktopFixture())
         desktopRenderer.scale = 0.75
@@ -83,7 +56,7 @@ struct RenderMedia {
             for frame in 0..<frames {
                 try autoreleasepool {
                     let context = effectContext(frame)
-                    let foreground = try gpuImage(gpu: pipeline.gpu, queue: pipeline.queue, format: pipeline.pixelFormat) { command, pass in
+                    let foreground = try gpuImage(gpu: gpu.device, queue: gpu.queue, format: pipeline.surface.pixelFormat) { command, pass in
                         pipeline.encode(command: command, pass: pass, size: size, context: context)
                     }
                     let scene = ZStack {
@@ -96,13 +69,12 @@ struct RenderMedia {
             print("Exported effect: " + name)
         }
         if selected("frost") {
-            let pipeline = try FrostPipeline()
-            let source = try frostSource(desktopCG, gpu: pipeline.gpu)
-            let mips = pipeline.makeMips(source: source)
+            let pipeline = try FrostPipeline(gpu: gpu)
+            let source = try frostSource(desktopCG, gpu: gpu.device)
             for frame in 0..<frames {
                 try autoreleasepool {
-                    let rendered = try gpuImage(gpu: pipeline.gpu, queue: pipeline.queue, format: .bgra8Unorm_srgb) { command, pass in
-                        pipeline.encode(command: command, source: source, mips: mips, pass: pass, context: effectContext(frame))
+                    let rendered = try gpuImage(gpu: gpu.device, queue: gpu.queue, format: .bgra8Unorm_srgb) { command, pass in
+                        pipeline.encode(command: command, source: source, pass: pass, context: effectContext(frame))
                     }
                     try save(Image(nsImage: rendered).resizable().frame(width: size.width, height: size.height), directory: "effects/frost", frame: frame)
                 }
@@ -112,6 +84,59 @@ struct RenderMedia {
         if selected("veil") || selected("fade") {
             try await nativeEffects(desktopImage: desktopImage)
         }
+    }
+
+    static func renderWallpaper(_ template: WallpaperTemplate, gpu: GPUContext, catalog: WallpaperShaderCatalog) throws {
+        let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog)
+        let frameCount = template.id == "hinge-garden" ? 1320 : frames
+        var dynamics = WallpaperInputDynamics()
+        var smoother = WallpaperFrameSmoother(template: template)
+        for frame in 0..<frameCount {
+            try autoreleasepool {
+                let time = Double(frame) / fps
+                var snapshot = demoSnapshot(time: time)
+                if let countdown = template.countdown {
+                    // Freeze the recording's calendar date so exports remain reproducible.
+                    let date = ISO8601DateFormatter().date(from: "2026-09-12T12:00:00Z")!
+                    var sample = countdown.sample(at: date, timeZone: TimeZone(secondsFromGMT: 0)!)
+                    sample.timestamp = .now
+                    snapshot.sources["countdown"] = sample
+                }
+                var channels = SIMD4<Float>.zero
+                for (index, binding) in (template.channels ?? []).prefix(4).enumerated() {
+                    channels[index] = Float(min(1, max(0, (snapshot.number(binding.metric) ?? 0) / binding.scale)))
+                }
+                let energy = (snapshot.number(template.reactiveMetric) ?? 0) / template.reactiveScale
+                let renderedFrame = template.id == "hinge-garden"
+                    ? gardenFrame(time, dynamics: &dynamics, smoother: &smoother)
+                    : WallpaperFrame(time: 4 + time, energy: energy, channels: channels, grid: template.gridBinding.flatMap { snapshot.grid($0) })
+                let background = try gpuImage(gpu: gpu.device, queue: gpu.queue, format: .bgra8Unorm) { command, pass in
+                    pipeline.encode(command: command, pass: pass, size: size, frame: renderedFrame)
+                }
+                let scene = ZStack {
+                    Image(nsImage: background).resizable()
+                    WallpaperLayers(template: template, snapshot: snapshot, animated: false)
+                }.frame(width: size.width, height: size.height)
+                try save(scene, directory: "wallpapers/" + template.id, frame: frame, totalFrames: frameCount)
+            }
+        }
+        print("Exported wallpaper: " + template.id)
+    }
+
+    // Synthetic inputs follow the same dynamics and smoother as the native scene. No sensors are read.
+    static func gardenFrame(_ time: Double, dynamics: inout WallpaperInputDynamics,
+                            smoother: inout WallpaperFrameSmoother) -> WallpaperFrame {
+        let angle = time < 3 || time >= 6 ? 110.0 : 8.0
+        dynamics.sample(now: time, lidAngle: angle, rms: time > 8 && time < 8.3 ? 0.1 : 0,
+                        sensitivity: 1, battery: 0.65, pluggedIn: time > 10,
+                        daylight: 0.35, soundEnabled: true, reducedMotion: false)
+        smoother.targetLiveInputs = dynamics.value
+        smoother.targetLiveInputs.parallax = SIMD2(sin(time * 0.6) * 0.9, cos(time * 0.43) * 0.6)
+        smoother.targetLiveInputs.motionStir = time > 7 && time < 9 ? 0.6 : 0
+        smoother.setTargets(energy: time > 10 ? 0.8 : 0.2, channels: .zero, grid: nil)
+        var frame = smoother.advance(delta: 1 / fps, animating: true)
+        frame.time += 18
+        return frame
     }
 
     static func selected(_ name: String) -> Bool {
@@ -221,19 +246,19 @@ struct RenderMedia {
         return NSImage(cgImage: image, size: size)
     }
 
-    static func save<V: View>(_ scene: V, directory: String, frame: Int) throws {
+    static func save<V: View>(_ scene: V, directory: String, frame: Int, totalFrames: Int = frames) throws {
         let renderer = ImageRenderer(content: scene)
         renderer.scale = 1
         guard let image = renderer.cgImage else {
             throw CocoaError(.coderInvalidValue)
         }
-        try writeFrame(normalizedPNG(image), directory: directory, frame: frame)
+        try writeFrame(normalizedPNG(image), directory: directory, frame: frame, totalFrames: totalFrames)
     }
 
     static var encoder: Process?
     static var input: FileHandle?
 
-    static func writeFrame(_ png: Data, directory: String, frame: Int) throws {
+    static func writeFrame(_ png: Data, directory: String, frame: Int, totalFrames: Int = frames) throws {
         if directory == "desktop" {
             try png.write(to: output.appendingPathComponent("demo-desktop.png"))
             return
@@ -250,7 +275,7 @@ struct RenderMedia {
             encoder = process; input = pipe.fileHandleForWriting
         }
         try input!.write(contentsOf: png)
-        if frame == frames - 1 {
+        if frame == totalFrames - 1 {
             try input!.close()
             encoder!.waitUntilExit()
             guard encoder!.terminationStatus == 0 else { throw CocoaError(.fileWriteUnknown) }

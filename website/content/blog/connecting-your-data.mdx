@@ -8,7 +8,7 @@ topic: "Data connections"
 ---
 A wallpaper can show coding activity without pretending to know what you are working on. In UnfoldMyMac, data connections provide specific inputs: Mac metrics, local session metadata, lifecycle events, public GitHub data, NOAA space weather, or your own snapshots.
 
-Personal data connections are optional and live in **Data & settings**. Choose a scene first, then connect the input you want it to use. The [README’s data section](https://github.com/satyajiit/UnfoldMyMac#living-wallpapers) describes the available sources.
+Open a design in **Dynamic Wallpapers** or **Creative Scenes**, then choose **Customize** below its preview. Feature badges identify its inputs before you connect anything. You can browse and preview before connecting personal data; required setup opens before applying a design. The [README’s data section](https://github.com/satyajiit/UnfoldMyMac#living-wallpapers) describes the available sources.
 
 ## Mac metrics come from your Mac
 
@@ -33,7 +33,7 @@ The connection follows these events:
 
 The active wallpaper reads local hook records once a second. Templates can use working and waiting counts, completed turns, tool events, status text, and a numeric state to change their appearance. With several sessions running, an approval request takes priority over a working state. A state expires after five minutes without another event.
 
-The hook receiver saves identifiers, timestamps, and counters. It discards prompts, commands, and responses, and does not approve or redirect Codex work. The [hook setup and data contract](https://github.com/satyajiit/UnfoldMyMac/blob/main/MacDuo/WALLPAPER_ENGINE.md#data-sources) and [activity provider](https://github.com/satyajiit/UnfoldMyMac/blob/main/MacDuo/Sources/UnfoldMyMacKit/Features/Wallpaper/Data/CodexActivityProvider.swift) describe what a new scene can use.
+The hook receiver saves identifiers, timestamps, and counters. It discards prompts, commands, and responses, and does not approve or redirect Codex work. The [hook setup and data contract](https://github.com/satyajiit/UnfoldMyMac/blob/main/UnfoldMyMac/WALLPAPER_ENGINE.md#data-sources) and [activity provider](https://github.com/satyajiit/UnfoldMyMac/blob/main/UnfoldMyMac/Sources/UnfoldMyMacKit/Features/Wallpaper/Data/CodexActivityProvider.swift) describe what a new scene can use.
 
 ## GitHub uses public information
 
@@ -43,13 +43,13 @@ The app refreshes public profile data every five minutes. GitHub can delay publi
 
 ## Aurora Observatory reads public space weather
 
-Previewing or running Aurora Observatory fetches NOAA's public OVATION aurora forecast and planetary Kp readings. No account or personal data connection is needed. The app shares a five-minute cache across the preview and desktop views, and labels cached or stale readings when a feed is unavailable. The [NOAA provider](https://github.com/satyajiit/UnfoldMyMac/blob/main/MacDuo/Sources/UnfoldMyMacKit/Features/Wallpaper/Data/AuroraWallpaperProvider.swift) defines those states.
+Previewing or running Aurora Observatory fetches NOAA's public OVATION aurora forecast and planetary Kp readings. No account or personal data connection is needed. The app shares a five-minute cache across the preview and desktop views, and labels cached or stale readings when a feed is unavailable. The [NOAA provider](https://github.com/satyajiit/UnfoldMyMac/blob/main/UnfoldMyMac/Sources/UnfoldMyMacKit/Features/Wallpaper/Data/AuroraWallpaperProvider.swift) defines those states.
 
 The auroral curtains are an artistic interpretation of the [NOAA forecast](https://www.swpc.noaa.gov/products/aurora-30-minute-forecast), drawn around bundled NASA Earth Observatory imagery. This website plays a recording with a synthetic forecast and a sample Kp reading; it does not fetch live NOAA data.
 
 ## The GTA VI countdown uses your calendar
 
-GTA VI — Vice City Countdown calculates the remaining calendar days in your time zone from the release date bundled with the template. It does not contact Rockstar to update that date or require an account. The [countdown implementation](https://github.com/satyajiit/UnfoldMyMac/blob/main/MacDuo/Sources/UnfoldMyMacCore/Wallpaper/WallpaperCountdown.swift) handles the date locally; [Rockstar's site](https://www.rockstargames.com/VI) is the source for the current release announcement. The website recording freezes the calendar at September 12, 2026.
+GTA VI — Vice City Countdown calculates the remaining calendar days in your time zone from the release date bundled with the template. It does not contact Rockstar to update that date or require an account. The [countdown implementation](https://github.com/satyajiit/UnfoldMyMac/blob/main/UnfoldMyMac/Sources/UnfoldMyMacCore/Wallpaper/WallpaperCountdown.swift) handles the date locally; [Rockstar's site](https://www.rockstargames.com/VI) is the source for the current release announcement. The website recording freezes the calendar at September 12, 2026.
 
 <h2 id="public-api-data-needs-a-snapshot-adapter">Public API data needs a snapshot adapter</h2>
 
@@ -57,7 +57,7 @@ To use another public API, write an adapter that maps its response into the engi
 
 The standard file connection reads once a second, and the HTTPS connection polls every five seconds while active. The adapter controls how often it calls the upstream API. Respect that service’s rate limits, cache its responses where appropriate, and report the age of the underlying reading. A raw public API URL works directly only if it already returns the expected snapshot format.
 
-Snapshots must have a current timestamp, fit within 64 KB, and keep their keys inside the connection’s namespace. Values older than 15 seconds stop supplying live input. Keep credentials in the adapter or connector, outside the template. The [snapshot example and provider guide](https://github.com/satyajiit/UnfoldMyMac/blob/main/MacDuo/WALLPAPER_ENGINE.md#connectors-and-providers) covers the format and validation rules.
+Snapshots must have a current timestamp, fit within 64 KB, and keep their keys inside the connection’s namespace. Values older than 15 seconds stop supplying live input. Keep credentials in the adapter or connector, outside the template. The [snapshot example and provider guide](https://github.com/satyajiit/UnfoldMyMac/blob/main/UnfoldMyMac/WALLPAPER_ENGINE.md#connectors-and-providers) covers the format and validation rules.
 
 ## Bring a scene of your own
 
@@ -65,7 +65,7 @@ An imported JSON template can reuse an installed scene with different colours, t
 
 There is room for more than counters. A tide reading could move a harbour’s waterline. Weather data could change a greenhouse. Codex hooks could give a character a reason to stop, look up, and wait for you.
 
-Share a sketch and the source you want to use in a [wallpaper idea](https://github.com/satyajiit/UnfoldMyMac/issues/new?template=feature-request.yml), or follow the [template guide](https://github.com/satyajiit/UnfoldMyMac/blob/main/MacDuo/WALLPAPER_ENGINE.md#add-a-template) and send a pull request. Include sample data so someone else can try the scene before setting up a connection.
+Share a sketch and the source you want to use in a [wallpaper idea](https://github.com/satyajiit/UnfoldMyMac/issues/new?template=feature-request.yml), or follow the [template guide](https://github.com/satyajiit/UnfoldMyMac/blob/main/UnfoldMyMac/WALLPAPER_ENGINE.md#add-a-template) and send a pull request. Include sample data so someone else can try the scene before setting up a connection.
 
 ## Some numbers are part of the scene
 
@@ -76,8 +76,8 @@ You can review the app’s capture, storage, and connection behavior on the [pri
 ## Sources
 
 - [UnfoldMyMac connections and permissions](https://github.com/satyajiit/UnfoldMyMac#get-started)
-- [Wallpaper engine, hooks, and template format](https://github.com/satyajiit/UnfoldMyMac/blob/main/MacDuo/WALLPAPER_ENGINE.md)
-- [Wallpaper data provider implementation](https://github.com/satyajiit/UnfoldMyMac/tree/main/MacDuo/Sources/UnfoldMyMacKit/Features/Wallpaper/Data)
+- [Wallpaper engine, hooks, and template format](https://github.com/satyajiit/UnfoldMyMac/blob/main/UnfoldMyMac/WALLPAPER_ENGINE.md)
+- [Wallpaper data provider implementation](https://github.com/satyajiit/UnfoldMyMac/tree/main/UnfoldMyMac/Sources/UnfoldMyMacKit/Features/Wallpaper/Data)
 - [GitHub REST API: events](https://docs.github.com/en/rest/activity/events)
 - [Aurora forecast — NOAA Space Weather Prediction Center](https://www.swpc.noaa.gov/products/aurora-30-minute-forecast)
 - [GTA VI release information — Rockstar Games](https://www.rockstargames.com/VI)

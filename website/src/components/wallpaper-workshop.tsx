@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { site } from "@/lib/site";
 import styles from "./wallpaper-workshop.module.css";
 
-const engineGuide = `${site.repo}/blob/main/MacDuo/WALLPAPER_ENGINE.md`;
+const engineGuide = `${site.repo}/blob/main/UnfoldMyMac/WALLPAPER_ENGINE.md`;
 const ideaLink = `${site.repo}/issues/new?template=feature-request.yml&title=Wallpaper%20idea%3A%20`;
 
 export function WallpaperConnections() {

@@ -3,7 +3,7 @@ import { mkdir, copyFile } from "node:fs/promises";
 import path from "node:path";
 import { heroCovers } from "../src/lib/hero-demo";
 const root = path.resolve("..");
-const resources = path.join(root, "MacDuo/Sources/UnfoldMyMacKit/Resources");
+const resources = path.join(root, "UnfoldMyMac/Sources/UnfoldMyMacKit/Resources");
 await mkdir("public/media", { recursive: true });
 await mkdir("public/artwork", { recursive: true });
 await mkdir("public/artwork/thumbs", { recursive: true });

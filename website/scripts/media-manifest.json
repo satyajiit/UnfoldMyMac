@@ -195,6 +195,19 @@
     "sha256": "3ef1802e237c52c56de3be0ff0e689075f8621f75e22032c265e6b9b3a7f1fd8"
   },
   {
+    "file": "hinge-garden.mp4",
+    "source": "Native Metal scene with deterministic local input dynamics, rendered at 60 fps",
+    "readmePreview": null,
+    "sampleData": true,
+    "demoDesktop": false,
+    "width": 960,
+    "height": 600,
+    "avg_frame_rate": "60/1",
+    "nb_frames": "1320",
+    "bytes": 1212199,
+    "sha256": "aed1b607232d672dcf0769273745ef23affef5c3657fa171ba9645ae1d22f6ff"
+  },
+  {
     "file": "lights-out.mp4",
     "source": "Updated README preview exporter, rendered at 60 fps",
     "readmePreview": ".github/media/wallpapers/lights-out.gif",

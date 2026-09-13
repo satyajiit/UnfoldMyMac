@@ -32,10 +32,10 @@ test("every film plays from YouTube and no video file ships with the site", () =
   }
 });
 
-test("three collection scenes and the website carousel include every current preview", () => {
+test("website carousel includes every current design alongside the original filmed collection", () => {
   const effects = catalog.filter(item => item.kind === "effect");
   const wallpapers = catalog.filter(item => item.kind === "wallpaper");
-  assert.deepEqual([catalog.length, effects.length, wallpapers.length], [23, 13, 10]);
+  assert.deepEqual([catalog.length, effects.length, wallpapers.length, catalog.filter(item => item.kind === "scene").length], [24, 13, 10, 1]);
   assert.equal(new Set(catalog.map(item => item.id)).size, catalog.length);
   for (const route of ["out/index.html", "out/showcase/index.html"]) {
     const $ = load(readFileSync(route, "utf8"));

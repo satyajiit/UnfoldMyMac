@@ -5,7 +5,7 @@ fixes are all welcome.
 
 ## Before you open a pull request
 
-Run all four from `MacDuo/`:
+Run all four from `UnfoldMyMac/`:
 
 ```sh
 swift test
@@ -63,18 +63,18 @@ when `CI=true`, so a green CI run is not a claim that rendering works. Your loca
 
 | Area | Start here |
 | --- | --- |
-| Models, calibration, preferences | [`UnfoldMyMacCore`](MacDuo/Sources/UnfoldMyMacCore) |
-| The effect list and its renderers | [`Effects.json`](MacDuo/Sources/UnfoldMyMacKit/Resources/Effects/Effects.json) and [`EffectRendererFactories.swift`](MacDuo/Sources/UnfoldMyMacKit/Features/Effects/Catalog/EffectRendererFactories.swift) |
-| Effect render pipelines | [`Pipelines`](MacDuo/Sources/UnfoldMyMacKit/Features/Effects/Pipelines) |
-| Metal shaders | [`Shaders`](MacDuo/Sources/UnfoldMyMacKit/Shaders) |
-| Bundled image designs | [`Artworks.json`](MacDuo/Sources/UnfoldMyMacKit/Resources/Library/Artworks.json) and [`Artwork`](MacDuo/Sources/UnfoldMyMacKit/Resources/Artwork) |
-| Wallpaper templates and rendering | [`Wallpapers`](MacDuo/Sources/UnfoldMyMacKit/Resources/Wallpapers) and [`Wallpaper`](MacDuo/Sources/UnfoldMyMacKit/Features/Wallpaper) |
-| App entry point | [`main.swift`](MacDuo/Sources/UnfoldMyMac/main.swift) |
+| Models, calibration, preferences | [`UnfoldMyMacCore`](UnfoldMyMac/Sources/UnfoldMyMacCore) |
+| The effect list and its renderers | [`Effects.json`](UnfoldMyMac/Sources/UnfoldMyMacKit/Resources/Effects/Effects.json) and [`EffectRendererFactories.swift`](UnfoldMyMac/Sources/UnfoldMyMacKit/Features/Effects/Catalog/EffectRendererFactories.swift) |
+| Effect render pipelines | [`Pipelines`](UnfoldMyMac/Sources/UnfoldMyMacKit/Features/Effects/Pipelines) |
+| Metal shaders | [`Shaders`](UnfoldMyMac/Sources/UnfoldMyMacKit/Shaders) |
+| Bundled image designs | [`Artworks.json`](UnfoldMyMac/Sources/UnfoldMyMacKit/Resources/Library/Artworks.json) and [`Artwork`](UnfoldMyMac/Sources/UnfoldMyMacKit/Resources/Artwork) |
+| Wallpaper templates and rendering | [`Wallpapers`](UnfoldMyMac/Sources/UnfoldMyMacKit/Resources/Wallpapers) and [`Wallpaper`](UnfoldMyMac/Sources/UnfoldMyMacKit/Features/Wallpaper) |
+| App entry point | [`main.swift`](UnfoldMyMac/Sources/UnfoldMyMac/main.swift) |
 
-[`MacDuo/DEVELOPING.md`](MacDuo/DEVELOPING.md) is the extension guide: how to add an effect, a
-shader, or a wallpaper template. [`MacDuo/WALLPAPER_ENGINE.md`](MacDuo/WALLPAPER_ENGINE.md)
+[`UnfoldMyMac/DEVELOPING.md`](UnfoldMyMac/DEVELOPING.md) is the extension guide: how to add an effect, a
+shader, or a wallpaper template. [`UnfoldMyMac/WALLPAPER_ENGINE.md`](UnfoldMyMac/WALLPAPER_ENGINE.md)
 covers the template schema and the data connectors.
-[`MacDuo/SIGNING.md`](MacDuo/SIGNING.md) covers how releases are built, signed and notarized.
+[`UnfoldMyMac/SIGNING.md`](UnfoldMyMac/SIGNING.md) covers how releases are built, signed and notarized.
 
 ## Reporting a bug
 

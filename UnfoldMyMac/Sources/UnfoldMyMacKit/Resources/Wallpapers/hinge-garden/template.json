@@ -1,0 +1,109 @@
+{
+  "version": 2,
+  "id": "hinge-garden",
+  "title": "Hinge Garden",
+  "subtitle": "A glass snail tends a tiny greenhouse. Open your Mac and let the garden wake.",
+  "author": "UnfoldMyMac",
+  "credit": "Original procedural miniature · rendered live on your Mac",
+  "category": "nature",
+  "order": 25,
+  "tags": [
+    "Cinematic",
+    "Nature",
+    "Lid reactive",
+    "Optional sound"
+  ],
+  "accent": 8961736,
+  "background": 199964,
+  "reactiveMetric": "mac.cpu",
+  "reactiveScale": 100,
+  "idleEnergy": 0.15,
+  "reactiveSmoothing": 1,
+  "allowsCustomBackground": false,
+  "cover": {
+    "time": 18,
+    "energy": 0.2,
+    "channels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "reduceMotionPose": {
+    "time": 18,
+    "energy": 0.15,
+    "channels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "setup": [
+    {
+      "kind": "garden",
+      "required": false
+    },
+    {
+      "kind": "microphone",
+      "required": false
+    }
+  ],
+  "layers": [],
+  "scene": {
+    "source": "Scene.metal",
+    "fragment": "hingeGardenFragment",
+    "dependencies": [
+      "GardenGeometry",
+      "GardenMaterials"
+    ],
+    "resolution": "native",
+    "liveInputs": true
+  },
+  "metadata": {
+    "version": 1,
+    "collection": "scenes",
+    "overview": "A tiny greenhouse with a glass snail at its heart. Open your MacBook and watch a small world wake up, with light, plants, and unexpected moments that respond to you.",
+    "sections": [
+      {
+        "title": "Open the lid, wake the garden",
+        "body": "As you open your MacBook, the snail extends its feelers before emerging from its shell. Lower the lid and it retreats; change direction and the movement follows smoothly. Plants sway, pollen drifts, and reflections move across the pool while the garden is awake."
+      },
+      {
+        "title": "Plug in and follow the light",
+        "body": "**Connect your charger while the garden is running** to send a ripple across the pool. A warm current travels through the roots, climbs the snail’s shell, and reaches the greenhouse lantern. The flowers open a little further as the light arrives.\n\nThe sequence takes about **nine seconds**, then settles into a soft glow that stays on while external power is connected—even at full battery. Unplug and the glow fades. Opening the app or waking your Mac while already plugged in shows the connected glow without replaying the traveling light."
+      },
+      {
+        "title": "Battery, daylight, and the pace of your Mac",
+        "body": "**Battery level** influences the light in the roots and lantern. **Local time** shifts the scene’s daylight, and **CPU activity** changes the currents beneath the water. These reactions use your Mac’s local readings automatically; no account or network connection is required."
+      },
+      {
+        "title": "Look around and set things in motion",
+        "body": "Move the pointer for a gentle change in perspective. On supported Macs, tilt shifts the view and gyroscope movement stirs the water and plants. Choose **Pointer parallax** and **React to tilt and gyroscope** in the Motion tab. Pointer movement still works when physical sensors are unavailable."
+      },
+      {
+        "title": "Sound, only if you want it",
+        "body": "Enable **React to sound** in the Sound tab to let nearby sound stir the garden. Stronger peaks release a brief burst of pollen. Adjust sensitivity to suit your space. Microphone permission is requested when you enable sound reactions; audio is measured as a level and is never recorded or transcribed."
+      },
+      {
+        "title": "A thought between the leaves",
+        "body": "Optional **One-liners** add a rotating selection of short lines, with a choice of 15, 45, or 120 seconds between changes. With sound reactions and the blow option enabled, a sustained blow can advance the line. Other sustained nearby sounds can also trigger it. One-liners are off by default."
+      },
+      {
+        "title": "A calmer garden when you need it",
+        "body": "With **Reduce Motion**, the garden holds an open, still pose, sound reactions pause, and the current one-liner stays in place. The soft connected-power glow remains available. Customize previews your settings; Save keeps them and Cancel restores your previous choices."
+      }
+    ],
+    "authors": [
+      {
+        "name": "UnfoldMyMac",
+        "role": "Design & development",
+        "url": "https://unfoldmymac.com",
+        "logo": "UnfoldMyMacMark"
+      }
+    ],
+    "relatedBrands": [],
+    "badge": "New"
+  }
+}

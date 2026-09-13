@@ -102,7 +102,7 @@ test("each uploaded film plays its assigned YouTube video and preserves the orig
   await page.route("https://www.youtube-nocookie.com/**", route => route.fulfill({ contentType: "text/html", body: "<!doctype html><title>Stub player</title>" }));
   await page.goto("/showcase/");
   await expect(page.locator(".real-film")).toHaveCount(6);
-  await expect(page.locator(".showcase-grid article")).toHaveCount(23);
+  await expect(page.locator(".showcase-grid article")).toHaveCount(24);
   await expect(page.locator(".real-film iframe")).toHaveCount(0);
   expect(requests).toEqual([]);
   for (const item of [realLifeReel, ...realLifeClips]) {
