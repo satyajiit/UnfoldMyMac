@@ -23,7 +23,8 @@ import UnfoldMyMacCore
     try await settle { model.thumbnails.count >= bundledTemplateCount() }
     let covers = CoverImageStore()
     UnfoldMyMacType.register()
-    let view = UnfoldMyMacView(shell: shell, effects: effects, wallpaper: model)
+    let view = UnfoldMyMacView(shell: shell, effects: effects, wallpaper: model,
+                               updates: makeUpdateModel(feed: FakeReleaseFeed(.failure(.offline))))
         .environment(\.colorScheme, scheme).environment(\.coverImages, covers).defaultAppStorage(defaults)
     let host = NSHostingView(rootView: view)
     let window = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 1120, height: 780),

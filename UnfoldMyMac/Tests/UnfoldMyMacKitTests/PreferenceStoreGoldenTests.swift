@@ -21,6 +21,18 @@ private let connectionsFixture = Data("""
     #expect(UnfoldMyMacSettings.key.legacyNames == ["luma.settings.v1", "activation", "style"])
     #expect(WallpaperPreferences.key.name == "unfoldmymac.wallpaper.v1")
     #expect(WallpaperSetupController.key.name == "unfoldmymac.wallpaper.connections.v1")
+    #expect(UpdatePreferences.key.name == "unfoldmymac.updates.v1")
+    #expect(UpdatePreferences.key.legacyNames.isEmpty, "The updater is new; there is no older payload to adopt")
+}
+
+@Test @MainActor func updatePreferencesLoadFromAPartialPayloadAndDropWhatCannotBeTrue() {
+    let store = InMemoryPreferencesStore()
+    store.set(Data(#"{"skippedVersion":"not a version","lastCheck":253402300799}"#.utf8),
+              forKey: UpdatePreferences.key.name)
+    let loaded = store.load(UpdatePreferences.key)
+    #expect(loaded.automaticChecks, "A field the payload never had falls back to its default")
+    #expect(loaded.skippedVersion == nil, "An unreadable version must not silently suppress an update")
+    #expect(loaded.lastCheck == nil, "A date far in the future would otherwise stop checks for a year")
 }
 
 @Test @MainActor func settingsFixtureDecodesSanitizesAndRoundTrips() throws {

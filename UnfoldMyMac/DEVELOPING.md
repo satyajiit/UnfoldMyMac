@@ -14,6 +14,7 @@ Requirements: macOS 26 and Xcode 26 with the Metal Toolchain component (`xcodebu
 | `./script/build_and_run.sh --shader-check` | Renders every pipeline from shader source and from the precompiled units and requires identical pixels |
 | `./script/build_and_run.sh --probe` | Read-only lid-sensor probe |
 | `./script/build_and_run.sh --self-test` | `swift test` through the script |
+| `./script/check_update_trust.sh` | Runs the real updater requirements against `dist/release` and `dist`: the release app and DMG must be accepted, a dev build rejected |
 
 The packaged executable also understands `--wallpaper-benchmark` (presents every wallpaper scene for eight seconds and reports presented frame rate, worst p95 interval and coverage), `--shader-units` (lists the shader compile units for the precompile step) and the two hook endpoints `--wallpaper-claude-hook` and `--wallpaper-codex-hook`.
 
@@ -45,12 +46,15 @@ UnfoldMyMac/
     App/                         UnfoldMyMacApp (CLI modes + launch), AppDependencies, AppController, AppShellModel,
                                  window / menu / status-item / preview-panel / appearance controllers, AppDiagnostics
     Platform/                    system seams and their live implementations: environment, displays, lid sensor,
-                                 desktop capture, preferences, file picker, workspace, permission, paths, BundleResources
+                                 desktop capture, preferences, file picker, workspace, permission, paths, BundleResources,
+                                 HTTP primitives, subprocess runner, update-environment probe
     Rendering/                   the GPU kernel shared by both features
     Shaders/                     Effects/*.metal, Wallpaper/{Common,Emblem,RaceCar,RaceMaterials,GardenGeometry,GardenMaterials}.metal
     DesignSystem/                palette, typography, icons, cards, buttons, NativeSwitch, environment keys
     Features/Effects/            Catalog, Pipelines, Library, Runtime, Presentation
     Features/Wallpaper/          Catalog, Connections, Data, Rendering, Runtime, Presentation
+    Features/Updates/            Data (feed, download), Verify (signature, SHA-256), Install (mount, stage, swap),
+                                 Runtime, Presentation
     Resources/                   Effects/Effects.json, Library/Artworks.json, Artwork, Covers, Fonts, Brand,
                                  WallpaperMarks, Wallpapers/<id>/{template.json, Scene.metal, cover.png?, marks/},
                                  Wallpapers/{Collection,Style}.json
@@ -58,7 +62,7 @@ UnfoldMyMac/
   Tests/UnfoldMyMacKitTests/     + Support/ (fakes, traits, settle helper), Fixtures/ (goldens, v1 templates)
 ```
 
-Conventions: one type per file, files under 200 lines, `internal` by default with `private(set)` state, `public` only on `UnfoldMyMacApp`. Every class is `final`. Owners of system resources implement `isolated deinit`. Blocking I/O lives in actors. Errors are typed (`GPUError`, `EffectSessionError`, `WallpaperError`, `LibraryError`, `BundleResourcesError`); tuning numbers are named constants (`EffectTuning`, `GPUTuning`, `WallpaperCanvas`). `BundleResources` is the only place that reads the resource bundle.
+Conventions: one type per file, files under 200 lines, `internal` by default with `private(set)` state, `public` only on `UnfoldMyMacApp`. Every class is `final`. Owners of system resources implement `isolated deinit`. Blocking I/O lives in actors. Errors are typed (`GPUError`, `EffectSessionError`, `WallpaperError`, `LibraryError`, `BundleResourcesError`, `UpdateError`); tuning numbers are named constants (`EffectTuning`, `GPUTuning`, `WallpaperCanvas`). `BundleResources` is the only place that reads the resource bundle.
 
 ## Architecture
 
@@ -84,12 +88,19 @@ Seams with one live implementation and one fake (`Tests/UnfoldMyMacKitTests/Supp
 | `ScreenCapturePermissionChecking` | `SystemScreenCapturePermission` | Screen Recording state |
 | `WallpaperDataProvider`, `WallpaperDesktopImageAccess` | providers, `SystemWallpaperDesktopImages` | Wallpaper data and the system desktop image |
 | `WallpaperAudioCapturing` | `WallpaperAudioCapture` | Input-only AVAudioEngine, permission state, scalar amplitude and device changes |
+| `ReleaseFeedReading` | `ReleaseFeed` | The published release: `release.json` first, the GitHub API as fallback and notes source |
+| `ArtifactDownloading` | `URLSessionArtifactDownloader` | One resumable `URLSessionDownloadTask` per download, as a stream of `DownloadEvent`s |
+| `CodeSignatureValidating` | `SecurityCodeSignatureValidator` | Developer ID + notarization + same-identity checks, in process |
+| `DiskImageMounting` | `HDIUtilMounter` | Read-only `nobrowse` attach scoped to one closure, with detach escalation |
+| `BundleInstalling` | `RenameSwapInstaller` | Writes the handoff and spawns the staged bundle's own signed binary |
+| `UpdateEnvironmentProbing` | `BundleUpdateEnvironment` | Where this copy runs, whether it may update itself, free space |
+| `ProcessRunning` | `SystemProcessRunner` | The only subprocess seam; three absolute paths, never a shell |
 
 Models are `@Observable`; controllers and models consume each other's state through `Observations {}` rather than callbacks. `SystemEnvironment` debounces display reconfiguration by 150 ms into one generation.
 
 `WallpaperModel` also owns one `WallpaperInputService`. Native scenes opt in with `scene.liveInputs`; visible desktop and preview renderers lease its lid sampler, physical motion sensors, and optional microphone session. Input dynamics are pure Core values; the platform audio callback retains only scalar RMS, and the frame smoother interpolates at display cadence. See the wallpaper engine guide for lifetimes, neutral defaults and the appended uniform layout. `scene.resolution: "native"` removes the default 1920-pixel shader cap for Hinge Garden only.
 
-Persisted keys: `unfoldmymac.settings.v1` (migrates from `luma.settings.v1`), `unfoldmymac.wallpaper.v1`, `unfoldmymac.wallpaper.connections.v1`. Golden JSON fixtures pin all three payloads; legacy names are removed after adoption.
+Persisted keys: `unfoldmymac.settings.v1` (migrates from `luma.settings.v1`), `unfoldmymac.wallpaper.v1`, `unfoldmymac.wallpaper.connections.v1`, `unfoldmymac.updates.v1`. Golden JSON fixtures pin all four payloads; legacy names are removed after adoption.
 
 ## Effects catalog
 
@@ -182,6 +193,28 @@ All pipelines receive calibrated closure: 0 is completely clear, 1 complete. Sta
 
 **Status.** `EffectRuntime` publishes every observable property only on change and names the *rendered* effect, so Reduce Transparency reports the fallback it actually shows.
 
+## Updating
+
+**What it is.** The app checks GitHub Releases, badges the sidebar, offers a sheet, and on one click downloads, verifies, installs and relaunches. No third-party framework: the package still has zero dependencies. Nothing is fetched until the user asks, and no update path is entered without the user clicking Update Now.
+
+**The feed.** `ReleaseFeed` reads `release.json`, published as a third release asset alongside the DMG and `SHA256SUMS`. It is the primary manifest because it costs no API quota — `/releases/latest/download/` is a redirect, not an API call — and because it carries `minimumMacOS`, which the GitHub API cannot report. The API is the fallback and the source of release notes. Both share `HTTPConditionalCache`, so a 304 is free against the 60-per-hour unauthenticated limit that `GitHubProfileClient` also spends.
+
+**Cadence.** `UpdateModel.run()` waits 8 s after launch, then wakes every 15 minutes to ask whether a check is due: 6 h after a success, 15 min after a failure, jittered ±30 min, never more than once an hour. The wait is sliced rather than one long sleep, because a sleep deadline is not extended across system sleep and a single six-hour wait fires late after a night with the lid closed.
+
+**Quiet in the background, always answers a click.** Every result passes through `UpdatePolicy.next(after:trigger:…)`, which takes the trigger as an argument. A failed automatic check returns `.idle` and leaves its message only in the retry schedule; a failed manual check returns `.failed`. `.failed(.download/.verify/.stage)` is therefore unreachable except from a path the user started. `UpdateModel` is the only writer of `state`.
+
+**The kill switch.** `BundleUpdateEnvironment.eligibility()` runs cheapest-first, first match wins, and any verdict other than `.eligible` ends in `.unsupported` before a single request: an unparseable `CFBundleShortVersionString`, a parent directory named `dist`, a read-only volume, an `/AppTranslocation/` path, a build that fails our own requirement, or an install root we cannot create a directory in. A `dist/` build reports `developmentTree`; a copy of one elsewhere reports `developmentBuild`. Neither ever touches the network.
+
+**Verification.** `SecurityCodeSignatureValidator` pins the Developer ID Application leaf OID, the Developer ID CA, team `WW382UC8JD` and `notarized`, and additionally requires the candidate to satisfy the running app's own designated requirement. Team OU alone is not enough: an Apple Development certificate carries the same OU, so the obvious requirement string accepts a dev build. The DMG's requirement omits the `identifier` clause, because a disk image's signing identifier is derived from its filename. `script/check_update_trust.sh` asserts all of this against the real signed artifacts.
+
+The order is load-bearing: SHA-256 against `SHA256SUMS`, then the **DMG's signature before `hdiutil attach`** — so the kernel is never asked to parse an image we did not sign — then the app on the read-only mount, reading its `Info.plist` through `kSecCodeInfoPList` so version and `LSMinimumSystemVersion` come from bytes the signature covers, then the staged copy after `ditto`, then the installed bundle after the swap.
+
+**Install.** In-place replacement is rejected because `ShaderLibraryCache`, `Effects.json`, templates and fonts all load lazily by bundle path; a swap under a live process breaks a resource twenty minutes later with nothing pointing at the updater. Instead the staged bundle's own signed binary is re-executed as `--install-update`, staging in `<installRoot>/.UnfoldMyMac-update-<uuid>/` on the target's volume. The helper `setsid()`s, re-verifies, waits for the old PID (confirming the path via `proc_pidpath` against PID recycling), and exchanges the two paths with `renamex_np(…, RENAME_SWAP)` — one syscall, no instant at which the app is missing, and rollback is the same call again. It relaunches with `open <path>`, never by bundle identifier. Same path plus same designated requirement means the Screen Recording and Microphone grants survive; an update must never relocate the app.
+
+**Failure reporting across a process death.** `handoff.json` is the state: `pending`, `installed` or `rolledBack` with a reason. The next launch reads it, and `UpdateSweeper` removes stale downloads, mount points and staging directories.
+
+**Diagnostics.** `--update-requirements` prints both requirement strings plus this copy's eligibility verdict and bundle path; `script/check_update_trust.sh` runs it against `.build`. Storage is `~/Library/Application Support/UnfoldMyMac/Updates/` — at most one version directory at a time, ~1 KB between sessions.
+
 ## Imported images
 
 **Add image** asks the injected `FilePicking` service for a file. `ImageFiles` validates a regular image up to 50 MB and 200 megapixels, applies orientation, downsamples to at most 4096 px on the longest side, flattens transparency over a dark matte and writes an opaque sRGB PNG without the original metadata; animated formats use their first frame. Decoding runs off the main actor.
@@ -200,7 +233,8 @@ Use `ContentCard`, `EffectTile`, `NativeSwitch` (an `NSSwitch` at its native sma
 
 - `Tests/UnfoldMyMacCoreTests`: value types, schema, rules, migrations. Runs anywhere.
 - `Tests/UnfoldMyMacKitTests`: models on fakes, providers behind `URLProtocol`, GPU renders, golden frames (62 SHA-256 hashes over every effect and wallpaper at fixed poses in `Fixtures/golden-frames.json`), input/capture lifecycle, window and panel behaviour.
-- `Support/`: `EffectsFakes.swift` and `makeModel(...)`, `TestTraits.swift` (`.requiresGPU`, `.requiresWindowServer`, tags `.gpu`, `.window`), `settle(timeout:until:)` for queued main-actor work, `TestGPU.context()`.
+- `Support/`: `EffectsFakes.swift` and `makeModel(...)`, `UpdateFakes.swift` (feed, downloader, validator, mounter, installer, environment), `TestTraits.swift` (`.requiresGPU`, `.requiresWindowServer`, tags `.gpu`, `.window`), `settle(timeout:until:)` for queued main-actor work, `TestGPU.context()`.
+- Updater tests are pure: `UpdatePlan`, `UpdatePolicy`, `AppVersion`, `ChecksumManifest` and the `UpdateError` copy meta-test need no fakes; the Kit side drives the install flow on `UpdatePaths(root:)` pointed at a temporary directory, never the real Application Support. The highest-value assertion is that an ineligible environment makes no network request at all.
 - Tag any new test that touches Metal, `NSWindow`, `NSScreen`, `ImageRenderer` or `NSHostingView`, otherwise it will fail on the CI runner.
 
 ## Product identity

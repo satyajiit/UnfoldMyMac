@@ -16,6 +16,12 @@ enum QuickMenuBuilder {
         items.append(.separator)
         items.append(.action("Open \(AppIdentity.name)…", .openApp))
         items.append(.action("Settings…", .showSettings))
+        switch state.update {
+        case .unavailable: break
+        case .idle: items.append(.action("Check for Updates…", .checkForUpdates))
+        case .available(let version): items.append(.action("Update to \(version)…", .installUpdate))
+        case .ready(let version): items.append(.action("Relaunch to Finish \(version)…", .installUpdate))
+        }
         items.append(.separator)
         items.append(.action("Star \(AppIdentity.name) on GitHub", .starRepository))
         items.append(.separator)

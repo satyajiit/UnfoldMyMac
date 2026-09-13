@@ -6,6 +6,9 @@ enum AppSupportPaths {
     static let root = URL.applicationSupportDirectory.appendingPathComponent("UnfoldMyMac", isDirectory: true)
     static let artwork = root.appendingPathComponent("Artwork", isDirectory: true)
     static let wallpaper = root.appendingPathComponent("Wallpaper", isDirectory: true)
+    /// Downloads, mount points and the installer handoff. Created mode 0700: the updater spawns
+    /// what it finds here, so nothing else on the Mac may write into it.
+    static let updates = root.appendingPathComponent("Updates", isDirectory: true)
     static let legacyArtwork = URL.applicationSupportDirectory.appendingPathComponent("Luma/Artwork", isDirectory: true)
 
     static func migrateLegacyArtwork(fileManager: FileManager = .default) {

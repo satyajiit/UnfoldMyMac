@@ -95,8 +95,14 @@ if should_run checksum; then
   # re-hashes the bytes it downloads.
   ( cd "$RELEASE_DIR" && /usr/bin/shasum -a 256 "$(basename "$DMG")" | tee SHA256SUMS )
   echo
+  # release.json ships as a third asset because the in-app updater reads it instead of the API.
+  # It is written by verify_release.sh, so publishing without that step would ship a stale manifest.
+  [ -f "$RELEASE_DIR/release.json" ] || { echo "✖ release.json is missing; run the verify step" >&2; exit 1; }
   echo "Publish with:"
   echo "  gh release create v$VERSION --repo satyajiit/UnfoldMyMac \\"
   echo "    --title \"$PRODUCT $VERSION\" --notes-file <notes> --verify-tag --draft \\"
-  echo "    \"$DMG\" \"$RELEASE_DIR/SHA256SUMS\""
+  echo "    \"$DMG\" \"$RELEASE_DIR/SHA256SUMS\" \"$RELEASE_DIR/release.json\""
+  echo
+  echo "Then copy $RELEASE_DIR/release.json over website/src/lib/release.json and commit it."
+  echo "The release must be marked Latest, or /releases/latest hides it from the updater."
 fi

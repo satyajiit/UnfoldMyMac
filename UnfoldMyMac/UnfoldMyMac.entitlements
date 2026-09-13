@@ -41,6 +41,17 @@
   allow-dyld-environment-variables, cs.debugger, device.camera and the
   personal-information family are all unused.
 
+  The in-app updater was evaluated against this list and needs nothing added. Outbound HTTPS to
+  GitHub is unentitled outside the sandbox. Spawning hdiutil, ditto and open is unaffected by the
+  Hardened Runtime, which governs what is loaded into this process, not what this process starts;
+  the installer is a re-exec of the newly staged bundle's own Developer ID signed binary, so no
+  unsigned helper is ever run. SecStaticCodeCheckValidity, renamex_np and removexattr are all
+  unentitled. Writing ~/Library/Application Support/UnfoldMyMac/Updates and replacing the bundle in
+  /Applications are plain POSIX, gated by ownership rather than by TCC; where they are not
+  permitted the updater says so and sends the user to the release page instead of escalating. No
+  privileged helper is installed: SMPrivilegedExecutables stays absent from Info.plist, and
+  SMJobBless and AuthorizationExecuteWithPrivileges are deliberately out of scope.
+
   ScreenCaptureKit, NSWorkspace.setDesktopImageURL, NSStatusItem, NSOpenPanel, outbound HTTPS,
   and reading or writing ~/.claude and ~/.codex are gated by TCC or by plain POSIX permissions
   outside the sandbox. None of them is entitlement gated.

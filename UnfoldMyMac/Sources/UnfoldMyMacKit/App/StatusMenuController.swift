@@ -7,16 +7,17 @@ import UnfoldMyMacCore
     private final class ActionBox { let action: QuickMenu.Action; init(_ action: QuickMenu.Action) { self.action = action } }
     private let effects: EffectsModel
     private let wallpaper: WallpaperModel
+    private let updates: UpdateModel
     private let shell: AppShellModel
     private let window: MainWindowController
     private let workspace: any WorkspaceOpening
     private var item: NSStatusItem?
     private var observation: Task<Void, Never>?
 
-    init(effects: EffectsModel, wallpaper: WallpaperModel, shell: AppShellModel, window: MainWindowController,
-         workspace: any WorkspaceOpening) {
-        self.effects = effects; self.wallpaper = wallpaper; self.shell = shell; self.window = window
-        self.workspace = workspace
+    init(effects: EffectsModel, wallpaper: WallpaperModel, updates: UpdateModel, shell: AppShellModel,
+         window: MainWindowController, workspace: any WorkspaceOpening) {
+        self.effects = effects; self.wallpaper = wallpaper; self.updates = updates; self.shell = shell
+        self.window = window; self.workspace = workspace
     }
     func install() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -34,6 +35,15 @@ import UnfoldMyMacCore
     func stop() { observation?.cancel(); observation = nil }
     isolated deinit { stop() }
 
+    private var updateEntry: QuickMenuUpdate {
+        switch updates.state {
+        case .unsupported: .unavailable
+        case .available(let release): .available(release.version.description)
+        case .readyToRelaunch(let release, _): .ready(release.version.description)
+        default: .idle
+        }
+    }
+
     private func apply(title: String, status: String) {
         guard let button = item?.button else { return }
         if button.title != title { button.title = title }
@@ -41,7 +51,8 @@ import UnfoldMyMacCore
     }
     @objc private func showQuickMenu(_ sender: Any?) {
         let state = QuickMenuState(status: effects.status, effectEnabled: effects.enabled, isPreviewing: effects.isPreviewing,
-                                   selectedEffect: effects.settings.effect, wallpaperEnabled: wallpaper.enabled, effects: effects.registry.descriptors)
+                                   selectedEffect: effects.settings.effect, wallpaperEnabled: wallpaper.enabled,
+                                   effects: effects.registry.descriptors, update: updateEntry)
         let menu = makeMenu(QuickMenuBuilder.menu(for: state).items)
         item?.menu = menu; item?.button?.performClick(nil); item?.menu = nil
     }
@@ -73,6 +84,8 @@ import UnfoldMyMacCore
         case .stopWallpaper: wallpaper.stopWallpaper()
         case .openApp: window.show()
         case .showSettings: shell.show(.settings); window.show()
+        case .checkForUpdates: updates.checkNow(.manual); shell.show(.settings); window.show()
+        case .installUpdate: updates.showPrompt(); window.show()
         case .starRepository: if let url = URL(string: AppIdentity.repository) { workspace.open(url) }
         case .quit: NSApp.terminate(nil)
         }

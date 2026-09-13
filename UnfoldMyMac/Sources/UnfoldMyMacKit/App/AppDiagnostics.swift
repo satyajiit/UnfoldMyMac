@@ -1,10 +1,27 @@
 import AppKit
 import CoreVideo
 import Foundation
+import Synchronization
 import UnfoldMyMacCore
 
 /// Command-line checks the build script and contributors run against the packaged app.
 @MainActor enum AppDiagnostics {
+    /// Prints the code requirements the updater installs against, so `check_update_trust.sh` can run
+    /// them against real signed artifacts instead of keeping its own copy that could drift from this,
+    /// and then says whether *this* copy would be allowed to update itself.
+    static func printUpdateRequirements() {
+        print("application\t\(SecurityCodeSignatureValidator.requirement(for: .application))")
+        print("diskImage\t\(SecurityCodeSignatureValidator.requirement(for: .diskImage))")
+        let environment = BundleUpdateEnvironment()
+        let verdict = Mutex<UpdateEligibility?>(nil)
+        Task.detached { let value = await environment.eligibility(); verdict.withLock { $0 = value } }
+        while verdict.withLock({ $0 }) == nil { RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.01)) }
+        switch verdict.withLock({ $0 }) {
+        case .blocked(let block)?: print("eligibility\tblocked: \(block.rawValue)")
+        default: print("eligibility\teligible")
+        }
+        print("bundle\t\(environment.bundleURL.path)")
+    }
     static func probe() -> Bool {
         let sensor = LidSensor(); print(sensor.diagnostic)
         let motion = GardenMotionSensor(); motion.start()

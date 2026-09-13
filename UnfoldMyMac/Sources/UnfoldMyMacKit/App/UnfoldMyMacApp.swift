@@ -10,6 +10,9 @@ import AppKit
         if arguments.contains("--shader-check") { exit(AppDiagnostics.checkShader() ? 0 : 1) }
         if arguments.contains("--shader-units") { AppDiagnostics.printShaderUnits(); exit(0) }
         if arguments.contains("--wallpaper-benchmark") { AppDiagnostics.benchmarkWallpaper(); exit(0) }
+        if arguments.contains("--update-requirements") { AppDiagnostics.printUpdateRequirements(); exit(0) }
+        // Runs from the staged bundle after the old process quits. Never reaches AppKit.
+        if arguments.contains("--install-update") { exit(UpdateInstallerCLI.run(arguments)) }
         let app = NSApplication.shared
         app.setActivationPolicy(.regular)
         let delegate = AppController()

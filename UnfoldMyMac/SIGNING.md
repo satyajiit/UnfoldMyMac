@@ -14,6 +14,10 @@ That runs, in order: `host → build → sign → notarize-app → dmg → notar
 and prints the SHA-256 plus a ready-to-paste `website/src/lib/release.json` block. Resume after a
 failure with `--from <step>`; `--list` prints the step names.
 
+**Three assets, not two.** `release.json` is published alongside the DMG and `SHA256SUMS`, because
+the in-app updater reads it as its primary manifest — see [Three assets and the in-app
+updater](#three-assets-and-the-in-app-updater) for why that matters and what breaks without it.
+
 ## One-time setup on the release machine
 
 **Notarization credentials are a keychain profile.** The scripts accept only the profile *name*,
@@ -69,7 +73,8 @@ release gate re-hashes the bytes it downloads.
 | `notarize_release.sh` | Runs twice. Pre-flights signature and profile *before* the upload, **parses `.status` rather than the exit code** (`--wait` exits 0 for a completed submission whose verdict is `Invalid`), dumps the notary log on failure, staples and validates. |
 | `render_dmg_background.swift` | Draws the installer artwork and emits `layout.plist`, so the drawn arrow and the positioned icons cannot drift apart. Registers the app's own Space Grotesk into the process; nothing is installed on the host. |
 | `package_dmg.sh` | Stages with `ditto`, images two-stage UDRW→UDZO, lays the window out through Finder, writes the volume icon **after** that step, signs the image, then mounts it and re-checks CDHash, `diff -qr` and the inner staple. |
-| `verify_release.sh` | The post-notarization gate, runnable against downloaded artifacts. Prints the SHA-256 and the `release.json` block. |
+| `verify_release.sh` | The post-notarization gate, runnable against downloaded artifacts. Prints the SHA-256, **writes** `release.json` next to the DMG, and runs `check_update_trust.sh`. |
+| `check_update_trust.sh` | Asserts what the in-app updater will accept, against these exact artifacts: the release app accepted, the DMG accepted, the DMG rejected once the `identifier` clause is added, a development build rejected. |
 | `release_macos.sh` | The driver, with `--from` resume. |
 
 ## Looking at the installer window without notarizing
@@ -131,6 +136,44 @@ sensor is a raw `IOHIDDevice` feature report that no sandbox entitlement grants.
 
 `sign_release.sh` asserts the embedded set matches that file and that `get-task-allow` is absent,
 so granting a capability means editing a file someone reads.
+
+## Three assets and the in-app updater
+
+The app now updates itself from these releases, so a release is no longer only a download link.
+The copies already in the field predate the updater and will not pick this up — the first release
+after 1.0.1 is still a manual download for everyone — but every release after it is consumed by
+software rather than by a person, and three things about it are load-bearing:
+
+**`release.json` is a release asset.** `verify_release.sh` writes it next to the DMG and
+`release_macos.sh` refuses to print the publish line without it. The app fetches it from
+`/releases/latest/download/release.json`, a redirect rather than an API call, so a check costs
+nothing against the 60-per-hour unauthenticated GitHub limit that the wallpaper connector is
+already spending from the same address. It is also the only place that states `minimumMacOS`: the
+GitHub API cannot report `LSMinimumSystemVersion`, so without this file the app cannot tell a user
+on an older macOS that the update is not for them. The GitHub API remains a fallback and the source
+of release notes. The website consumes the identical bytes, so the two cannot drift.
+
+**The release must be marked Latest.** `/releases/latest` excludes anything not flagged latest, and
+a release published without it is simply invisible to every installed copy. Nothing fails; the
+update never appears.
+
+**The asset filename is checked against the tag.** The app requires exactly one `.dmg` named
+`UnfoldMyMac-{version}.dmg` matching the tag, and refuses drafts and prereleases twice over — once
+from the API flags and once from the parsed tag. These releases are cut by hand, and a forgotten
+checkbox should stop an update rather than ship one.
+
+`check_update_trust.sh` runs inside the verify step and asserts the trust decision against the real
+artifacts. It reads the requirement strings out of the built binary via `--update-requirements`, so
+the check cannot drift from the code that installs updates. The assertion that matters most is the
+negative one: a **properly signed development build is rejected**. Team OU alone would accept it —
+an Apple Development certificate carries the same OU — so the Developer ID leaf OID and `notarized`
+do the real work. The DMG's requirement omits the `identifier` clause, because `package_dmg.sh`
+signs the image without `--identifier` and the identifier is derived from the filename
+(`UnfoldMyMac-1`, truncated at the first dot); pinning it would break silently at 2.0.
+
+The updater needs no new entitlements and no Info.plist change; `UnfoldMyMac.entitlements` records
+why. Worth doing though never read by this design: bump `CFBundleVersion` monotonically per
+release, rather than leaving it at a static `2`.
 
 ## The local and CI paths are deliberately separate
 

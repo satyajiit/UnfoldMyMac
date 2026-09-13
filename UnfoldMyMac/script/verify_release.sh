@@ -105,13 +105,23 @@ ok "branded window, Applications symlink, volume icon, byte-identical stapled ap
 /usr/bin/hdiutil detach "$mount_dir" -quiet
 mounted=0
 
+# What the in-app updater will accept, asserted against these exact artifacts. The requirement it
+# uses is read out of the built binary, so this cannot drift from the code that installs updates.
+echo "→ in-app updater trust"
+"$HERE/check_update_trust.sh" "$APP" "$DMG" | sed 's/^/  /'
+
 sha="$(/usr/bin/shasum -a 256 "$DMG" | awk '{print $1}')"
 echo "✓ verify_release: $(basename "$DMG") is ready to publish"
 echo
 echo "SHA-256: $sha"
 echo
-echo "website/src/lib/release.json:"
-cat <<JSON
+
+# Written, not just printed. The in-app updater reads this file from the release as its primary
+# manifest: it is the only place that states the macOS version a build needs, and reading it costs
+# no GitHub API quota, which the wallpaper connector is already spending from the same address.
+# The website consumes the identical bytes, so the two can never drift.
+manifest="$(dirname "$DMG")/release.json"
+cat >"$manifest" <<JSON
 {
   "status": "available",
   "version": "$version",
@@ -124,3 +134,6 @@ cat <<JSON
   "verifiedAt": "$(date -u +%Y-%m-%d)"
 }
 JSON
+/usr/bin/plutil -lint "$manifest" >/dev/null || fail "the generated release.json is not valid JSON"
+echo "website/src/lib/release.json (also written to $manifest):"
+cat "$manifest"

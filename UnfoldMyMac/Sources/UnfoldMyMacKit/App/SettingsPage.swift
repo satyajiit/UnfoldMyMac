@@ -4,6 +4,7 @@ import UnfoldMyMacCore
 /// Preferences shared by every feature belong here.
 struct SettingsPage: View {
     @Bindable var model: EffectsModel
+    let updates: UpdateModel
     @Environment(\.appInfo) private var appInfo
     @Environment(\.workspace) private var workspace
     var body: some View {
@@ -54,6 +55,9 @@ struct SettingsPage: View {
                             .font(UnfoldMyMacType.caption).modifier(SecondaryTextStyle())
                     }
                 }
+                Divider()
+                UpdateStatusRow(model: updates)
+                Divider()
                 Text("Closing the window keeps the app in your Dock and menu bar. Click its Dock icon to reopen it, or choose Quit from the app menu to exit.")
                     .font(UnfoldMyMacType.callout).modifier(SecondaryTextStyle()).fixedSize(horizontal: false, vertical: true)
                 Divider()
