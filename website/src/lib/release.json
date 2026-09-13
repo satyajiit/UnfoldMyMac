@@ -1,11 +1,11 @@
 {
   "status": "available",
-  "version": "1.0.0",
-  "tag": "v1.0.0",
-  "assetUrl": "https://github.com/satyajiit/UnfoldMyMac/releases/download/v1.0.0/UnfoldMyMac-1.0.0.dmg",
-  "sha256": "1192647f1d0b8089025cdcd15cda2112b3f31a9a40421374189fe00263cd3116",
+  "version": "1.0.1",
+  "tag": "v1.0.1",
+  "assetUrl": "https://github.com/satyajiit/UnfoldMyMac/releases/download/v1.0.1/UnfoldMyMac-1.0.1.dmg",
+  "sha256": "f6e146469cf4a91825a0f01bbf9166a03aaf2b29b14f984c077368ea43262443",
   "architectures": ["arm64"],
   "minimumMacOS": "26",
   "signing": "developer-id-notarized",
-  "verifiedAt": "2026-09-12"
+  "verifiedAt": "2026-09-13"
 }
