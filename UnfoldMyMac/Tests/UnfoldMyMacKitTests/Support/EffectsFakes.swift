@@ -77,8 +77,10 @@ extension InMemoryPreferencesStore {
 @MainActor final class FakeWorkspace: WorkspaceOpening {
     var opened: [URL] = []
     var copied: [String] = []
+    var desktopReveals = 0
     func open(_ url: URL) { opened.append(url) }
     func copyToPasteboard(_ text: String) { copied.append(text) }
+    func showDesktop() { desktopReveals += 1 }
 }
 @MainActor final class FakeCapturePermission: ScreenCapturePermissionChecking {
     var hasAccess = true

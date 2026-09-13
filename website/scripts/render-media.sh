@@ -19,6 +19,8 @@ pathlib.Path(sys.argv[2]).write_text('\n'.join('"' + item + '"' for item in obje
 PYTHON
 swiftc -swift-version 6 -parse-as-library -I "$SWIFT_BIN/Modules" \
   "$SITE_DIR/scripts/RenderMedia.swift" \
+  "$SITE_DIR/scripts/GamePreviewSamples.swift" \
+  "$SITE_DIR/scripts/ScenePreviewRenderer.swift" \
   "$SITE_DIR/scripts/DesktopFixture.swift" \
   @"$SITE_DIR/.cache/renderer-objects.txt" \
   -o "$SITE_DIR/.cache/render-media"

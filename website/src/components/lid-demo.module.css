@@ -12,6 +12,11 @@
 .gestureSurface img { -webkit-user-drag: none; pointer-events: none; }
 .gestureSurface:focus { outline: none; }
 .stage { perspective: 1800px; perspective-origin: 50% 100%; aspect-ratio: 16 / 10; max-width: 760px; margin: auto; }
+.powerCable { position:absolute; left:-15%; top:102%; width:16%; height:auto; overflow:visible; opacity:0; transform:translateX(-12px); transition:opacity 200ms cubic-bezier(.23,1,.32,1),transform 200ms cubic-bezier(.23,1,.32,1); }
+.powerCable[data-connected=true] { opacity:1; transform:translateX(0); }
+.powerCable>path { fill:none; stroke:#9d9fa6; stroke-width:5; }
+.powerCable>rect { fill:#c1c3c9; stroke:#767981; stroke-width:1; }
+.powerCable>.powerLight { stroke:#49cf80; stroke-width:2; }
 .model { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transform: rotateY(-5deg); }
 .screen { position: absolute; inset: 0; transform: rotateX(15deg); transform-origin: 50% 100%; transform-style: preserve-3d; }
 .screenFront, .screenBack { position: absolute; inset: 0; border: 1px solid #51535a; border-radius: 12px 12px 5px 5px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
@@ -159,6 +164,7 @@
   .caption { font-size: 9px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .powerCable { transition:none; transform:none; }
   .screen, .half, .glass, .wallpaper { transition: none; }
   .demo[data-playing=true] .wallpaperPicker button[aria-pressed=true] .progress { animation: none; }
 }

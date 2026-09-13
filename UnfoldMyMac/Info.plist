@@ -15,9 +15,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.1</string>
+	<string>1.0.2</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>3</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.graphics-design</string>
 	<key>LSMinimumSystemVersion</key>
@@ -25,17 +25,17 @@
 	<key>LSUIElement</key>
 	<false/>
 	<key>NSDesktopFolderUsageDescription</key>
-	<string>UnfoldMyMac opens image files you pick for custom wallpapers and image reveals. It reads only the file you choose.</string>
+	<string>UnfoldMyMac opens images you choose. If you connect Desktop items to The Workshop, it counts the folder's immediate items without reading their contents.</string>
 	<key>NSDocumentsFolderUsageDescription</key>
-	<string>UnfoldMyMac opens image files you pick for custom wallpapers and image reveals. It reads only the file you choose.</string>
+	<string>UnfoldMyMac opens images you choose. If you connect a folder to The Workshop, it counts immediate items without reading their contents.</string>
 	<key>NSDownloadsFolderUsageDescription</key>
-	<string>UnfoldMyMac opens image files you pick for custom wallpapers and image reveals. It reads only the file you choose.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>When you enable React to sound, UnfoldMyMac uses microphone amplitude locally to stir the garden. Audio is never recorded, retained, or sent.</string>
+	<string>UnfoldMyMac opens images you choose. If you connect a folder to The Workshop, it counts immediate items without reading their contents.</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2026 Satyajit Pradhan / Matterward Labs Private Limited. Licensed under Apache-2.0.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>When you enable React to sound, UnfoldMyMac uses microphone amplitude locally to stir the garden. Audio is never recorded, retained, or sent.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSScreenCaptureUsageDescription</key>

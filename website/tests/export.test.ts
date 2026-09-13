@@ -6,10 +6,12 @@ import path from "node:path";
 import { load } from "cheerio";
 import sharp from "sharp";
 import { pages, site, release, type Release } from "../src/lib/site";
-import { catalog } from "../src/lib/catalog";
+import { catalog, gameWallpapers } from "../src/lib/catalog";
 import { getArticles } from "../src/lib/content";
 import { releaseProblems } from "../src/lib/release-validation";
-const routes = [...pages.map(page => page.path), ...getArticles().map(article => `/blog/${article.slug}/`)];
+import { libraryRoutes } from "../src/lib/design-content";
+import { designPath } from "../src/lib/catalog-routes";
+const routes = [...[...pages, ...libraryRoutes].map(page => page.path), ...getArticles().map(article => `/blog/${article.slug}/`)];
 for (const route of routes) test(`static export, metadata, and local resources: ${route}`, () => {
   const $ = load(readFileSync(path.join("out", route, "index.html"), "utf8"));
   assert.equal($("main h1").length, 1);
@@ -23,13 +25,17 @@ for (const route of routes) test(`static export, metadata, and local resources: 
   assert.ok($("meta[property='og:title']").attr("content"));
   assert.equal($("meta[property='og:description']").attr("content"), $("meta[name=description]").attr("content"));
   assert.equal($("meta[property='og:locale']").attr("content"), "en_US");
-  assert.equal($("meta[property='og:image']").attr("content"), `${site.url}/media/featured.png`);
-  assert.equal($("meta[property='og:image:width']").attr("content"), "1200");
-  assert.equal($("meta[property='og:image:height']").attr("content"), "630");
-  assert.equal($("meta[property='og:image:type']").attr("content"), "image/png");
+  const design = catalog.find(item => designPath(item) === route);
+  const imageURL = `${site.url}${design?.poster ?? "/media/featured.png"}`;
+  assert.equal($("meta[property='og:image']").attr("content"), imageURL);
+  if (!design) {
+    assert.equal($("meta[property='og:image:width']").attr("content"), "1200");
+    assert.equal($("meta[property='og:image:height']").attr("content"), "630");
+  }
+  assert.equal($("meta[property='og:image:type']").attr("content"), design ? "image/webp" : "image/png");
   assert.ok($("meta[property='og:image:alt']").attr("content"));
   assert.equal($("meta[name='twitter:card']").attr("content"), "summary_large_image");
-  assert.equal($("meta[name='twitter:image']").attr("content"), `${site.url}/media/featured.png`);
+  assert.equal($("meta[name='twitter:image']").attr("content"), imageURL);
   assert.ok($("meta[name='twitter:image:alt']").attr("content"));
   assert.equal($("meta[name=robots]").attr("content"), "index, follow");
   assert.ok($("meta[name=googlebot]").attr("content")?.includes("max-image-preview:large"));
@@ -57,7 +63,7 @@ test("search snippets are unique and the featured social image is export-ready",
   assert.ok(missing("meta[name=robots]").toArray().some(element => missing(element).attr("content")?.includes("noindex")));
 });
 test("catalog assets and search discovery are complete", () => {
-  assert.equal(catalog.length, 24);
+  assert.equal(catalog.length, 35);
   assert.equal(new Set(catalog.map(item => item.id)).size, catalog.length);
   const sitemap = readFileSync("out/sitemap.xml", "utf8");
   const llms = readFileSync("out/llms.txt", "utf8");
@@ -79,11 +85,12 @@ test("release gate rejects mismatched assets, unknown signing, and future attest
 });
 
 test("native previews have consistent 60 fps provenance", () => {
-  const manifest = JSON.parse(readFileSync("scripts/media-manifest.json", "utf8")) as { file: string; avg_frame_rate: string; nb_frames: string; sha256: string }[];
+  const manifest = JSON.parse(readFileSync("scripts/media-manifest.json", "utf8")) as { file: string; width: number; height: number; avg_frame_rate: string; nb_frames: string; sha256: string }[];
   assert.equal(manifest.length, catalog.filter(item => item.video).length);
   for (const item of manifest) {
     assert.equal(item.avg_frame_rate, "60/1");
-    assert.equal(item.nb_frames, item.file === "hinge-garden.mp4" ? "1320" : "240");
+    if (gameWallpapers.some(game => `${game.id}.mp4` === item.file)) assert.deepEqual([item.width, item.height], [1920, 1200]);
+    assert.equal(item.nb_frames, item.file === "hinge-garden.mp4" ? "1320" : item.file === "the-workshop.mp4" ? "1080" : "240");
     assert.equal(createHash("sha256").update(readFileSync(path.join("public/media", item.file))).digest("hex"), item.sha256);
   }
 });

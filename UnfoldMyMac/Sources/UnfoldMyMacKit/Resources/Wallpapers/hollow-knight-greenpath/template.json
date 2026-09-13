@@ -1,0 +1,187 @@
+{
+  "version": 2,
+  "id": "hollow-knight-greenpath",
+  "title": "Hollow Knight — Greenpath",
+  "subtitle": "Greenpath remembers to give your eyes a break.",
+  "author": "UnfoldMyMac",
+  "credit": "AI-generated fan artwork. Game, logo & official promotional assets © Team Cherry. Independent tribute.",
+  "category": "play",
+  "order": 160,
+  "tags": [
+    "Gaming",
+    "Quiet moments",
+    "Device & live data",
+    "Lid reactive"
+  ],
+  "accent": 9560271,
+  "background": 1055011,
+  "image": "GameHollowKnight",
+  "reactiveMetric": "eyes.progress",
+  "reactiveScale": 1,
+  "idleEnergy": 0.12,
+  "emblem": {
+    "asset": "GameHollowKnight",
+    "x": 0.055,
+    "y": 0.1,
+    "width": 0.28
+  },
+  "layers": [
+    {
+      "id": "feature",
+      "kind": "text",
+      "content": "QUIET MOMENTS",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.54,
+      "width": 0.43,
+      "size": 0.011,
+      "color": 9560271,
+      "rotation": 0,
+      "height": 0.04,
+      "maxLines": 1
+    },
+    {
+      "id": "value",
+      "kind": "metric",
+      "content": "20:00",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.577,
+      "width": 0.43,
+      "size": 0.05,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.1,
+      "maxLines": 1,
+      "binding": "eyes.timer"
+    },
+    {
+      "id": "state",
+      "kind": "text",
+      "content": "Select to begin a quiet reminder",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.69,
+      "width": 0.43,
+      "size": 0.013,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2,
+      "binding": "eyes.state"
+    },
+    {
+      "id": "detail",
+      "kind": "text",
+      "content": "A gentle reminder after 20 minutes of screen time.",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.752,
+      "width": 0.45,
+      "size": 0.011,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.065,
+      "maxLines": 2,
+      "binding": "eyes.detail"
+    },
+    {
+      "id": "source",
+      "kind": "text",
+      "content": "LOCAL · 20 SECONDS AWAY RESETS THE REMINDER",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.844,
+      "width": 0.49,
+      "size": 0.0085,
+      "color": 12831437,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2
+    }
+  ],
+  "allowsCustomBackground": false,
+  "informationURL": "https://www.hollowknight.com/",
+  "scene": {
+    "source": "Scene.metal",
+    "fragment": "gameHollowKnightFragment",
+    "dependencies": [
+      "GameAtmosphere"
+    ],
+    "liveInputs": true,
+    "resolution": "native"
+  },
+  "cover": {
+    "time": 4,
+    "energy": 0.3,
+    "channels": [
+      0.65,
+      0.25
+    ]
+  },
+  "reduceMotionPose": {
+    "time": 4,
+    "energy": 0.25,
+    "channels": [
+      0.65,
+      0.25
+    ]
+  },
+  "fpsCeiling": 30,
+  "metadata": {
+    "version": 1,
+    "collection": "wallpapers",
+    "overview": "Five quiet lights fill as screen time passes. After 20 minutes, Greenpath brightens into a rest reminder. Leave the keyboard and mouse alone for 20 seconds to reset it. Change the interval or restart in Settings; sleep never adds screen time.",
+    "badge": "New",
+    "banner": "Official",
+    "sections": [
+      {
+        "title": "Quiet moments",
+        "body": "Five quiet lights fill as screen time passes. After 20 minutes, Greenpath brightens into a rest reminder. Leave the keyboard and mouse alone for 20 seconds to reset it. Change the interval or restart in Settings; sleep never adds screen time."
+      },
+      {
+        "title": "Built for your desktop",
+        "body": "Live readings stay readable with Reduce Motion. The lid dims the scene and the pointer adds subtle depth. Settings changes are saved per wallpaper."
+      },
+      {
+        "title": "Artwork & attribution",
+        "body": "AI-generated fan artwork, with the original game logo and official promotional artwork by Team Cherry. An independent tribute; not affiliated with or endorsed by the game’s creators."
+      }
+    ],
+    "authors": [
+      {
+        "name": "UnfoldMyMac",
+        "role": "Wallpaper design & generated fan artwork",
+        "url": "https://unfoldmymac.com",
+        "logo": "UnfoldMyMacMark"
+      },
+      {
+        "name": "Team Cherry",
+        "role": "Original game, logo & promotional assets",
+        "url": "https://www.hollowknight.com/",
+        "logo": "GameHollowKnight"
+      }
+    ],
+    "relatedBrands": [
+      "GameHollowKnight"
+    ]
+  },
+  "channels": [
+    {
+      "metric": "eyes.progress",
+      "scale": 1,
+      "smoothing": 4
+    },
+    {
+      "metric": "eyes.resting",
+      "scale": 1,
+      "smoothing": 4
+    }
+  ],
+  "setup": [
+    {
+      "required": false,
+      "kind": "greenpath-rest"
+    }
+  ]
+}

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { animate, type AnimationPlaybackControls } from "motion";
 import { lidAngles } from "@/lib/hero-demo";
 
-export function useLidMotion(coverIndex: number) {
+export function useLidMotion(coverIndex: number, onAngle?: (angle: number) => void, range: { min: number; max: number } = lidAngles) {
   const lid = useRef<HTMLDivElement>(null);
   const left = useRef<HTMLDivElement>(null);
   const right = useRef<HTMLDivElement>(null);
@@ -11,11 +11,11 @@ export function useLidMotion(coverIndex: number) {
   const surface = useRef<HTMLDivElement>(null);
   const slider = useRef<HTMLInputElement>(null);
   const output = useRef<HTMLOutputElement>(null);
-  const angle = useRef<number>(lidAngles.max);
+  const angle = useRef<number>(range.max);
   const animation = useRef<AnimationPlaybackControls | null>(null);
 
   const paint = useCallback((value: number) => {
-    angle.current = Math.max(lidAngles.min, Math.min(lidAngles.max, value));
+    angle.current = Math.max(range.min, Math.min(range.max, value));
     const opening = Math.max(0, Math.min(1, (angle.current - lidAngles.coverClosed) / (lidAngles.coverOpen - lidAngles.coverClosed)));
     const degrees = String(Math.round(angle.current));
     // The base sits at 70° to the viewing plane. Both halves share one hinge.
@@ -27,11 +27,12 @@ export function useLidMotion(coverIndex: number) {
     if (output.current) output.current.value = `${degrees}°`;
     surface.current?.setAttribute("aria-valuenow", degrees);
     surface.current?.setAttribute("aria-valuetext", `${degrees} degrees open`);
-  }, []);
+    onAngle?.(angle.current);
+  }, [onAngle, range.min, range.max]);
 
   function move(target: number, animated = false) {
     animation.current?.stop();
-    const bounded = Math.max(lidAngles.min, Math.min(lidAngles.max, target));
+    const bounded = Math.max(range.min, Math.min(range.max, target));
     if (!animated || matchMedia("(prefers-reduced-motion: reduce)").matches) { paint(bounded); return; }
     animation.current = animate(angle.current, bounded, { type: "spring", duration: 0.5, bounce: 0.1, onUpdate: paint });
   }

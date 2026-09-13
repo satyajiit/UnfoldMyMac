@@ -93,7 +93,7 @@ struct WallpaperDetailPage: View {
         }
     }
     private var actions: some View {
-        HStack(spacing: 10) {
+        ContentFlowLayout(spacing: 10) {
             Button {
                 if model.selectedID != template.id { model.select(template.id) }
                 model.apply()
@@ -105,9 +105,17 @@ struct WallpaperDetailPage: View {
                 Button { model.setup.open(template) } label: { Label("Customize", systemImage: "slider.horizontal.3") }
                     .modifier(UnfoldMyMacButtonStyle()).accessibilityIdentifier("wallpaper.detail.customize")
             }
-            if applied { Button("Stop", action: model.stopWallpaper).buttonStyle(.plain).accessibilityIdentifier("wallpaper.stop") }
-            Spacer()
-            if !model.setup.isReady(template) { ContentBadge(title: "Setup needed", symbol: "link") }
+            Button(action: workspace.showDesktop) {
+                Label("Show Desktop", systemImage: "rectangle.inset.filled")
+            }
+            .modifier(UnfoldMyMacButtonStyle())
+            .help("Hide other apps and minimize UnfoldMyMac to see your desktop. Reopen apps from the Dock.")
+            .accessibilityIdentifier("wallpaper.detail.showDesktop")
+            if applied {
+                Button("Stop", action: model.stopWallpaper).buttonStyle(.plain)
+                    .frame(minHeight: 30).accessibilityIdentifier("wallpaper.stop")
+            }
+            if !model.setup.isReady(template) { ContentBadge(title: "Setup needed", symbol: "link").frame(minHeight: 30) }
         }
     }
     private var requirements: some View {

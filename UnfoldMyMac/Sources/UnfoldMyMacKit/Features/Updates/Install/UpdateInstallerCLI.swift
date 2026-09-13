@@ -90,8 +90,8 @@ enum UpdateInstallerCLI {
         return dictionary["CFBundleIdentifier"] as? String
     }
 
-    /// By path, never by name or bundle id: Launch Services could otherwise resolve a different copy,
-    /// and the shipped `CFBundleVersion` does not change between releases for it to notice.
+    /// By path, never by name or bundle id: Launch Services keeps its own record of where a bundle
+    /// identifier lives and could resolve a different copy than the one just installed.
     private static func reopen(_ target: URL) {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: SystemTool.open)

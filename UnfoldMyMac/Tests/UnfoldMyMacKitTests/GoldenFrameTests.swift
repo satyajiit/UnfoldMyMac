@@ -48,6 +48,13 @@ import UnfoldMyMacCore
                 peekaboo.encode(command: $0, pass: $1, size: CGSize(width: width, height: height), context: pose.context)
             }.sha256
         }
+        for style in LidImpactPipeline.Style.allCases {
+            let pipeline = try LidImpactPipeline(style: style, gpu: try TestGPU.context())
+            for pose in poses {
+                hashes["\(style.rawValue)/\(pose.name)"] = try OffscreenRenderer.render(pipeline,
+                    frame: pose.context, width: width, height: height).sha256
+            }
+        }
         for artwork in try EffectAssets.artworks() {
             let art = try ArtRevealPipeline(artwork: artwork, gpu: try TestGPU.context())
             for reveal in ArtRevealMotion.allCases {
@@ -61,6 +68,10 @@ import UnfoldMyMacCore
         let registry = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false)
         for template in registry.templates {
             let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog)
+            if gameWallpaperIDs.contains(template.id) {
+                hashes["wallpaper/\(template.id)/live-data"] = try OffscreenRenderer.render(pipeline,
+                    frame: WallpaperFrame(time: 4, energy: 0.3, channels: SIMD4(0.75, 0.5, 1, 1)), width: width, height: height).sha256
+            }
             for (name, time, energy) in [("calm", 2.0, 0.2), ("busy", 5.0, 0.7)] {
                 hashes["wallpaper/\(template.id)/\(name)"] = try OffscreenHarness.render(device: gpu.device, queue: gpu.queue, pixelFormat: .bgra8Unorm, width: width, height: height) {
                     pipeline.encode(command: $0, pass: $1, size: CGSize(width: width, height: height), time: time, energy: energy, channels: .zero, grid: nil)

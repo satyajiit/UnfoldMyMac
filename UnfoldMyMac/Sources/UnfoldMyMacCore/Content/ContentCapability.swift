@@ -2,7 +2,7 @@ import Foundation
 
 /// Actual host features, derived from runtime declarations rather than promotional tags.
 public enum ContentCapability: String, CaseIterable, Identifiable, Sendable {
-    case lid, motion, microphone, network, publicAPI, localFiles, hooks, macMetrics
+    case lid, motion, microphone, network, publicAPI, localFiles, hooks, macMetrics, openApps
     public var id: String { rawValue }
     public var title: String {
         switch self {
@@ -14,6 +14,7 @@ public enum ContentCapability: String, CaseIterable, Identifiable, Sendable {
         case .localFiles: "Local files"
         case .hooks: "Local hooks"
         case .macMetrics: "Mac metrics"
+        case .openApps: "Open apps"
         }
     }
     public var symbol: String {
@@ -26,6 +27,7 @@ public enum ContentCapability: String, CaseIterable, Identifiable, Sendable {
         case .localFiles: "folder"
         case .hooks: "bolt.horizontal"
         case .macMetrics: "cpu"
+        case .openApps: "square.stack.3d.up"
         }
     }
     public var detail: String {
@@ -38,6 +40,7 @@ public enum ContentCapability: String, CaseIterable, Identifiable, Sendable {
         case .localFiles: "Reads the local data you connect in setup."
         case .hooks: "Responds to local tool lifecycle events after setup."
         case .macMetrics: "Uses local Mac activity such as CPU load."
+        case .openApps: "Counts ordinary open apps locally. App names and window contents are not retained."
         }
     }
 }

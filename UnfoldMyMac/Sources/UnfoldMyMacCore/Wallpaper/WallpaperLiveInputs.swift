@@ -14,6 +14,8 @@ public struct WallpaperLiveInputs: Equatable, Sendable {
     public var reducedMotion = false
     public var parallax = SIMD2<Double>.zero
     public var motionStir = 0.0
+    /// A discrete composition preference, carried in the previously reserved motion lane.
+    public var mirrored = false
     public init() {}
 
     public static func openness(angle: Double?) -> Double {

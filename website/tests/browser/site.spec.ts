@@ -1,3 +1,4 @@
+import { catalog, gameWallpapers } from "../../src/lib/catalog";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 const routes = ["/", "/features/", "/showcase/", "/story/", "/download/", "/blog/", "/faq/", "/privacy/", "/blog/lid-effects/", "/blog/live-wallpapers/", "/blog/connecting-your-data/"];
@@ -34,26 +35,27 @@ test("appearance persists and follows system when selected", async ({ page }) =>
 });
 test("lid responds to keyboard, design choice, and reset", async ({ page }) => {
   await page.goto("/");
-  const slider = page.getByRole("slider", { name: "Lid angle" });
+  const slider = page.getByRole("slider", { name: "Lid angle", exact: true });
   await slider.focus();
   await slider.press("ArrowLeft");
   await expect(slider).toHaveValue("124");
-  await expect(page.locator("output")).toHaveText("124°");
+  await expect(page.locator(".lid-demo output")).toHaveText("124°");
   await page.getByRole("button", { name: "Curtains", exact: true }).click();
   await expect(page.getByRole("button", { name: "Curtains", exact: true })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Reset lid angle" }).click();
   await expect(slider).toHaveValue("125");
 });
-test("showcase filters and stops offscreen video", async ({ page }) => {
+test("collection navigation and offscreen video playback", async ({ page }) => {
+  test.setTimeout(60_000);
   await page.goto("/showcase/");
   for (const name of ["Frost", "Veil", "Fade"]) {
     await page.getByRole("button", { name: `Play ${name} preview` }).click();
     await expect.poll(() => page.locator(`#${name.toLowerCase()} video`).evaluate((video: HTMLVideoElement) => video.currentTime)).toBeGreaterThan(0);
     await page.getByRole("button", { name: `Pause ${name} preview` }).click();
   }
-  await page.getByRole("button", { name: "Dynamic Wallpapers", exact: true }).click();
-  await expect(page.locator(".showcase-grid article")).toHaveCount(10);
-  for (const [id, name] of [["gta-vi-countdown", "GTA VI — Vice City Countdown"], ["aurora-observatory", "Aurora Observatory"]]) {
+  await page.getByRole("navigation", { name: "Design collections" }).getByRole("link", { name: "Dynamic Wallpapers" }).click();
+  await expect(page.locator(".showcase-grid article")).toHaveCount(20);
+  for (const [id, name] of [["gta-vi-countdown", "GTA VI — Vice City Countdown"], ["aurora-observatory", "Aurora Observatory"], ...gameWallpapers.map(item => [item.id, item.name])]) {
     await page.getByRole("button", { name: `Play ${name} preview` }).click();
     await expect.poll(() => page.locator(`#${id} video`).evaluate((video: HTMLVideoElement) => video.currentTime)).toBeGreaterThan(0);
     await page.getByRole("button", { name: `Pause ${name} preview` }).click();
@@ -63,7 +65,7 @@ test("showcase filters and stops offscreen video", async ({ page }) => {
   await page.locator("footer").scrollIntoViewIfNeeded();
   await expect.poll(() => page.locator("#pulse video").evaluate((video: HTMLVideoElement) => video.paused)).toBe(true);
 });
-test("the three collections switch app screenshots and filter their own designs", async ({ page }) => {
+test("the three collections switch app screenshots and open their own routes", async ({ page }) => {
   await page.goto("/");
   const discovery = page.getByRole("group", { name: "Explore app collections" });
   await discovery.getByRole("button", { name: "Creative Scenes" }).click();
@@ -75,27 +77,30 @@ test("the three collections switch app screenshots and filter their own designs"
     await expect.poll(() => screenshot.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
   }
   await page.goto("/showcase/");
-  const filters = page.getByRole("group", { name: "Filter showcase", exact: true });
-  await filters.getByRole("button", { name: "Creative Scenes" }).click();
-  await expect(page.locator(".showcase-grid article")).toHaveCount(1);
+  const filters = page.getByRole("navigation", { name: "Design collections", exact: true });
+  await filters.getByRole("link", { name: "Creative Scenes" }).click();
+  await expect(page.locator(".showcase-grid article")).toHaveCount(2);
   await expect(page.locator(".showcase-grid #hinge-garden")).toBeVisible();
   await page.getByRole("button", { name: "Play Hinge Garden preview", exact: true }).click();
   await expect.poll(() => page.locator("#hinge-garden video").evaluate((video: HTMLVideoElement) => video.currentTime)).toBeGreaterThan(0);
-  await filters.getByRole("button", { name: "Lid Effects" }).click();
+  await expect(page.locator(".showcase-grid #the-workshop")).toBeVisible();
+  await page.getByRole("button", { name: "Play The Workshop preview", exact: true }).click();
+  await expect.poll(() => page.locator("#the-workshop video").evaluate((video: HTMLVideoElement) => video.currentTime)).toBeGreaterThan(0);
+  await filters.getByRole("link", { name: "Lid Effects" }).click();
   await expect(page.locator(".showcase-grid article")).toHaveCount(13);
-  await page.getByRole("group", { name: "Filter lid effect styles" }).getByRole("button", { name: "Glass & Light" }).click();
+  await page.getByRole("navigation", { name: "Lid Effects categories" }).getByRole("link", { name: "Glass & Light" }).click();
   await expect(page.locator(".showcase-grid article")).toHaveCount(3);
-  await filters.getByRole("button", { name: "Dynamic Wallpapers" }).click();
-  await expect(page.locator(".showcase-grid article")).toHaveCount(10);
-  await expect(page.getByRole("group", { name: "Filter lid effect styles" })).toHaveCount(0);
-  await filters.getByRole("button", { name: "All designs" }).click();
-  await expect(page.locator(".showcase-grid article")).toHaveCount(24);
+  await filters.getByRole("link", { name: "Dynamic Wallpapers" }).click();
+  await expect(page.locator(".showcase-grid article")).toHaveCount(20);
+  await expect(page.getByRole("navigation", { name: "Lid Effects categories" })).toHaveCount(0);
+  await filters.getByRole("link", { name: "All designs" }).click();
+  await expect(page.locator(".showcase-grid article")).toHaveCount(catalog.length);
 });
 test("reduced motion starts with still media and allows manual lid input", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   expect(await page.locator("video").evaluateAll(videos => videos.every(video => video instanceof HTMLVideoElement && video.paused && !video.autoplay))).toBe(true);
-  const slider = page.getByRole("slider", { name: "Lid angle" });
+  const slider = page.getByRole("slider", { name: "Lid angle", exact: true });
   await slider.focus(); await slider.press("End");
   await expect(slider).toHaveValue("125");
 });

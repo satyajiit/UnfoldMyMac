@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { collections } from "@/lib/catalog";
+import { libraryCollections as collections, collectionPath } from "@/lib/catalog-routes";
 import styles from "./app-discovery.module.css";
 
 const screens = { effect: "effects", wallpaper: "wallpaper", scene: "scenes" };
@@ -23,7 +23,7 @@ export function AppDiscovery() {
     <figure id="collection-screen" className={styles.screen}>
       <Image className={styles.light} src={`/media/discovery/${screens[selected.id]}-light.webp`} alt={`${selected.name} in the redesigned UnfoldMyMac app, light appearance`} width={2240} height={1560} sizes="(max-width: 800px) 94vw, 1160px" />
       <Image className={styles.dark} src={`/media/discovery/${screens[selected.id]}-dark.webp`} alt={`${selected.name} in the redesigned UnfoldMyMac app, dark appearance`} width={2240} height={1560} sizes="(max-width: 800px) 94vw, 1160px" />
-      <figcaption aria-live="polite"><span>{selected.description}</span><Link href={`/features/#${selected.anchor}`}>Explore {selected.name}</Link></figcaption>
+      <figcaption aria-live="polite"><span>{selected.description}</span><Link href={collectionPath(selected)}>Explore {selected.name}</Link></figcaption>
     </figure>
     <div className={styles.details}>
       <div className={styles.detailScreen}>

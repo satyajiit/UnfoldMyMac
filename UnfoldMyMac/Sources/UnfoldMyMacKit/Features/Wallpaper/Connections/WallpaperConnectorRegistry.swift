@@ -9,6 +9,12 @@ struct WallpaperConnectorRegistry: Sendable {
     func connector(_ id: String) -> WallpaperConnectorDescriptor? { connectors.first { $0.id == id } }
 
     static let standard = WallpaperConnectorRegistry(connectors: [
+        .init(id: "workshop", title: "Your little workshop", namespaces: [], form: .workshop, makeProvider: { _ in nil }),
+        .init(id: "open-apps", title: "Open apps", namespaces: ["apps"], implicit: true, makeProvider: { _ in OpenAppsWallpaperProvider() }),
+        .init(id: "desktop-folder", title: "Stock the shelves", namespaces: ["desktop"], form: .desktopFolder,
+              description: "Items in your Desktop folder become parcels on the shelves. Each file, folder or shortcut counts once. Only the count is used; file contents and names are never displayed or saved.",
+              validate: { $0.enabled && $0.folderBookmark != nil },
+              makeProvider: { settings in settings.folderBookmark.map { DesktopItemsWallpaperProvider(bookmark: $0) } }),
         .init(id: "garden", title: "Garden atmosphere", namespaces: [], form: .garden, makeProvider: { _ in nil }),
         .init(id: "microphone", title: "React to sound", namespaces: [], form: .microphone, makeProvider: { _ in nil }),
         .init(id: "mac-metrics", title: "Mac metrics", namespaces: ["mac"], implicit: true, makeProvider: { _ in MacWallpaperProvider() }),
@@ -34,7 +40,7 @@ struct WallpaperConnectorRegistry: Sendable {
               description: "Poll an HTTPS endpoint that returns a wallpaper snapshot. Credentials belong in your adapter, never in a template.",
               toggleTitle: "Enable this endpoint", validate: { $0.enabled && Self.endpoint($0) != nil },
               makeProvider: { settings in Self.endpoint(settings).flatMap { try? WallpaperHTTPProvider(id: "http", request: URLRequest(url: $0)) } }),
-    ])
+    ] + gameConnectors)
 
     private static func endpoint(_ settings: WallpaperConnectionSettings) -> URL? {
         guard let path = settings.path, let url = URL(string: path), url.scheme == "https", url.host != nil else { return nil }

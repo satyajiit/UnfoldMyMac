@@ -34,8 +34,12 @@ struct RenderMedia {
         let gpu = try GPUContext()
         let catalog = WallpaperShaderCatalog()
         let registry = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false)
-        for template in registry.templates where CommandLine.arguments.count < 3 || template.id == CommandLine.arguments[2] {
-            try renderWallpaper(template, gpu: gpu, catalog: catalog)
+        if CommandLine.arguments.contains("interactive-scenes") {
+            try renderInteractiveScenes(registry: registry, gpu: gpu, catalog: catalog)
+            return
+        }
+        for template in registry.templates where selected(template.id) || (CommandLine.arguments.dropFirst(2).contains("games") && template.image?.hasPrefix("Game") == true) {
+            try renderWallpaper(template, gpu: gpu, catalog: catalog, assets: registry.assets(for: template.id))
         }
 
         var effects: [(String, any EffectPipeline)] = [
@@ -86,15 +90,18 @@ struct RenderMedia {
         }
     }
 
-    static func renderWallpaper(_ template: WallpaperTemplate, gpu: GPUContext, catalog: WallpaperShaderCatalog) throws {
-        let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog)
-        let frameCount = template.id == "hinge-garden" ? 1320 : frames
+    static func renderWallpaper(_ template: WallpaperTemplate, gpu: GPUContext, catalog: WallpaperShaderCatalog, assets: WallpaperAssetResolver) throws {
+        let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog, assets: assets)
+        let isGame = template.image?.hasPrefix("Game") == true
+        let size = isGame ? CGSize(width: 1920, height: 1200) : Self.size
+        let frameCount = template.id == "hinge-garden" ? 1320 : template.id == "the-workshop" ? 1080 : frames
         var dynamics = WallpaperInputDynamics()
         var smoother = WallpaperFrameSmoother(template: template)
         for frame in 0..<frameCount {
             try autoreleasepool {
                 let time = Double(frame) / fps
                 var snapshot = demoSnapshot(time: time)
+                if isGame { GamePreviewSamples.add(to: &snapshot, time: time) }
                 if let countdown = template.countdown {
                     // Freeze the recording's calendar date so exports remain reproducible.
                     let date = ISO8601DateFormatter().date(from: "2026-09-12T12:00:00Z")!
@@ -107,10 +114,12 @@ struct RenderMedia {
                     channels[index] = Float(min(1, max(0, (snapshot.number(binding.metric) ?? 0) / binding.scale)))
                 }
                 let energy = (snapshot.number(template.reactiveMetric) ?? 0) / template.reactiveScale
-                let renderedFrame = template.id == "hinge-garden"
-                    ? gardenFrame(time, dynamics: &dynamics, smoother: &smoother)
-                    : WallpaperFrame(time: 4 + time, energy: energy, channels: channels, grid: template.gridBinding.flatMap { snapshot.grid($0) })
-                let background = try gpuImage(gpu: gpu.device, queue: gpu.queue, format: .bgra8Unorm) { command, pass in
+                let renderedFrame = switch template.id {
+                case "hinge-garden": gardenFrame(time, dynamics: &dynamics, smoother: &smoother)
+                case "the-workshop": workshopFrame(time, dynamics: &dynamics, smoother: &smoother)
+                default: WallpaperFrame(time: 4 + time, energy: energy, channels: channels, grid: template.gridBinding.flatMap { snapshot.grid($0) })
+                }
+                let background = try gpuImage(gpu: gpu.device, queue: gpu.queue, format: .bgra8Unorm, renderSize: size) { command, pass in
                     pipeline.encode(command: command, pass: pass, size: size, frame: renderedFrame)
                 }
                 let scene = ZStack {
@@ -134,6 +143,22 @@ struct RenderMedia {
         smoother.targetLiveInputs.parallax = SIMD2(sin(time * 0.6) * 0.9, cos(time * 0.43) * 0.6)
         smoother.targetLiveInputs.motionStir = time > 7 && time < 9 ? 0.6 : 0
         smoother.setTargets(energy: time > 10 ? 0.8 : 0.2, channels: .zero, grid: nil)
+        var frame = smoother.advance(delta: 1 / fps, animating: true)
+        frame.time += 18
+        return frame
+    }
+
+    // A representative workshop with optional text hidden; no apps or folders are inspected.
+    static func workshopFrame(_ time: Double, dynamics: inout WallpaperInputDynamics,
+                              smoother: inout WallpaperFrameSmoother) -> WallpaperFrame {
+        dynamics.sample(now: time, lidAngle: time >= 3 && time < 5 ? 8 : 110, rms: 0,
+                        sensitivity: 1, battery: 0.8, pluggedIn: time > 10,
+                        daylight: 0.8, soundEnabled: false, reducedMotion: false)
+        smoother.targetLiveInputs = dynamics.value
+        smoother.targetLiveInputs.parallax = SIMD2(sin(time * 0.35) * 0.5, cos(time * 0.3) * 0.25)
+        let apps: Float = time < 7 ? 4 : 8
+        let parcels: Float = time < 9 ? 9 : 18
+        smoother.setTargets(energy: 0.3, channels: SIMD4(apps / 12, parcels / 24, 1, 1), grid: nil)
         var frame = smoother.advance(delta: 1 / fps, animating: true)
         frame.time += 18
         return frame
@@ -214,8 +239,9 @@ struct RenderMedia {
         }
     }
 
-    static func gpuImage(gpu: MTLDevice, queue: MTLCommandQueue, format: MTLPixelFormat,
+    static func gpuImage(gpu: MTLDevice, queue: MTLCommandQueue, format: MTLPixelFormat, renderSize: CGSize? = nil,
                          encode: (MTLCommandBuffer, MTLRenderPassDescriptor) -> Bool) throws -> NSImage {
+        let size = renderSize ?? Self.size
         let width = Int(size.width), height = Int(size.height)
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: format, width: width, height: height, mipmapped: false)
         descriptor.usage = [.renderTarget]; descriptor.storageMode = .shared
@@ -269,7 +295,10 @@ struct RenderMedia {
             let process = Process(), pipe = Pipe()
             guard let ffmpeg = ProcessInfo.processInfo.environment["WEBSITE_FFMPEG"] else { throw CocoaError(.fileReadNoSuchFile) }
             process.executableURL = URL(fileURLWithPath: ffmpeg)
-            process.arguments = ["-v", "error", "-y", "-f", "image2pipe", "-framerate", "60", "-i", "pipe:0", "-an", "-c:v", "libx264", "-preset", "fast", "-crf", "21", "-pix_fmt", "yuv420p", "-movflags", "+faststart", output.appendingPathComponent(id + ".mp4").path]
+            let file = output.appendingPathComponent(directory.hasPrefix("interactive/") ? directory + ".mp4" : id + ".mp4")
+            try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+            let seekable = directory.hasPrefix("interactive/") && id.contains("-lid-") ? ["-g", "1"] : []
+            process.arguments = ["-v", "error", "-y", "-f", "image2pipe", "-framerate", "60", "-i", "pipe:0", "-an", "-c:v", "libx264", "-preset", "fast", "-crf", "21", "-pix_fmt", "yuv420p", "-movflags", "+faststart"] + seekable + [file.path]
             process.standardInput = pipe
             try process.run()
             encoder = process; input = pipe.fileHandleForWriting

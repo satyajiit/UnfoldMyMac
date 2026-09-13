@@ -1,0 +1,189 @@
+{
+  "version": 2,
+  "id": "wolverine-after-rain",
+  "title": "Wolverine — After the Rain",
+  "subtitle": "Your battery, with a healing factor.",
+  "author": "UnfoldMyMac",
+  "credit": "AI-generated fan artwork. Game, logo & official promotional assets © Marvel / Insomniac Games / Sony Interactive Entertainment. Independent tribute.",
+  "category": "play",
+  "order": 110,
+  "tags": [
+    "Gaming",
+    "Battery recovery",
+    "Device & live data",
+    "Lid reactive"
+  ],
+  "accent": 15580240,
+  "background": 1055011,
+  "image": "GameWolverine",
+  "reactiveMetric": "power.battery",
+  "reactiveScale": 1,
+  "idleEnergy": 0.12,
+  "emblem": {
+    "asset": "GameWolverine",
+    "x": 0.055,
+    "y": 0.1,
+    "width": 0.28
+  },
+  "layers": [
+    {
+      "id": "feature",
+      "kind": "text",
+      "content": "BATTERY RECOVERY",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.54,
+      "width": 0.43,
+      "size": 0.011,
+      "color": 15580240,
+      "rotation": 0,
+      "height": 0.04,
+      "maxLines": 1
+    },
+    {
+      "id": "value",
+      "kind": "metric",
+      "content": "—",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.577,
+      "width": 0.43,
+      "size": 0.05,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.1,
+      "maxLines": 1,
+      "binding": "power.level"
+    },
+    {
+      "id": "state",
+      "kind": "text",
+      "content": "Waiting for battery",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.69,
+      "width": 0.43,
+      "size": 0.013,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2,
+      "binding": "power.state"
+    },
+    {
+      "id": "detail",
+      "kind": "text",
+      "content": "Battery and charging estimates from your Mac.",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.752,
+      "width": 0.45,
+      "size": 0.011,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.065,
+      "maxLines": 2,
+      "binding": "power.detail"
+    },
+    {
+      "id": "source",
+      "kind": "text",
+      "content": "LOCAL · MACOS POWER SOURCES",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.844,
+      "width": 0.49,
+      "size": 0.0085,
+      "color": 12831437,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2
+    }
+  ],
+  "allowsCustomBackground": false,
+  "informationURL": "https://www.playstation.com/en-us/games/marvels-wolverine/",
+  "scene": {
+    "source": "Scene.metal",
+    "fragment": "gameWolverineFragment",
+    "dependencies": [
+      "GameAtmosphere"
+    ],
+    "liveInputs": true,
+    "resolution": "native"
+  },
+  "cover": {
+    "time": 4,
+    "energy": 0.3,
+    "channels": [
+      0.65,
+      0.25,
+      1
+    ]
+  },
+  "reduceMotionPose": {
+    "time": 4,
+    "energy": 0.25,
+    "channels": [
+      0.65,
+      0.25,
+      1
+    ]
+  },
+  "fpsCeiling": 30,
+  "metadata": {
+    "version": 1,
+    "collection": "wallpapers",
+    "overview": "Three claw marks fill with the Mac’s battery reserve. Charging sends amber recovery light through them; low battery turns the marks red. Live battery percentage, charging state and macOS time estimates make this a quiet power companion.",
+    "badge": "New",
+    "banner": "Official",
+    "sections": [
+      {
+        "title": "Battery recovery",
+        "body": "Three claw marks fill with the Mac’s battery reserve. Charging sends amber recovery light through them; low battery turns the marks red. Live battery percentage, charging state and macOS time estimates make this a quiet power companion."
+      },
+      {
+        "title": "Built for your desktop",
+        "body": "Live readings stay readable with Reduce Motion. The lid dims the scene and the pointer adds subtle depth. Settings changes are saved per wallpaper."
+      },
+      {
+        "title": "Artwork & attribution",
+        "body": "AI-generated fan artwork, with the original game logo and official promotional artwork by Marvel / Insomniac Games / Sony Interactive Entertainment. An independent tribute; not affiliated with or endorsed by the game’s creators."
+      }
+    ],
+    "authors": [
+      {
+        "name": "UnfoldMyMac",
+        "role": "Wallpaper design & generated fan artwork",
+        "url": "https://unfoldmymac.com",
+        "logo": "UnfoldMyMacMark"
+      },
+      {
+        "name": "Marvel / Insomniac Games / Sony Interactive Entertainment",
+        "role": "Original game, logo & promotional assets",
+        "url": "https://www.playstation.com/en-us/games/marvels-wolverine/",
+        "logo": "GameWolverine"
+      }
+    ],
+    "relatedBrands": [
+      "GameWolverine"
+    ]
+  },
+  "channels": [
+    {
+      "metric": "power.battery",
+      "scale": 1,
+      "smoothing": 4
+    },
+    {
+      "metric": "power.charging",
+      "scale": 1,
+      "smoothing": 4
+    },
+    {
+      "metric": "power.low",
+      "scale": 1,
+      "smoothing": 4
+    }
+  ],
+  "setup": []
+}

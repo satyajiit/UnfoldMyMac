@@ -1,0 +1,110 @@
+[
+  {
+    "file": "/media/interactive/hinge-garden-idle-battery.mp4",
+    "width": 960,
+    "height": 600,
+    "avg_frame_rate": "60/1",
+    "duration": "6.000000",
+    "nb_frames": "360",
+    "sha256": "4eb525915cbe6eeda4bdf2a5f238266dfc332d15f0dfefaa3b3cfc07c34e6ac3"
+  },
+  {
+    "file": "/media/interactive/hinge-garden-idle-charging.mp4",
+    "width": 960,
+    "height": 600,
+    "avg_frame_rate": "60/1",
+    "duration": "6.000000",
+    "nb_frames": "360",
+    "sha256": "7b0acb7f08492e969458a3459535a795e255708f352074ff20d7249c55fdba7d"
+  },
+  {
+    "file": "/media/interactive/hinge-garden-connect.mp4",
+    "width": 960,
+    "height": 600,
+    "avg_frame_rate": "60/1",
+    "duration": "10.000000",
+    "nb_frames": "600",
+    "sha256": "a90791bf13a143b8883b6eb0540cab02aff2f161b23e9201994bfa418512bd3a"
+  },
+  {
+    "file": "/media/interactive/hinge-garden-disconnect.mp4",
+    "width": 960,
+    "height": 600,
+    "avg_frame_rate": "60/1",
+    "duration": "6.000000",
+    "nb_frames": "360",
+    "sha256": "21f1551bf5652a3a04db3b977a32a946c79db3ec7d2d48ee1d4f9c7f8f4765cc"
+  },
+  {
+    "file": "/media/interactive/hinge-garden-lid-battery.mp4",
+    "width": 960,
+    "height": 600,
+    "avg_frame_rate": "60/1",
+    "duration": "1.716667",
+    "nb_frames": "103",
+    "sha256": "42a4ed01199a606c579b42b77b8b4ab3714dfa691b0614437f3247eef9d5631d"
+  },
+  {
+    "file": "/media/interactive/hinge-garden-lid-charging.mp4",
+    "width": 960,
+    "height": 600,
+    "avg_frame_rate": "60/1",
+    "duration": "1.716667",
+    "nb_frames": "103",
+    "sha256": "8666217869fb6837aa139ae77600844877e94b460fb8d7fd9e7b3fb908732895"
+  },
+  {
+    "file": "/media/interactive/the-workshop-idle-battery.mp4",
+    "width": 960,
+    "height": 600,
+    "avg_frame_rate": "60/1",
+    "duration": "6.000000",
+    "nb_frames": "360",
+    "sha256": "ce75dcc585164c8e8dc8057b2d16941bf1990e52b2f600a88b2b1d9a93deb690"
+  },
+  {
+    "file": "/media/interactive/the-workshop-idle-charging.mp4",
+    "width": 960,
+    "height": 600,
+    "avg_frame_rate": "60/1",
+    "duration": "6.000000",
+    "nb_frames": "360",
+    "sha256": "6de875fbafee8fd1eb8db19bc03b8ff422c2d7308cda3dc44ca3b3706bbfc53f"
+  },
+  {
+    "file": "/media/interactive/the-workshop-connect.mp4",
+    "width": 960,
+    "height": 600,
+    "avg_frame_rate": "60/1",
+    "duration": "10.000000",
+    "nb_frames": "600",
+    "sha256": "2d75d0eaac6e99eb55fe94d445a5815b0ed97aa4baca0228e49f5c97f18a6233"
+  },
+  {
+    "file": "/media/interactive/the-workshop-disconnect.mp4",
+    "width": 960,
+    "height": 600,
+    "avg_frame_rate": "60/1",
+    "duration": "6.000000",
+    "nb_frames": "360",
+    "sha256": "08262479890f9a6f98fee65c7a5c67893d4612dc9780df06a5dec94e9cdd8b00"
+  },
+  {
+    "file": "/media/interactive/the-workshop-lid-battery.mp4",
+    "width": 960,
+    "height": 600,
+    "avg_frame_rate": "60/1",
+    "duration": "1.716667",
+    "nb_frames": "103",
+    "sha256": "c773831490d4eed166d30891c40e0f7f538848ec0d52f21abf89344ec5dc7e40"
+  },
+  {
+    "file": "/media/interactive/the-workshop-lid-charging.mp4",
+    "width": 960,
+    "height": 600,
+    "avg_frame_rate": "60/1",
+    "duration": "1.716667",
+    "nb_frames": "103",
+    "sha256": "820d75c9b69e300fa0cf0792e17aae351a420f9106bcd96b810c10199b56aa84"
+  }
+]

@@ -38,9 +38,10 @@ struct WallpaperSoundSetup: View {
             }
             .disabled(!connection.enabled)
         } header: {
-            Text("Sound response")
+            Text("Sound response").font(UnfoldMyMacType.headline)
         } footer: {
             Text("Nearby sounds stir the water, sway the plants, and release a little pollen.")
+                .font(UnfoldMyMacType.caption)
         }
 
         Section {
@@ -53,9 +54,10 @@ struct WallpaperSoundSetup: View {
                     .accessibilityIdentifier("wallpaper.sound.status")
             }
         } header: {
-            Text("Microphone & privacy")
+            Text("Microphone & privacy").font(UnfoldMyMacType.headline)
         } footer: {
             Text("Sound amplitude is processed on this Mac. Audio is never recorded or saved. Listening stops when sound reactions are off or the garden isn’t visible.")
+                .font(UnfoldMyMacType.caption)
         }
     }
 }

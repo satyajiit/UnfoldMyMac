@@ -1,0 +1,218 @@
+{
+  "version": 2,
+  "id": "forza-horizon-dusk",
+  "title": "Forza Horizon 5 — Endless Dusk",
+  "subtitle": "The weather outside, before your next drive.",
+  "author": "UnfoldMyMac",
+  "credit": "AI-generated fan artwork. Game, logo & official promotional assets © Playground Games / Xbox Game Studios. Independent tribute.",
+  "category": "play",
+  "order": 150,
+  "tags": [
+    "Gaming",
+    "Weather for the road",
+    "Device & live data",
+    "Lid reactive"
+  ],
+  "accent": 16492485,
+  "background": 1055011,
+  "image": "GameForza",
+  "reactiveMetric": "weather.rain",
+  "reactiveScale": 5,
+  "idleEnergy": 0.12,
+  "emblem": {
+    "asset": "GameForza",
+    "x": 0.38,
+    "y": 0.06,
+    "width": 0.28
+  },
+  "layers": [
+    {
+      "id": "feature",
+      "kind": "text",
+      "content": "WEATHER FOR THE ROAD",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.54,
+      "width": 0.43,
+      "size": 0.011,
+      "color": 16492485,
+      "rotation": 0,
+      "height": 0.04,
+      "maxLines": 1
+    },
+    {
+      "id": "value",
+      "kind": "metric",
+      "content": "—",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.577,
+      "width": 0.43,
+      "size": 0.05,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.1,
+      "maxLines": 1,
+      "binding": "weather.temperature"
+    },
+    {
+      "id": "state",
+      "kind": "text",
+      "content": "Choose a city in Settings",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.69,
+      "width": 0.43,
+      "size": 0.013,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2,
+      "binding": "weather.condition"
+    },
+    {
+      "id": "detail",
+      "kind": "text",
+      "content": "Precipitation —",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.752,
+      "width": 0.45,
+      "size": 0.011,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.065,
+      "maxLines": 2,
+      "binding": "weather.rainfall"
+    },
+    {
+      "id": "source",
+      "kind": "text",
+      "content": "Open-Meteo · choose your city",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.844,
+      "width": 0.49,
+      "size": 0.0085,
+      "color": 12831437,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2,
+      "binding": "weather.source"
+    },
+    {
+      "id": "city",
+      "kind": "text",
+      "content": "YOUR CITY",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.499,
+      "width": 0.43,
+      "size": 0.0095,
+      "color": 13488848,
+      "rotation": 0,
+      "height": 0.04,
+      "maxLines": 1,
+      "binding": "weather.location"
+    }
+  ],
+  "allowsCustomBackground": false,
+  "informationURL": "https://forza.net/horizon",
+  "scene": {
+    "source": "Scene.metal",
+    "fragment": "gameForzaFragment",
+    "dependencies": [
+      "GameAtmosphere"
+    ],
+    "liveInputs": true,
+    "resolution": "native"
+  },
+  "cover": {
+    "time": 4,
+    "energy": 0.3,
+    "channels": [
+      0.65,
+      0.25,
+      1
+    ]
+  },
+  "reduceMotionPose": {
+    "time": 4,
+    "energy": 0.25,
+    "channels": [
+      0.65,
+      0.25,
+      1
+    ]
+  },
+  "fpsCeiling": 30,
+  "metadata": {
+    "version": 1,
+    "collection": "wallpapers",
+    "overview": "Check temperature, precipitation and conditions in your chosen city before heading out. Rain streaks follow forecast precipitation, the sky darkens at night, and dust and clouds respond to wind. Open-Meteo forecast conditions refresh every 10 minutes; city selection is in Settings.",
+    "badge": "New",
+    "banner": "Official",
+    "sections": [
+      {
+        "title": "Weather for the road",
+        "body": "Check temperature, precipitation and conditions in your chosen city before heading out. Rain streaks follow forecast precipitation, the sky darkens at night, and dust and clouds respond to wind. Open-Meteo forecast conditions refresh every 10 minutes; city selection is in Settings."
+      },
+      {
+        "title": "Built for your desktop",
+        "body": "Live readings stay readable with Reduce Motion. The lid dims the scene and the pointer adds subtle depth. Settings changes are saved per wallpaper."
+      },
+      {
+        "title": "Weather & city data",
+        "body": "Forecasts by Open-Meteo (CC BY 4.0); city names by GeoNames. Cached readings show their update time and expire after two hours. No precise device location is requested."
+      },
+      {
+        "title": "Artwork & attribution",
+        "body": "AI-generated fan artwork, with the original game logo and official promotional artwork by Playground Games / Xbox Game Studios. An independent tribute; not affiliated with or endorsed by the game’s creators."
+      }
+    ],
+    "authors": [
+      {
+        "name": "UnfoldMyMac",
+        "role": "Wallpaper design & generated fan artwork",
+        "url": "https://unfoldmymac.com",
+        "logo": "UnfoldMyMacMark"
+      },
+      {
+        "name": "Playground Games / Xbox Game Studios",
+        "role": "Original game, logo & promotional assets",
+        "url": "https://forza.net/horizon",
+        "logo": "GameForza"
+      }
+    ],
+    "relatedBrands": [
+      "GameForza"
+    ]
+  },
+  "channels": [
+    {
+      "metric": "weather.rain",
+      "scale": 5,
+      "smoothing": 4
+    },
+    {
+      "metric": "weather.day",
+      "scale": 1,
+      "smoothing": 4
+    },
+    {
+      "metric": "weather.wind",
+      "scale": 60,
+      "smoothing": 4
+    },
+    {
+      "metric": "weather.available",
+      "scale": 1
+    }
+  ],
+  "setup": [
+    {
+      "required": true,
+      "kind": "local-weather"
+    }
+  ]
+}

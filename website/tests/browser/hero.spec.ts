@@ -32,7 +32,7 @@ test("cover choices close over the current wallpaper and reset reopens it", asyn
   await page.goto("/");
   await page.getByRole("button", { name: "Show Codex wallpaper" }).click();
   const demo = page.locator(".lid-demo");
-  const slider = page.getByRole("slider", { name: "Lid angle" });
+  const slider = page.getByRole("slider", { name: "Lid angle", exact: true });
   for (const [name, id, treatment] of [["Curtains", "curtains", "split"], ["Frost", "frost", "frost"], ["Peekaboo", "peekaboo", "split"], ["Reverie", "reverie", "split"], ["Neon Coast", "neon-coast", "split"], ["Fade", "fade", "fade"]]) {
     const button = page.getByRole("group", { name: "Demo effect" }).getByRole("button", { name, exact: true });
     await button.click();

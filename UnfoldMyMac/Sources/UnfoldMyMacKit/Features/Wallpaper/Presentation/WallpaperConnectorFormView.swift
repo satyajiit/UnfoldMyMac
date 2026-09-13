@@ -7,6 +7,10 @@ struct WallpaperConnectorFormView: View {
     var inputs: WallpaperInputService? = nil
     var body: some View {
         switch connector.form {
+        case .weather: WallpaperWeatherSetup(connection: $connection)
+        case .restTimer: WallpaperRestSetup(connector: connector, connection: $connection)
+        case .workshop: WallpaperWorkshopSetup(connection: $connection)
+        case .desktopFolder: WallpaperDesktopFolderSetup(connection: $connection)
         case .garden: WallpaperGardenSetup(connection: $connection, inputs: inputs)
         case .microphone: WallpaperSoundSetup(connection: $connection, inputs: inputs)
         case .githubProfile: GitHubProfileSetup(connection: $connection)

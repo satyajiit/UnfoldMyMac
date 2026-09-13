@@ -88,15 +88,19 @@ import UnfoldMyMacCore
     defer { defaults.removePersistentDomain(forName: suite) }
     let setup = WallpaperSetupController(preferences: UserDefaultsPreferencesStore(defaults: defaults))
     let templates = try WallpaperTemplateRegistry(shaders: WallpaperShaderCatalog(), loadUserTemplates: false).templates
-    for id in ["github-after-hours", "codex-mission-control"] {
+    let cases: [(String, ColorScheme)] = [("github-after-hours", .dark), ("codex-mission-control", .dark),
+                                         ("the-workshop", .light), ("the-workshop", .dark),
+                                         ("ghost-tsushima-maple", .dark), ("elden-ring-grace", .dark)]
+    for (id, scheme) in cases {
         let template = try #require(templates.first { $0.id == id })
         setup.open(template, applyAfterSetup: true)
         let request = try #require(setup.request)
         let view = WallpaperTemplateSetupSheet(setup: setup, request: request)
-            .environment(\.colorScheme, .dark).background(Color(hex: 0x16181D))
+            .environment(\.colorScheme, scheme)
         let host = NSHostingView(rootView: view)
         let window = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 640, height: 580), styleMask: [.borderless], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
+        window.appearance = NSAppearance(named: scheme == .dark ? .darkAqua : .aqua)
         window.contentView = host
         host.layoutSubtreeIfNeeded()
         window.setContentSize(host.fittingSize)
@@ -107,7 +111,7 @@ import UnfoldMyMacCore
         let bitmap = try #require(host.bitmapImageRepForCachingDisplay(in: host.bounds))
         host.cacheDisplay(in: host.bounds, to: bitmap)
         let png = try #require(bitmap.representation(using: .png, properties: [:]))
-        try png.write(to: URL(fileURLWithPath: path).appendingPathComponent(id + "-native-setup.png"))
+        try png.write(to: URL(fileURLWithPath: path).appendingPathComponent(id + "-native-setup" + (scheme == .light ? "-light" : "") + ".png"))
         window.contentView = nil; window.close(); setup.cancel()
     }
 }

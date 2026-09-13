@@ -1,0 +1,191 @@
+{
+  "version": 2,
+  "id": "wukong-cloud-temple",
+  "title": "Black Myth: Wukong — Cloud Temple",
+  "subtitle": "A window into Wukong’s living community.",
+  "author": "UnfoldMyMac",
+  "credit": "AI-generated fan artwork. Game, logo & official promotional assets © Game Science. Independent tribute.",
+  "category": "play",
+  "order": 170,
+  "tags": [
+    "Gaming",
+    "Fellow travellers",
+    "Device & live data",
+    "Lid reactive"
+  ],
+  "accent": 14986329,
+  "background": 1055011,
+  "image": "GameWukong",
+  "reactiveMetric": "wukong.crowd",
+  "reactiveScale": 1,
+  "idleEnergy": 0.12,
+  "emblem": {
+    "asset": "GameWukong",
+    "x": 0.055,
+    "y": 0.1,
+    "width": 0.28
+  },
+  "layers": [
+    {
+      "id": "feature",
+      "kind": "text",
+      "content": "FELLOW TRAVELLERS",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.54,
+      "width": 0.43,
+      "size": 0.011,
+      "color": 14986329,
+      "rotation": 0,
+      "height": 0.04,
+      "maxLines": 1
+    },
+    {
+      "id": "value",
+      "kind": "metric",
+      "content": "—",
+      "format": "integer",
+      "x": 0.055,
+      "y": 0.577,
+      "width": 0.43,
+      "size": 0.05,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.1,
+      "maxLines": 1,
+      "binding": "wukong.players"
+    },
+    {
+      "id": "state",
+      "kind": "text",
+      "content": "STEAM PLAYERS WORLDWIDE",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.69,
+      "width": 0.43,
+      "size": 0.013,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2,
+      "binding": "wukong.scope"
+    },
+    {
+      "id": "detail",
+      "kind": "text",
+      "content": "Waiting for publisher updates",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.752,
+      "width": 0.45,
+      "size": 0.012,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.072,
+      "maxLines": 2,
+      "binding": "wukong.news"
+    },
+    {
+      "id": "source",
+      "kind": "text",
+      "content": "Steam · waiting for current data",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.875,
+      "width": 0.49,
+      "size": 0.0085,
+      "color": 12831437,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2,
+      "binding": "wukong.source"
+    },
+    {
+      "id": "update-date",
+      "kind": "text",
+      "content": "Publisher announcements",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.818,
+      "width": 0.49,
+      "size": 0.0085,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.04,
+      "maxLines": 1,
+      "binding": "wukong.newsDate"
+    }
+  ],
+  "allowsCustomBackground": false,
+  "informationURL": "https://www.heishenhua.com/",
+  "scene": {
+    "source": "Scene.metal",
+    "fragment": "gameWukongFragment",
+    "dependencies": [
+      "GameAtmosphere"
+    ],
+    "liveInputs": true,
+    "resolution": "native"
+  },
+  "cover": {
+    "time": 4,
+    "energy": 0.3,
+    "channels": [
+      0.65
+    ]
+  },
+  "reduceMotionPose": {
+    "time": 4,
+    "energy": 0.25,
+    "channels": [
+      0.65
+    ]
+  },
+  "fpsCeiling": 30,
+  "metadata": {
+    "version": 1,
+    "collection": "wallpapers",
+    "overview": "Lantern-like lights fill the temple as Wukong’s worldwide Steam player count grows. See the latest publisher announcement alongside it. Aggregate counts refresh every two minutes and announcements every 15 minutes; no Steam sign-in or in-game access is needed.",
+    "badge": "New",
+    "banner": "Official",
+    "sections": [
+      {
+        "title": "Fellow travellers",
+        "body": "Lantern-like lights fill the temple as Wukong’s worldwide Steam player count grows. See the latest publisher announcement alongside it. Aggregate counts refresh every two minutes and announcements every 15 minutes; no Steam sign-in or in-game access is needed."
+      },
+      {
+        "title": "Built for your desktop",
+        "body": "Live readings stay readable with Reduce Motion. The lid dims the scene and the pointer adds subtle depth. Settings changes are saved per wallpaper."
+      },
+      {
+        "title": "Artwork & attribution",
+        "body": "AI-generated fan artwork, with the original game logo and official promotional artwork by Game Science. An independent tribute; not affiliated with or endorsed by the game’s creators."
+      }
+    ],
+    "authors": [
+      {
+        "name": "UnfoldMyMac",
+        "role": "Wallpaper design & generated fan artwork",
+        "url": "https://unfoldmymac.com",
+        "logo": "UnfoldMyMacMark"
+      },
+      {
+        "name": "Game Science",
+        "role": "Original game, logo & promotional assets",
+        "url": "https://www.heishenhua.com/",
+        "logo": "GameWukong"
+      }
+    ],
+    "relatedBrands": [
+      "GameWukong"
+    ]
+  },
+  "channels": [
+    {
+      "metric": "wukong.crowd",
+      "scale": 1,
+      "smoothing": 4
+    }
+  ],
+  "setup": []
+}

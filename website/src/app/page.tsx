@@ -26,13 +26,13 @@ export default function Home() {
       </div>
     </div><LidDemo />
     </section>
-    <div className="feature-strip"><span><Laptop aria-hidden="true" />Follows your MacBook lid</span><span><Sparkles aria-hidden="true" />Three collections. 24 designs.</span><span><SlidersHorizontal aria-hidden="true" />Make it your own</span><span><Code2 aria-hidden="true" />SwiftUI, AppKit & Metal</span></div>
+    <div className="feature-strip"><span><Laptop aria-hidden="true" />Follows your MacBook lid</span><span><Sparkles aria-hidden="true" />Three collections. {catalog.length} designs.</span><span><SlidersHorizontal aria-hidden="true" />Make it your own</span><span><Code2 aria-hidden="true" />SwiftUI, AppKit & Metal</span></div>
     <AppDiscovery />
     <LidSetupSection />
     <RealLifeSection />
     <CollectionCarousel />
-    <section className="section"><div className="section-heading"><div><h2>Closing time has character.</h2><p>Curtains, curious faces, and a little moonlit escape.<br />Choose what happens when your lid comes down.</p></div><Link className="text-link" href="/showcase/">See every effect <ArrowUpRight size={16} aria-hidden="true" /></Link></div><div className="featured-grid">{featured.map(item => <MediaCard key={item.id} item={item} featured />)}</div></section>
-    <section className="wallpaper-section"><div className="wallpaper-copy"><span className="section-context">Dynamic Wallpapers</span><h2>Leave it open.{" "}<br />There’s a whole{" "}<br />world in there.</h2><p>A sculpture moves with your Mac’s workload. A robot follows your coding sessions. Your GitHub profile becomes a city.</p><p>Ten wallpapers, from a GTA VI countdown to auroras around Earth. Optional personal data connections leave room for your own ideas.</p><Link href="/features/#wallpapers" className="text-link">Meet your next wallpaper <ArrowUpRight size={16} aria-hidden="true" /></Link></div><div className="wallpaper-preview"><MediaCard item={catalog.find(item => item.id === "codex-mission-control")!} /></div></section>
+    <section className="section"><div className="section-heading"><div><h2>Closing time has character.</h2><p>Curtains, curious faces, and a little moonlit escape.<br />Choose what happens when your lid comes down.</p></div><Link className="text-link" href="/lid-effects/">See every effect <ArrowUpRight size={16} aria-hidden="true" /></Link></div><div className="featured-grid">{featured.map(item => <MediaCard key={item.id} item={item} featured />)}</div></section>
+    <section className="wallpaper-section"><div className="wallpaper-copy"><span className="section-context">Dynamic Wallpapers</span><h2>Leave it open.{" "}<br />There’s a whole{" "}<br />world in there.</h2><p>A sculpture moves with your Mac’s workload. A robot follows your coding sessions. Your GitHub profile becomes a city.</p><p>Twenty wallpapers, including ten game worlds with useful live features. Track your battery with Wolverine, focus at a Site of Grace, or follow the wind through Tsushima.</p><Link href="/dynamic-wallpapers/" className="text-link">Meet your next wallpaper <ArrowUpRight size={16} aria-hidden="true" /></Link></div><div className="wallpaper-preview"><MediaCard item={catalog.find(item => item.id === "codex-mission-control")!} /></div></section>
     <CreativeScenesSection />
     <WallpaperConnections />
     <NativeMacSection />

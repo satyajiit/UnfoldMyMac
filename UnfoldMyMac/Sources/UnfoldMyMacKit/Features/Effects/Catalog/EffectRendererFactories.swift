@@ -30,6 +30,8 @@ enum EffectRendererFactory {
         "metal-pipeline:curtains": .metal { _, gpu in try CurtainsPipeline(gpu: gpu) },
         "metal-pipeline:current": .metal { _, gpu in try CurrentPipeline(gpu: gpu) },
         "metal-pipeline:peekaboo": .metal { _, gpu in try PeekabooPipeline(gpu: gpu) },
+        "metal-pipeline:fracture": .metal { _, gpu in try LidImpactPipeline(style: .fracture, gpu: gpu) },
+        "metal-pipeline:vortex": .metal { _, gpu in try LidImpactPipeline(style: .vortex, gpu: gpu) },
         EffectAssets.artworkRenderer: .metal { entry, gpu in try ArtRevealPipeline(artwork: try EffectAssets.artwork(for: entry), gpu: gpu) },
     ]
     static func factory(for entry: EffectManifestEntry) -> EffectRendererFactory? { table[entry.renderer] }

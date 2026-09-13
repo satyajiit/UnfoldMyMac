@@ -16,9 +16,10 @@ struct WallpaperOneLinerSetup: View {
             .disabled(!connection.showsOneLiners)
             .accessibilityIdentifier("wallpaper.garden.interval")
         } header: {
-            Text("On your desktop")
+            Text("On your desktop").font(UnfoldMyMacType.headline)
         } footer: {
             Text("A little encouragement, set in larger type. Each line fades softly into the next.")
+                .font(UnfoldMyMacType.caption)
         }
 
         Section {
@@ -28,9 +29,10 @@ struct WallpaperOneLinerSetup: View {
             LabeledContent("Sound reactions", value: soundEnabled ? "On" : "Off — enable in Sound")
                 .foregroundStyle(.secondary)
         } header: {
-            Text("A fresh thought")
+            Text("A fresh thought").font(UnfoldMyMacType.headline)
         } footer: {
             Text("With React to sound enabled, blow toward the microphone for about half a second. Sustained nearby sounds can also advance a line.")
+                .font(UnfoldMyMacType.caption)
         }
     }
 }

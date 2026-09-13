@@ -66,9 +66,12 @@ struct WallpaperSetupContent: View {
                     Section {
                         WallpaperConnectorFormView(connector: connector, connection: connection(requirement.id), inputs: setup.inputs)
                     } header: {
-                        Text(connector.title)
+                        Text(connector.title).font(UnfoldMyMacType.headline)
                     } footer: {
-                        Text(requirement.required ? "Required to use this wallpaper." : "Optional connection.")
+                        if connector.form != .desktopFolder && connector.form != .restTimer {
+                            Text(connector.form == .workshop ? "Changes preview immediately." : requirement.required ? "Required to use this wallpaper." : "Optional connection.")
+                                .font(UnfoldMyMacType.caption)
+                        }
                     }
                 }
             }

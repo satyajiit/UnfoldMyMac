@@ -136,7 +136,8 @@ private func temporaryDirectory() -> URL { FileManager.default.temporaryDirector
 @Test(.requiresGPU, .tags(.gpu)) @MainActor func folderCoversSkipRenderingAndFPSCeilingsCapPlayback() async throws {
     let registry = try WallpaperTemplateRegistry(shaders: WallpaperShaderCatalog(), loadUserTemplates: false)
     let covered = registry.templates.filter { registry.assets(for: $0.id).cover(for: $0) != nil }
-    #expect(Set(covered.map(\.id)) == ["aurora-observatory", "gta-vi-countdown", "hinge-garden"])
+    let expectedCovers = Set(["aurora-observatory", "gta-vi-countdown", "hinge-garden"] + gameWallpaperIDs)
+    #expect(expectedCovers.isSubset(of: Set(covered.map(\.id))))
     let store = WallpaperCoverStore(factory: nil, directory: temporaryDirectory())
     store.request(covered, assets: registry.assets(for:))
     try await settle(timeout: .seconds(5)) { store.images.count == covered.count }

@@ -7,8 +7,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("the lid pivots at a fixed hinge and stops above the keyboard deck", async ({ page }) => {
-  const lid = page.locator("[data-mac-lid]");
-  const base = page.locator("[data-mac-base]");
+  const lid = page.locator(".lid-demo [data-mac-lid]");
+  const base = page.locator(".lid-demo [data-mac-base]");
   const slider = page.getByRole("slider", { name: "Lid angle", exact: true });
   await lid.evaluate(element => {
     const probe = document.createElement("span");
@@ -120,7 +120,7 @@ test("gesture surface supports keyboard and keeps the Dock beneath covers", asyn
   await expect(page.getByRole("slider", { name: "Lid angle", exact: true })).toHaveValue("120");
   await surface.press("Home"); await expect(surface).toHaveAttribute("aria-valuenow", "30");
   await surface.press("End"); await expect(surface).toHaveAttribute("aria-valuenow", "125");
-  await expect(page.locator("[data-mac-lid] [data-mac-dock]")).toBeVisible();
+  await expect(page.locator(".lid-demo [data-mac-lid] [data-mac-dock]")).toBeVisible();
   await page.getByRole("group", { name: "Demo effect" }).getByRole("button", { name: "Frost", exact: true }).click();
   expect(await page.locator("[data-treatment=frost]").evaluate(cover => Number(getComputedStyle(cover).zIndex) > Number(getComputedStyle(cover.previousElementSibling!).zIndex))).toBe(true);
 });

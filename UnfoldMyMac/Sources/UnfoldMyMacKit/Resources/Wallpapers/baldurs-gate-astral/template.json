@@ -1,0 +1,182 @@
+{
+  "version": 2,
+  "id": "baldurs-gate-astral",
+  "title": "Baldur’s Gate 3 — Astral Twilight",
+  "subtitle": "Know when your inventory is getting full.",
+  "author": "UnfoldMyMac",
+  "credit": "AI-generated fan artwork. Game, logo & official promotional assets © Larian Studios / Wizards of the Coast. Independent tribute.",
+  "category": "play",
+  "order": 190,
+  "tags": [
+    "Gaming",
+    "Storage inventory",
+    "Device & live data",
+    "Lid reactive"
+  ],
+  "accent": 12361967,
+  "background": 1055011,
+  "image": "GameBaldursGate",
+  "reactiveMetric": "storage.used",
+  "reactiveScale": 1,
+  "idleEnergy": 0.12,
+  "emblem": {
+    "asset": "GameBaldursGate",
+    "x": 0.055,
+    "y": 0.1,
+    "width": 0.28
+  },
+  "layers": [
+    {
+      "id": "feature",
+      "kind": "text",
+      "content": "STORAGE INVENTORY",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.54,
+      "width": 0.43,
+      "size": 0.011,
+      "color": 12361967,
+      "rotation": 0,
+      "height": 0.04,
+      "maxLines": 1
+    },
+    {
+      "id": "value",
+      "kind": "metric",
+      "content": "—",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.577,
+      "width": 0.43,
+      "size": 0.05,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.1,
+      "maxLines": 1,
+      "binding": "storage.capacity"
+    },
+    {
+      "id": "state",
+      "kind": "text",
+      "content": "Waiting for storage",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.69,
+      "width": 0.43,
+      "size": 0.013,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2,
+      "binding": "storage.state"
+    },
+    {
+      "id": "detail",
+      "kind": "text",
+      "content": "Available space on your Mac’s home volume.",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.752,
+      "width": 0.45,
+      "size": 0.011,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.065,
+      "maxLines": 2,
+      "binding": "storage.detail"
+    },
+    {
+      "id": "source",
+      "kind": "text",
+      "content": "LOCAL · HOME VOLUME STORAGE",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.844,
+      "width": 0.49,
+      "size": 0.0085,
+      "color": 12831437,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2
+    }
+  ],
+  "allowsCustomBackground": false,
+  "informationURL": "https://baldursgate3.game/",
+  "scene": {
+    "source": "Scene.metal",
+    "fragment": "gameBaldursGateFragment",
+    "dependencies": [
+      "GameAtmosphere"
+    ],
+    "liveInputs": true,
+    "resolution": "native"
+  },
+  "cover": {
+    "time": 4,
+    "energy": 0.3,
+    "channels": [
+      0.65,
+      0.25
+    ]
+  },
+  "reduceMotionPose": {
+    "time": 4,
+    "energy": 0.25,
+    "channels": [
+      0.65,
+      0.25
+    ]
+  },
+  "fpsCeiling": 30,
+  "metadata": {
+    "version": 1,
+    "collection": "wallpapers",
+    "overview": "The astral inventory’s twelve runes fill as your home volume fills. Free storage is always visible; below 10% free, the portal turns amber and reminds you to make room before another install. Reads volume capacity only, without scanning your files.",
+    "badge": "New",
+    "banner": "Official",
+    "sections": [
+      {
+        "title": "Storage inventory",
+        "body": "The astral inventory’s twelve runes fill as your home volume fills. Free storage is always visible; below 10% free, the portal turns amber and reminds you to make room before another install. Reads volume capacity only, without scanning your files."
+      },
+      {
+        "title": "Built for your desktop",
+        "body": "Live readings stay readable with Reduce Motion. The lid dims the scene and the pointer adds subtle depth. Settings changes are saved per wallpaper."
+      },
+      {
+        "title": "Artwork & attribution",
+        "body": "AI-generated fan artwork, with the original game logo and official promotional artwork by Larian Studios / Wizards of the Coast. An independent tribute; not affiliated with or endorsed by the game’s creators."
+      }
+    ],
+    "authors": [
+      {
+        "name": "UnfoldMyMac",
+        "role": "Wallpaper design & generated fan artwork",
+        "url": "https://unfoldmymac.com",
+        "logo": "UnfoldMyMacMark"
+      },
+      {
+        "name": "Larian Studios / Wizards of the Coast",
+        "role": "Original game, logo & promotional assets",
+        "url": "https://baldursgate3.game/",
+        "logo": "GameBaldursGate"
+      }
+    ],
+    "relatedBrands": [
+      "GameBaldursGate"
+    ]
+  },
+  "channels": [
+    {
+      "metric": "storage.used",
+      "scale": 1,
+      "smoothing": 4
+    },
+    {
+      "metric": "storage.free",
+      "scale": 1,
+      "smoothing": 4
+    }
+  ],
+  "setup": []
+}

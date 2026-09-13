@@ -8,7 +8,7 @@ struct WallpaperLayersRoot: View {
         if let template = surface.template {
             ZStack {
                 WallpaperLayers(template: template, snapshot: surface.snapshot, animated: surface.animated, styleSheet: surface.styleSheet)
-                if template.id == "hinge-garden", let inputs { WallpaperGardenQuote(inputs: inputs) }
+                WallpaperSceneOverlay(template: template, snapshot: surface.snapshot, inputs: inputs)
             }.ignoresSafeArea().allowsHitTesting(false)
         }
     }

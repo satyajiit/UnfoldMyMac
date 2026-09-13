@@ -13,7 +13,7 @@ struct WallpaperScene: View {
         ZStack {
             WallpaperMetalView(pipeline: pipeline, pose: WallpaperPose(template: pipeline.template, snapshot: snapshot), fps: fps, onStats: onStats, inputs: inputs)
             WallpaperLayers(template: pipeline.template, snapshot: snapshot, animated: fps > 1, styleSheet: styleSheet)
-            if pipeline.template.id == "hinge-garden", let inputs { WallpaperGardenQuote(inputs: inputs) }
+            WallpaperSceneOverlay(template: pipeline.template, snapshot: snapshot, inputs: inputs)
         }
         .background(Color(hex: pipeline.template.background))
         .ignoresSafeArea()

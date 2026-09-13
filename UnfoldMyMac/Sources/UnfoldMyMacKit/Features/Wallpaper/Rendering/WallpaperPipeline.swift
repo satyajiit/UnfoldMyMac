@@ -64,7 +64,7 @@ struct WallpaperUniforms {
             energy: Float(min(1, max(0, frame.energy))), accent: accent, background: background, channels: frame.channels, params: params,
             interaction: SIMD4(Float(frame.liveInputs.lidOpen), Float(frame.liveInputs.sound), Float(frame.liveInputs.pollen), Float(frame.liveInputs.charging)),
             environment: SIMD4(Float(frame.liveInputs.battery), Float(frame.liveInputs.daylight), frame.liveInputs.reducedMotion ? 1 : 0, Float(frame.liveInputs.externalPower)),
-            motion: SIMD4(Float(frame.liveInputs.parallax.x), Float(frame.liveInputs.parallax.y), Float(frame.liveInputs.motionStir), 0))
+            motion: SIMD4(Float(frame.liveInputs.parallax.x), Float(frame.liveInputs.parallax.y), Float(frame.liveInputs.motionStir), frame.liveInputs.mirrored ? 1 : 0))
         encoder.setRenderPipelineState(pipeline)
         encoder.setFragmentBytes(&uniforms, length: MemoryLayout<WallpaperUniforms>.stride, index: 0)
         encoder.setFragmentTexture(texture, index: 0)

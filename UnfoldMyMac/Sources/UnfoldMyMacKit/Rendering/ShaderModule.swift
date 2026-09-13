@@ -44,5 +44,5 @@ struct ShaderModule: Hashable, Sendable {
         ShaderModule(id: "wallpaper/\(id)", resources: [.bundled(family: .wallpaper, name: "Common")] + dependencies.map { .bundled(family: .wallpaper, name: $0) } + [source], mathMode: mathMode)
     }
     static let wallpaperEmblem = ShaderModule.wallpaper("emblem", source: .bundled(family: .wallpaper, name: "Emblem"))
-    static let effects: [ShaderModule] = ["Frost", "Curtains", "ArtReveal", "Current", "Peekaboo"].map { effect($0) }
+    static let effects: [ShaderModule] = ["Frost", "Curtains", "ArtReveal", "Current", "Peekaboo", "LidImpact"].map { effect($0) }
 }

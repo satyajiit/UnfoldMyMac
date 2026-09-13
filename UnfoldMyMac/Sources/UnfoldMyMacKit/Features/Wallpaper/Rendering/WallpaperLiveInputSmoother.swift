@@ -26,6 +26,7 @@ struct WallpaperLiveInputSmoother: Equatable, Sendable {
             value.parallax = .zero; value.motionStir = 0
         }
         value.reducedMotion = !animating
+        value.mirrored = target.mirrored
         previous = target
         return value
     }

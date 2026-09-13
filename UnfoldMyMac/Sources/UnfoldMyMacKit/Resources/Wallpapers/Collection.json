@@ -2,6 +2,10 @@
   "version": 1,
   "categories": [
     {
+      "id": "work",
+      "title": "Work & play"
+    },
+    {
       "id": "mac",
       "title": "Your Mac"
     },

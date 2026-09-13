@@ -1,0 +1,211 @@
+{
+  "version": 2,
+  "id": "red-dead-sunset",
+  "title": "Red Dead Redemption 2 — Last Light",
+  "subtitle": "Keep an eye on the last light in your city.",
+  "author": "UnfoldMyMac",
+  "credit": "AI-generated fan artwork. Game, logo & official promotional assets © Rockstar Games. Independent tribute.",
+  "category": "play",
+  "order": 180,
+  "tags": [
+    "Gaming",
+    "Daylight companion",
+    "Device & live data",
+    "Lid reactive"
+  ],
+  "accent": 15955525,
+  "background": 1055011,
+  "image": "GameRedDead",
+  "reactiveMetric": "weather.sun",
+  "reactiveScale": 1,
+  "idleEnergy": 0.12,
+  "emblem": {
+    "asset": "GameRedDead",
+    "x": 0.055,
+    "y": 0.1,
+    "width": 0.28
+  },
+  "layers": [
+    {
+      "id": "feature",
+      "kind": "text",
+      "content": "DAYLIGHT COMPANION",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.54,
+      "width": 0.43,
+      "size": 0.011,
+      "color": 15955525,
+      "rotation": 0,
+      "height": 0.04,
+      "maxLines": 1
+    },
+    {
+      "id": "value",
+      "kind": "metric",
+      "content": "—",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.577,
+      "width": 0.43,
+      "size": 0.05,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.1,
+      "maxLines": 1,
+      "binding": "weather.clock"
+    },
+    {
+      "id": "state",
+      "kind": "text",
+      "content": "Choose a city in Settings",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.69,
+      "width": 0.43,
+      "size": 0.013,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2,
+      "binding": "weather.sunNext"
+    },
+    {
+      "id": "detail",
+      "kind": "text",
+      "content": "Sunrise —    Sunset —",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.752,
+      "width": 0.45,
+      "size": 0.011,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.065,
+      "maxLines": 2,
+      "binding": "weather.sunTimes"
+    },
+    {
+      "id": "source",
+      "kind": "text",
+      "content": "Open-Meteo · choose your city",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.844,
+      "width": 0.49,
+      "size": 0.0085,
+      "color": 12831437,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2,
+      "binding": "weather.source"
+    },
+    {
+      "id": "city",
+      "kind": "text",
+      "content": "YOUR CITY",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.499,
+      "width": 0.43,
+      "size": 0.0095,
+      "color": 13488848,
+      "rotation": 0,
+      "height": 0.04,
+      "maxLines": 1,
+      "binding": "weather.location"
+    }
+  ],
+  "allowsCustomBackground": false,
+  "informationURL": "https://www.rockstargames.com/reddeadredemption2",
+  "scene": {
+    "source": "Scene.metal",
+    "fragment": "gameRedDeadFragment",
+    "dependencies": [
+      "GameAtmosphere"
+    ],
+    "liveInputs": true,
+    "resolution": "native"
+  },
+  "cover": {
+    "time": 4,
+    "energy": 0.3,
+    "channels": [
+      0.65,
+      0.25
+    ]
+  },
+  "reduceMotionPose": {
+    "time": 4,
+    "energy": 0.25,
+    "channels": [
+      0.65,
+      0.25
+    ]
+  },
+  "fpsCeiling": 30,
+  "metadata": {
+    "version": 1,
+    "collection": "wallpapers",
+    "overview": "Your chosen city’s clock, sunrise, sunset and countdown to the next solar event sit beside a sun that travels along the horizon arc. The scene dims at night. Times use the selected city’s timezone, including daylight-saving changes. Solar data comes from Open-Meteo.",
+    "badge": "New",
+    "banner": "Official",
+    "sections": [
+      {
+        "title": "Daylight companion",
+        "body": "Your chosen city’s clock, sunrise, sunset and countdown to the next solar event sit beside a sun that travels along the horizon arc. The scene dims at night. Times use the selected city’s timezone, including daylight-saving changes. Solar data comes from Open-Meteo."
+      },
+      {
+        "title": "Built for your desktop",
+        "body": "Live readings stay readable with Reduce Motion. The lid dims the scene and the pointer adds subtle depth. Settings changes are saved per wallpaper."
+      },
+      {
+        "title": "Weather & city data",
+        "body": "Forecasts by Open-Meteo (CC BY 4.0); city names by GeoNames. Cached readings show their update time and expire after two hours. No precise device location is requested."
+      },
+      {
+        "title": "Artwork & attribution",
+        "body": "AI-generated fan artwork, with the original game logo and official promotional artwork by Rockstar Games. An independent tribute; not affiliated with or endorsed by the game’s creators."
+      }
+    ],
+    "authors": [
+      {
+        "name": "UnfoldMyMac",
+        "role": "Wallpaper design & generated fan artwork",
+        "url": "https://unfoldmymac.com",
+        "logo": "UnfoldMyMacMark"
+      },
+      {
+        "name": "Rockstar Games",
+        "role": "Original game, logo & promotional assets",
+        "url": "https://www.rockstargames.com/reddeadredemption2",
+        "logo": "GameRedDead"
+      }
+    ],
+    "relatedBrands": [
+      "GameRedDead"
+    ]
+  },
+  "channels": [
+    {
+      "metric": "weather.sun",
+      "scale": 1,
+      "smoothing": 4
+    },
+    {
+      "metric": "weather.day",
+      "scale": 1,
+      "smoothing": 4
+    },
+    {
+      "metric": "weather.available",
+      "scale": 1
+    }
+  ],
+  "setup": [
+    {
+      "required": true,
+      "kind": "local-weather"
+    }
+  ]
+}

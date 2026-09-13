@@ -48,6 +48,36 @@
       "cover": "Covers/Peekaboo", "renderer": "metal-pipeline:peekaboo", "renderingLabel": "3D characters",
       "capabilities": {"continuousMotion": true},
       "parameters": [{"key": "strength", "title": "Playfulness", "kind": "slider", "range": [0, 1], "step": 0.01, "format": "percent", "default": 1}]
+    },
+    {
+      "id": "fracture",
+      "title": "Glass Fracture",
+      "subtitle": "A small impact. A thousand reflections.",
+      "detail": "An impact blossoms from the centre into irregular glass facets and spectral fracture lines. Close the lid to assemble the glass; open it to retrace the breakage. The glass is a procedural overlay that needs no Screen Recording permission.",
+      "symbol": "sparkle",
+      "category": "glass",
+      "tags": ["Glass","Fracture","Radial","Prismatic"],
+      "cover": "Covers/Fracture",
+      "renderer": "metal-pipeline:fracture",
+      "renderingLabel": "Procedural glass",
+      "capabilities": {"continuousMotion": false,"requiresCapture": false},
+      "parameters": [{"key": "strength","title": "Spectral light","kind": "slider","range": [0,1],"step": 0.01,"format": "percent","default": 1}],
+      "metadata": {"version": 1,"overview": "An impact blossoms from the centre into irregular glass facets and spectral fracture lines. Close the lid to assemble the glass; open it to retrace the breakage. The glass is a procedural overlay that needs no Screen Recording permission.","badge": "New","authors": [{"name": "UnfoldMyMac","role": "Design & development","url": "https://unfoldmymac.com","logo": "UnfoldMyMacMark"}]}
+    },
+    {
+      "id": "vortex",
+      "title": "Ink Vortex",
+      "subtitle": "Let your desktop fall into a little magic.",
+      "detail": "A pool of midnight ink curls outward in turquoise and violet arms. Its rippling rim follows your lid until the whole display is immersed. Opening unwinds the spiral; Reduce Motion stills the ink.",
+      "symbol": "hurricane",
+      "category": "motion",
+      "tags": ["Ink","Spiral","Animated","Radial"],
+      "cover": "Covers/Vortex",
+      "renderer": "metal-pipeline:vortex",
+      "renderingLabel": "Fluid motion",
+      "capabilities": {"continuousMotion": true,"requiresCapture": false},
+      "parameters": [{"key": "strength","title": "Ink shimmer","kind": "slider","range": [0,1],"step": 0.01,"format": "percent","default": 1}],
+      "metadata": {"version": 1,"overview": "A pool of midnight ink curls outward in turquoise and violet arms. Its rippling rim follows your lid until the whole display is immersed. Opening unwinds the spiral; Reduce Motion stills the ink.","badge": "New","authors": [{"name": "UnfoldMyMac","role": "Design & development","url": "https://unfoldmymac.com","logo": "UnfoldMyMacMark"}]}
     }
   ]
 }

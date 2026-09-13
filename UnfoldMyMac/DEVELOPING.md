@@ -26,6 +26,7 @@ Environment variables used by tests and diagnostics:
 | `UNFOLDMYMAC_RECORD_GOLDENS=1` | Re-records the golden frame hashes after an intended shader change |
 | `UNFOLDMYMAC_ART_ARTIFACTS`, `_CURTAIN_`, `_CURRENT_`, `_PEEKABOO_`, `_WALLPAPER_ARTIFACTS=<dir>` | Tests write rendered frames to that directory for inspection |
 | `UNFOLDMYMAC_GARDEN_ARTIFACTS=<dir>` | Writes Hinge Garden's native reference states and aspect variants; add `UNFOLDMYMAC_GARDEN_MOTION=1` for an 22-second 60 fps recording (ffmpeg required) |
+| `UNFOLDMYMAC_WORKSHOP_ARTIFACTS=<dir>` | `swift test --filter workshopReferenceFrames` exports day, night, count, lid, power, mirror, still, Retina, portrait, ultrawide and cover fixtures |
 | `UNFOLDMYMAC_BENCHMARK_FOREGROUND=1` | Temporarily raises the diagnostic surface above other apps; use when desktop occlusion pauses measurements. Closing the benchmark removes the window |
 | `UNFOLDMYMAC_BENCHMARK_TEMPLATE=hinge-garden`, `UNFOLDMYMAC_BENCHMARK_SECONDS=60`, `UNFOLDMYMAC_BENCHMARK_STRESS=1` | Selects a scene, enables the 59 fps / 20 ms performance gate, and optionally supplies scripted physical inputs |
 | `UNFOLDMYMAC_SIGN_IDENTITY` | Code-signing identity for the build script (`-` for ad hoc) |
@@ -159,6 +160,8 @@ Collections describe the medium: **Glass & Light**, **Image Art**, **Motion & 3D
 3. Run `swift test` and `./script/build_and_run.sh --shader-check`. The catalog tests find every image through the manifest and check covers, complete assembly, transparency, first-frame onset, reversibility, colour and capture capability.
 
 ### Add a procedural or native effect
+
+`LidImpactPipeline` provides Glass Fracture and Ink Vortex through one fullscreen encoder and two distinct radial shaders in `LidImpact.metal`. Their factories are `metal-pipeline:fracture` and `metal-pipeline:vortex`; neither requires desktop capture. See [Game wallpapers and radial lid effects](GAME_WALLPAPERS.md) for their behavior and checks.
 
 1. Add an entry to `Effects.json`. An effect that reuses an existing renderer key stops here.
 2. For a new Metal renderer, implement `EffectPipeline`: keep the injected `GPUContext`, declare a `SurfaceConfiguration` (pixel format, opacity, clear colour) and encode one frame in `encode(command:pass:size:frame:)`. Ask the context for pipeline states with `gpu.pipeline(.effect("Name"), vertex:fragment:color:)`; units compile once per process and states are cached by every input. `CurrentPipeline` is a small example, `CurtainsPipeline` a mesh. Read extra parameters from `context.parameters["key"]`.

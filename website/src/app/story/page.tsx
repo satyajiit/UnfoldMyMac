@@ -55,7 +55,7 @@ export default function StoryPage() {
           <h2 id="experiment-heading">So I tried it on my MacBook.</h2>
           <p>The first experiment was blur: the iPhone Duo frost, redrawn in Metal for a laptop hinge. Lower the lid and the desktop blurs. Lift it and everything comes back. Stop halfway, and the effect stops with you.</p>
           <p>Then came curtains, flowing ribbons, artwork, and characters peeking over my windows. One effect had become a collection.</p>
-          <Link className={styles.inlineLink} href="/showcase/#curtains">Meet the {effectCount} lid effects <ArrowUpRight size={18} aria-hidden="true" /></Link>
+          <Link className={styles.inlineLink} href="/lid-effects/">Meet the {effectCount} lid effects <ArrowUpRight size={18} aria-hidden="true" /></Link>
         </div>
       </section>
       <section className={styles.chapter + " " + styles.worlds} id="a-bigger-idea" aria-labelledby="worlds-heading">
@@ -72,7 +72,7 @@ export default function StoryPage() {
         </figure>
       </section>
       <section className={styles.previewSection} aria-labelledby="wallpaper-heading">
-        <div className={styles.previewHeading}><div><h2 id="wallpaper-heading">A few things now living on my desktop.</h2><p>These are previews from the app. Pick one to see it move.</p></div><Link className={styles.inlineLink} href="/showcase/#pulse">Explore all {wallpaperCount} wallpapers <ArrowUpRight size={18} aria-hidden="true" /></Link></div>
+        <div className={styles.previewHeading}><div><h2 id="wallpaper-heading">A few things now living on my desktop.</h2><p>These are previews from the app. Pick one to see it move.</p></div><Link className={styles.inlineLink} href="/dynamic-wallpapers/">Explore all {wallpaperCount} wallpapers <ArrowUpRight size={18} aria-hidden="true" /></Link></div>
         <div className={styles.previewGrid}>{wallpapers.map(item => <MediaCard key={item.id} item={item} />)}</div>
       </section>
       <section className={styles.filmSection} id="the-film" aria-labelledby="film-heading">

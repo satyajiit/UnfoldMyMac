@@ -6,7 +6,7 @@ export const site = {
   description: "Lid Effects, Dynamic Wallpapers, and Creative Scenes. A redesigned native Mac app with reactive worlds, design previews, and optional data connections.",
   keywords: [
     "MacBook lid effects", "lid angle sensor", "macOS desktop effects", "live wallpaper for Mac",
-    "dynamic wallpaper macOS", "Creative Scenes", "Hinge Garden", "iPhone Duo", "iOS Duo", "iPhone Duo effect on Mac",
+    "dynamic wallpaper macOS", "Creative Scenes", "Hinge Garden", "The Workshop", "iPhone Duo", "iOS Duo", "iPhone Duo effect on Mac",
     "Metal shaders macOS", "native Mac app", "menu bar app", "Apple silicon",
   ],
 };
@@ -29,9 +29,9 @@ export const navigation = [
   { href: "/story/", label: "The story" }, { href: "/blog/", label: "Field notes" },
 ];
 export const pages = [
-  { path: "/", title: "A little more life on your Mac", description: "Explore Lid Effects, Dynamic Wallpapers, and Creative Scenes in a redesigned native Mac app. Meet Hinge Garden, browse by category, and preview each design." },
-  { path: "/features/", title: "Made for the way you open your Mac", description: "Explore Lid Effects, Dynamic Wallpapers, and Creative Scenes: custom image reveals, reactive Hinge Garden, rich design pages, and optional data connections." },
-  { path: "/showcase/", title: "Pick your kind of desktop", description: "Browse 13 Lid Effects, 10 Dynamic Wallpapers, and Hinge Garden in Creative Scenes, with native app renders and collection filters." },
+  { path: "/", title: "A little more life on your Mac", description: "Explore Lid Effects, Dynamic Wallpapers, and Creative Scenes in a redesigned native Mac app. Meet The Workshop and Hinge Garden, browse by category, and preview each design." },
+  { path: "/features/", title: "Made for the way you open your Mac", description: "Explore Lid Effects, Dynamic Wallpapers, and Creative Scenes: custom image reveals, The Workshop and Hinge Garden, and optional data connections." },
+  { path: "/showcase/", title: "Pick your kind of desktop", description: "Browse 13 Lid Effects, 20 Dynamic Wallpapers, and two Creative Scenes, with native app renders of The Workshop and Hinge Garden." },
   { path: "/story/", title: "I only meant to make one effect", description: "The illustrated story of UnfoldMyMac: how an iPhone Duo animation inspired a MacBook experiment, desktop effects, and a collection of live wallpapers." },
   { path: "/download/", title: "Make yourself at home", description: "Get UnfoldMyMac for macOS 26 or later. Check release availability, hardware requirements, and installation instructions." },
   { path: "/blog/", title: "Notes from an open laptop", description: "Practical guides to Lid Effects, Dynamic Wallpapers, Creative Scenes, and local data connections." },

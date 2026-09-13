@@ -18,6 +18,7 @@
     "check:release": "node --import tsx scripts/check-release.ts",
     "prepare:assets": "node --import tsx scripts/prepare-assets.ts",
     "prepare:media": "bash scripts/render-media.sh && node --import tsx scripts/finish-media.ts",
+    "prepare:scenes": "bash scripts/render-media.sh interactive-scenes && node --import tsx scripts/finish-scene-media.ts",
     "films:youtube": "node --import tsx scripts/set-film-youtube.ts"
   },
   "dependencies": {

@@ -9,9 +9,10 @@ struct WallpaperGardenSetup: View {
             Toggle("Pointer parallax", isOn: Binding(get: { connection.pointerParallax }, set: { connection.parallax = $0 }))
                 .accessibilityIdentifier("wallpaper.garden.parallax")
         } header: {
-            Text("Perspective")
+            Text("Perspective").font(UnfoldMyMacType.headline)
         } footer: {
             Text("Move the pointer to look gently around the miniature.")
+                .font(UnfoldMyMacType.caption)
         }
 
         Section {
@@ -24,9 +25,10 @@ struct WallpaperGardenSetup: View {
                     .frame(maxWidth: 330, minHeight: 48, alignment: .trailing)
             }
         } header: {
-            Text("Mac movement")
+            Text("Mac movement").font(UnfoldMyMacType.headline)
         } footer: {
             Text("Supported sensors gently shift the view and stir the water when you move your Mac. Motion follows your system’s Reduce Motion setting.")
+                .font(UnfoldMyMacType.caption)
         }
     }
 }

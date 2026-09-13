@@ -1,0 +1,246 @@
+{
+  "version": 2,
+  "id": "doom-ember-citadel",
+  "title": "DOOM Eternal — Ember Citadel",
+  "subtitle": "A live thermal monitor forged in fire.",
+  "author": "UnfoldMyMac",
+  "credit": "AI-generated fan artwork. Game, logo & official promotional assets © id Software / Bethesda Softworks. Independent tribute.",
+  "category": "play",
+  "order": 140,
+  "tags": [
+    "Gaming",
+    "Thermal armor",
+    "Device & live data",
+    "Lid reactive"
+  ],
+  "accent": 16737589,
+  "background": 1055011,
+  "image": "GameDoom",
+  "reactiveMetric": "thermal.pressure",
+  "reactiveScale": 1,
+  "idleEnergy": 0.12,
+  "emblem": {
+    "asset": "GameDoom",
+    "x": 0.055,
+    "y": 0.1,
+    "width": 0.28
+  },
+  "layers": [
+    {
+      "id": "feature",
+      "kind": "text",
+      "content": "THERMAL ARMOR",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.54,
+      "width": 0.43,
+      "size": 0.011,
+      "color": 16737589,
+      "rotation": 0,
+      "height": 0.04,
+      "maxLines": 1
+    },
+    {
+      "id": "value",
+      "kind": "metric",
+      "content": "—",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.577,
+      "width": 0.43,
+      "size": 0.05,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.1,
+      "maxLines": 1,
+      "binding": "thermal.state"
+    },
+    {
+      "id": "state",
+      "kind": "text",
+      "content": "MAC THERMAL STATE",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.69,
+      "width": 0.43,
+      "size": 0.013,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2
+    },
+    {
+      "id": "detail",
+      "kind": "text",
+      "content": "Waiting for macOS thermal information.",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.752,
+      "width": 0.45,
+      "size": 0.011,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.065,
+      "maxLines": 2,
+      "binding": "thermal.advice"
+    },
+    {
+      "id": "source",
+      "kind": "text",
+      "content": "LOCAL · SYSTEM THERMAL PRESSURE",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.9,
+      "width": 0.49,
+      "size": 0.0085,
+      "color": 12831437,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2
+    },
+    {
+      "id": "cpu-label",
+      "kind": "text",
+      "content": "CPU",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.84,
+      "width": 0.07,
+      "size": 0.009,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.04,
+      "maxLines": 1
+    },
+    {
+      "id": "cpu",
+      "kind": "text",
+      "content": "—",
+      "format": "percent",
+      "x": 0.11,
+      "y": 0.84,
+      "width": 0.08,
+      "size": 0.009,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.04,
+      "maxLines": 1,
+      "binding": "mac.cpu"
+    },
+    {
+      "id": "memory-label",
+      "kind": "text",
+      "content": "MEMORY",
+      "format": "text",
+      "x": 0.21,
+      "y": 0.84,
+      "width": 0.08,
+      "size": 0.009,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.04,
+      "maxLines": 1
+    },
+    {
+      "id": "memory",
+      "kind": "text",
+      "content": "—",
+      "format": "percent",
+      "x": 0.3,
+      "y": 0.84,
+      "width": 0.08,
+      "size": 0.009,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.04,
+      "maxLines": 1,
+      "binding": "mac.memory"
+    }
+  ],
+  "allowsCustomBackground": false,
+  "informationURL": "https://slayersclub.bethesda.net/en-US",
+  "scene": {
+    "source": "Scene.metal",
+    "fragment": "gameDoomFragment",
+    "dependencies": [
+      "GameAtmosphere"
+    ],
+    "liveInputs": true,
+    "resolution": "native"
+  },
+  "cover": {
+    "time": 4,
+    "energy": 0.3,
+    "channels": [
+      0.65,
+      0.25,
+      1
+    ]
+  },
+  "reduceMotionPose": {
+    "time": 4,
+    "energy": 0.25,
+    "channels": [
+      0.65,
+      0.25,
+      1
+    ]
+  },
+  "fpsCeiling": 30,
+  "metadata": {
+    "version": 1,
+    "collection": "wallpapers",
+    "overview": "The citadel heats up with the thermal pressure reported by macOS. Three armor cells show the pressure level, and CPU and memory usage stay visible below. Serious or critical pressure brings a practical cooling reminder. These are system pressure states, not invented temperature readings.",
+    "badge": "New",
+    "banner": "Official",
+    "sections": [
+      {
+        "title": "Thermal armor",
+        "body": "The citadel heats up with the thermal pressure reported by macOS. Three armor cells show the pressure level, and CPU and memory usage stay visible below. Serious or critical pressure brings a practical cooling reminder. These are system pressure states, not invented temperature readings."
+      },
+      {
+        "title": "Built for your desktop",
+        "body": "Live readings stay readable with Reduce Motion. The lid dims the scene and the pointer adds subtle depth. Settings changes are saved per wallpaper."
+      },
+      {
+        "title": "Artwork & attribution",
+        "body": "AI-generated fan artwork, with the original game logo and official promotional artwork by id Software / Bethesda Softworks. An independent tribute; not affiliated with or endorsed by the game’s creators."
+      }
+    ],
+    "authors": [
+      {
+        "name": "UnfoldMyMac",
+        "role": "Wallpaper design & generated fan artwork",
+        "url": "https://unfoldmymac.com",
+        "logo": "UnfoldMyMacMark"
+      },
+      {
+        "name": "id Software / Bethesda Softworks",
+        "role": "Original game, logo & promotional assets",
+        "url": "https://slayersclub.bethesda.net/en-US",
+        "logo": "GameDoom"
+      }
+    ],
+    "relatedBrands": [
+      "GameDoom"
+    ]
+  },
+  "channels": [
+    {
+      "metric": "thermal.pressure",
+      "scale": 1,
+      "smoothing": 4
+    },
+    {
+      "metric": "mac.cpu",
+      "scale": 100,
+      "smoothing": 4
+    },
+    {
+      "metric": "mac.memory",
+      "scale": 100,
+      "smoothing": 4
+    }
+  ],
+  "setup": []
+}

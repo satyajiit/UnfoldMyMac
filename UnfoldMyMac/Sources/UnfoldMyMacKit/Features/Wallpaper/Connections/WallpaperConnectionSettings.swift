@@ -12,6 +12,19 @@ struct WallpaperConnectionSettings: Codable, Equatable, Sendable {
     var oneLiners: Bool?
     var lineInterval: Double?
     var blowToChange: Bool?
+    var folderBookmark: Data?
+    var liveCounts: Bool?
+    var mirrored: Bool?
+    var weatherLocation: WallpaperWeatherLocation?
+    var sessionMinutes: Double?
+    var sessionRestart: String?
+    func restMinutes(default fallback: Double) -> Double {
+        guard let sessionMinutes, sessionMinutes.isFinite else { return fallback }
+        return min(60, max(1, sessionMinutes))
+    }
+    var showsLiveCounts: Bool { liveCounts ?? true }
+    var showsWorkshopLines: Bool { oneLiners ?? true }
+    var mirrorsComposition: Bool { mirrored ?? false }
     var pointerParallax: Bool { parallax ?? true }
     var sensorMotion: Bool { motionSensors ?? true }
     var showsOneLiners: Bool { oneLiners ?? false }

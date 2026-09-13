@@ -13,6 +13,19 @@
     "sha256": "60b4137eee48d3a1c320c81e7a54fcb38c20d4f5829ade72eabf22181d853cfa"
   },
   {
+    "file": "baldurs-gate-astral.mp4",
+    "source": "Native Metal wallpaper and SwiftUI readouts, 4K artwork with illustrative device and public data, rendered at 60 fps",
+    "readmePreview": null,
+    "sampleData": true,
+    "demoDesktop": false,
+    "width": 1920,
+    "height": 1200,
+    "avg_frame_rate": "60/1",
+    "nb_frames": "240",
+    "bytes": 1228197,
+    "sha256": "a0e1673bf6acf36f27fa140fe64f86b00f7b4db73b5f13ee0c4aab86609b0762"
+  },
+  {
     "file": "claude-current.mp4",
     "source": "Updated README preview exporter, rendered at 60 fps",
     "readmePreview": ".github/media/wallpapers/claude-current.gif",
@@ -104,6 +117,19 @@
     "sha256": "51fb005fbdec896a46621186bbc7540178938a96e77a9a7bd9dfd0fce07cfee4"
   },
   {
+    "file": "cyberpunk-night-city.mp4",
+    "source": "Native Metal wallpaper and SwiftUI readouts, 4K artwork with illustrative device and public data, rendered at 60 fps",
+    "readmePreview": null,
+    "sampleData": true,
+    "demoDesktop": false,
+    "width": 1920,
+    "height": 1200,
+    "avg_frame_rate": "60/1",
+    "nb_frames": "240",
+    "bytes": 1533868,
+    "sha256": "19d73c3b8bd8eb529bb24f008f335d1f737e99523377f1198029d4e27f1ad965"
+  },
+  {
     "file": "daydream.mp4",
     "source": "Updated README preview exporter, rendered at 60 fps",
     "readmePreview": ".github/media/wallpapers/daydream.gif",
@@ -115,6 +141,32 @@
     "nb_frames": "240",
     "bytes": 741147,
     "sha256": "c6e1d47e43546eafae1f29b4793eb5aef1d0ef42f3db54573e1b1e506b929401"
+  },
+  {
+    "file": "doom-ember-citadel.mp4",
+    "source": "Native Metal wallpaper and SwiftUI readouts, 4K artwork with illustrative device and public data, rendered at 60 fps",
+    "readmePreview": null,
+    "sampleData": true,
+    "demoDesktop": false,
+    "width": 1920,
+    "height": 1200,
+    "avg_frame_rate": "60/1",
+    "nb_frames": "240",
+    "bytes": 1447542,
+    "sha256": "759e654ae40b57e03760932d99e69f0cb3ef24e492bbb5ab4dd738ca8737426e"
+  },
+  {
+    "file": "elden-ring-grace.mp4",
+    "source": "Native Metal wallpaper and SwiftUI readouts, 4K artwork with illustrative device and public data, rendered at 60 fps",
+    "readmePreview": null,
+    "sampleData": true,
+    "demoDesktop": false,
+    "width": 1920,
+    "height": 1200,
+    "avg_frame_rate": "60/1",
+    "nb_frames": "240",
+    "bytes": 1524634,
+    "sha256": "a8c7bef2ff353ef19cc2c88222e26a05d375d986f8efbc1b81b38c901b872eb8"
   },
   {
     "file": "fade.mp4",
@@ -143,6 +195,19 @@
     "sha256": "6848cb964f2c2d02a8b68b15a16d49a876b5240a44ef28e36198b696410f45e2"
   },
   {
+    "file": "forza-horizon-dusk.mp4",
+    "source": "Native Metal wallpaper and SwiftUI readouts, 4K artwork with illustrative device and public data, rendered at 60 fps",
+    "readmePreview": null,
+    "sampleData": true,
+    "demoDesktop": false,
+    "width": 1920,
+    "height": 1200,
+    "avg_frame_rate": "60/1",
+    "nb_frames": "240",
+    "bytes": 1137358,
+    "sha256": "7fa3b99d3149d36c4720f291bc04539c21ad7917a202044c66fa0d4118edaf5f"
+  },
+  {
     "file": "frost.mp4",
     "source": "Updated README preview exporter, rendered at 60 fps",
     "readmePreview": ".github/media/effects/frost.gif",
@@ -154,6 +219,19 @@
     "nb_frames": "240",
     "bytes": 353019,
     "sha256": "bdad42e41c2d4b632c6ee920eff8a839585c751e9d1aa1238ff7b4eca0da63d1"
+  },
+  {
+    "file": "ghost-tsushima-maple.mp4",
+    "source": "Native Metal wallpaper and SwiftUI readouts, 4K artwork with illustrative device and public data, rendered at 60 fps",
+    "readmePreview": null,
+    "sampleData": true,
+    "demoDesktop": false,
+    "width": 1920,
+    "height": 1200,
+    "avg_frame_rate": "60/1",
+    "nb_frames": "240",
+    "bytes": 1599673,
+    "sha256": "6c59669d50eefb0c04edf049f22ad81bae69c0f68589cb889cb9a3e7f84320b4"
   },
   {
     "file": "github-after-hours.mp4",
@@ -208,6 +286,19 @@
     "sha256": "aed1b607232d672dcf0769273745ef23affef5c3657fa171ba9645ae1d22f6ff"
   },
   {
+    "file": "hollow-knight-greenpath.mp4",
+    "source": "Native Metal wallpaper and SwiftUI readouts, 4K artwork with illustrative device and public data, rendered at 60 fps",
+    "readmePreview": null,
+    "sampleData": true,
+    "demoDesktop": false,
+    "width": 1920,
+    "height": 1200,
+    "avg_frame_rate": "60/1",
+    "nb_frames": "240",
+    "bytes": 1076305,
+    "sha256": "1f6b17dfe12e5c6b0534b7fa908898467ea28cab3e75295d7f5f6e0b4e675868"
+  },
+  {
     "file": "lights-out.mp4",
     "source": "Updated README preview exporter, rendered at 60 fps",
     "readmePreview": ".github/media/wallpapers/lights-out.gif",
@@ -260,6 +351,19 @@
     "sha256": "71596c59231ce9941196dce708f9592875c2c339b125f9347c8f5d36a1930b81"
   },
   {
+    "file": "red-dead-sunset.mp4",
+    "source": "Native Metal wallpaper and SwiftUI readouts, 4K artwork with illustrative device and public data, rendered at 60 fps",
+    "readmePreview": null,
+    "sampleData": true,
+    "demoDesktop": false,
+    "width": 1920,
+    "height": 1200,
+    "avg_frame_rate": "60/1",
+    "nb_frames": "240",
+    "bytes": 931901,
+    "sha256": "24fb23ad9ae78fa300ea7461cf6342246dab58f8415b94a0d2addbab86b374bf"
+  },
+  {
     "file": "reverie.mp4",
     "source": "Updated README preview exporter, rendered at 60 fps",
     "readmePreview": ".github/media/effects/reverie.gif",
@@ -299,6 +403,19 @@
     "sha256": "55c2586cbfc427800b522a63ef42927bfb2329191f08b20bca6b5c2dde39c08b"
   },
   {
+    "file": "the-workshop.mp4",
+    "source": "Native Metal scene with deterministic local input dynamics, rendered at 60 fps",
+    "readmePreview": null,
+    "sampleData": true,
+    "demoDesktop": false,
+    "width": 960,
+    "height": 600,
+    "avg_frame_rate": "60/1",
+    "nb_frames": "1080",
+    "bytes": 989274,
+    "sha256": "733b186cbc3d314e4637c259545ac5f4fe17047f22809b06789ca4a816c2a5b8"
+  },
+  {
     "file": "veil.mp4",
     "source": "Updated README preview exporter, rendered at 60 fps",
     "readmePreview": ".github/media/effects/veil.gif",
@@ -310,5 +427,31 @@
     "nb_frames": "240",
     "bytes": 420520,
     "sha256": "73348ee9465e6e9b4647739fa51e4b5e6aee9a953c706cac4d1517308398fb9c"
+  },
+  {
+    "file": "wolverine-after-rain.mp4",
+    "source": "Native Metal wallpaper and SwiftUI readouts, 4K artwork with illustrative device and public data, rendered at 60 fps",
+    "readmePreview": null,
+    "sampleData": true,
+    "demoDesktop": false,
+    "width": 1920,
+    "height": 1200,
+    "avg_frame_rate": "60/1",
+    "nb_frames": "240",
+    "bytes": 1918883,
+    "sha256": "897308239e7ffa6ec062a4efc77adc4399609ca38936af653ab657f68bc660e7"
+  },
+  {
+    "file": "wukong-cloud-temple.mp4",
+    "source": "Native Metal wallpaper and SwiftUI readouts, 4K artwork with illustrative device and public data, rendered at 60 fps",
+    "readmePreview": null,
+    "sampleData": true,
+    "demoDesktop": false,
+    "width": 1920,
+    "height": 1200,
+    "avg_frame_rate": "60/1",
+    "nb_frames": "240",
+    "bytes": 1283041,
+    "sha256": "79cb0f81239e541c1d5418df08080b1c5c491489b59549d79a002bdd630fab09"
   }
 ]

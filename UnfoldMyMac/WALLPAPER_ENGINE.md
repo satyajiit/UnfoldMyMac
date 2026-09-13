@@ -4,6 +4,8 @@ The wallpaper feature puts a Metal scene on every display, below the desktop ico
 
 ## Collection
 
+The ten game wallpapers pair generated fan artwork and original publisher assets with useful device and public data: battery recovery, network traffic, focus and rest timers, thermal pressure, storage, weather, daylight, wind and Steam activity. Scene-specific instruments and atmosphere follow those readings. See [Game wallpapers](GAME_WALLPAPERS.md) for behavior, data contracts, asset sources and checks.
+
 | Template | Rendering | Data |
 | --- | --- | --- |
 | Hinge Garden | Native-resolution miniature: moss, glass snail, greenhouse, reflecting pool, translucent flowers | Lid openness, pointer parallax, tilt and gyro, optional sound and one-liners, battery and charging, CPU currents, local time |
@@ -75,6 +77,14 @@ Sources are sampled independently (Mac and session every second, Claude and Code
 Low Power Mode or serious thermal pressure limits animation to 30 fps. Reduce Motion shows a still pose with live data at 1 Hz. Display sleep and an inactive user session pause rendering and sampling. An activity assertion prevents App Nap while a desktop scene animates. Closing or minimising the app window stops its preview; an applied desktop continues. Display changes rebuild the desktop surfaces.
 
 Frost's ScreenCaptureKit filter excludes this process but re-admits the applied wallpaper windows by ID, so the wallpaper stays visible under Frost while the app's own controls and overlays stay out of the capture.
+
+### The Workshop
+
+`the-workshop` is a template-owned Creative Scene with bounded procedural geometry, twelve app stations, twenty-four parcel slots, and a reversible lid-driven case. It uses the default 1920 px shader limit; its optional native text overlay preserves exact counts above the drawn limits. `motion.w` carries the mirror flag without changing the 144-byte uniform layout. Reduce Motion freezes animation and parallax in an open pose while retaining live data.
+
+`OpenAppsWallpaperProvider` samples an immutable main-actor `NSWorkspace` aggregate once per second while consumed. Regular, nonterminated applications are deduplicated by bundle identifier, falling back to bundle URL; Finder and UnfoldMyMac are excluded. Names never enter snapshots. `DesktopItemsWallpaperProvider` refreshes every five seconds, counts only immediate nonhidden entries, and honors cancellation. A chosen directory's bookmark is required; there is no implicit Desktop path fallback. A missing source clears its count and restores decorative supplies, whereas an empty connected folder has zero parcels.
+
+The optional `workshop` form controls count visibility, motivating lines (on by default), pointer parallax, and mirroring with immediate draft preview. `WorkshopQuoteDeck` supplies eight original lines to the shared quote cycle. The input service advances the cycle only with an animated Workshop consumer, fades out before swapping text, and holds the current line under Reduce Motion. The optional `desktop-folder` form uses the native directory picker and persists its bookmark only on Save. The setup sheet has one presenter on `UnfoldMyMacView`, above the collection navigation stacks, so Customize opens while a detail destination is pushed. Folder enumeration starts after Save. Disconnect clears the bookmark. Preview and desktop retain the data coordinator's independent lifetimes. Workshop consumers never enable garden motion sensors or microphone capture.
 
 ### Hinge Garden inputs and motion
 

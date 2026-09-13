@@ -5,6 +5,30 @@ All notable changes to UnfoldMyMac are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-09-13
+
+### Added
+
+- **In-app updates.** UnfoldMyMac now watches its own GitHub releases, badges the sidebar when a new version is published, and installs it on one click: download, verify, replace, relaunch. Nothing is fetched until you ask. A background check that fails stays silent; a check you started always answers. "Check for Updates…" is in the app menu, the menu-bar menu, and Settings, alongside a toggle for automatic checks.
+- Every downloaded build is checked against its published SHA-256, then against a pinned code requirement — Developer ID, this team, Apple-notarized, and the same signing identity as the copy already running. The disk image's signature is verified before it is mounted. Anything that fails is deleted and never installed.
+- Copies that must not update themselves disable the feature entirely and make no network request: a build running from a disk image, from a read-only volume, from an App Translocation path, or from the development tree.
+- **The Workshop**, a new Creative Scene: a miniature studio in a hinged wooden case that folds with your lid. Open apps light up to twelve tool stations, and an optional Desktop or chosen-folder connection fills up to twenty-four parcel slots. Folder enumeration is shallow and never reads file contents; Finder, this app, helpers and hidden items are excluded. Eight original lines fade between one another, with their own toggle in Customize.
+- Ten new game-themed dynamic wallpapers with original procedural artwork, each rendered live on your Mac.
+- Two new lid effects, **Glass Fracture** and **Ink Vortex**, drawn procedurally in Metal from a shared radial encoder. Neither requires Screen Recording.
+- New optional data connections for wallpapers and scenes: battery recovery, network traffic, thermal pressure, storage inventory, local weather, Steam, open apps, Desktop items, and a generic REST endpoint.
+- Website collection and library browsing, per-collection routes, and live scene previews.
+
+### Changed
+
+- `release.json` now ships as a third release asset beside the DMG and `SHA256SUMS`. It is what the updater reads, it costs no GitHub API quota, and it carries the minimum macOS version the API cannot report.
+- `CFBundleVersion` now increases with every release instead of staying at a fixed counter.
+- The shared HTTP primitives moved from the wallpaper feature to `Platform/`, where the updater also uses them.
+
+### Security
+
+- The updater adds no entitlements and installs no privileged helper. Replacing the app is plain POSIX, gated by ownership; where it is not permitted, the app says so and points at the release page rather than asking to escalate.
+- The installed app is replaced with a single atomic `renamex_np` exchange, so there is no moment at which it is missing, and a failed verification afterwards rolls back by the same call. Screen Recording and Microphone permissions survive an update.
+
 ## [1.0.1] - 2026-09-13
 
 ### Added
@@ -66,3 +90,5 @@ First public release.
 [1.0.0]: https://github.com/satyajiit/UnfoldMyMac/releases/tag/v1.0.0
 
 [1.0.1]: https://github.com/satyajiit/UnfoldMyMac/releases/tag/v1.0.1
+
+[1.0.2]: https://github.com/satyajiit/UnfoldMyMac/releases/tag/v1.0.2

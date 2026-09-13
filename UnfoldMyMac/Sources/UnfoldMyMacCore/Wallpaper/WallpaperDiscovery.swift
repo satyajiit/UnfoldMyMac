@@ -14,10 +14,11 @@ extension WallpaperTemplate {
         if scene?.liveInputs == true { result.insert(.lid) }
         if connectors.contains("garden") { result.insert(.motion) }
         if connectors.contains("microphone") { result.insert(.microphone) }
-        if dataNamespaces.contains("mac") { result.insert(.macMetrics) }
-        if !connectors.isDisjoint(with: ["claude-code", "codex-history", "tool-file"]) { result.insert(.localFiles) }
+        if !dataNamespaces.isDisjoint(with: ["mac", "power", "network", "thermal", "storage", "focus", "eyes"]) { result.insert(.macMetrics) }
+        if dataNamespaces.contains("apps") { result.insert(.openApps) }
+        if !connectors.isDisjoint(with: ["claude-code", "codex-history", "tool-file", "desktop-folder"]) { result.insert(.localFiles) }
         if connectors.contains("codex-activity") { result.insert(.hooks) }
-        if !dataNamespaces.isDisjoint(with: ["github", "aurora"]) { result.formUnion([.publicAPI, .network]) }
+        if !dataNamespaces.isDisjoint(with: ["github", "aurora", "weather", "wukong"]) { result.formUnion([.publicAPI, .network]) }
         if connectors.contains("http") { result.insert(.network) }
         return ContentCapability.allCases.filter(result.contains)
     }

@@ -1,0 +1,187 @@
+{
+  "version": 2,
+  "id": "elden-ring-grace",
+  "title": "Elden Ring — A Moment of Grace",
+  "subtitle": "A focus ritual at the Site of Grace.",
+  "author": "UnfoldMyMac",
+  "credit": "AI-generated fan artwork. Game, logo & official promotional assets © FromSoftware / Bandai Namco Entertainment. Independent tribute.",
+  "category": "play",
+  "order": 130,
+  "tags": [
+    "Gaming",
+    "Focus at Grace",
+    "Device & live data",
+    "Lid reactive"
+  ],
+  "accent": 14990697,
+  "background": 1055011,
+  "image": "GameEldenRing",
+  "reactiveMetric": "focus.progress",
+  "reactiveScale": 1,
+  "idleEnergy": 0.12,
+  "emblem": {
+    "asset": "GameEldenRing",
+    "x": 0.055,
+    "y": 0.1,
+    "width": 0.28
+  },
+  "layers": [
+    {
+      "id": "feature",
+      "kind": "text",
+      "content": "FOCUS AT GRACE",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.54,
+      "width": 0.43,
+      "size": 0.011,
+      "color": 14990697,
+      "rotation": 0,
+      "height": 0.04,
+      "maxLines": 1
+    },
+    {
+      "id": "value",
+      "kind": "metric",
+      "content": "25:00",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.577,
+      "width": 0.43,
+      "size": 0.05,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.1,
+      "maxLines": 1,
+      "binding": "focus.timer"
+    },
+    {
+      "id": "state",
+      "kind": "text",
+      "content": "Select to begin a focus session",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.69,
+      "width": 0.43,
+      "size": 0.013,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2,
+      "binding": "focus.state"
+    },
+    {
+      "id": "detail",
+      "kind": "text",
+      "content": "25 minutes of focus, then a five-minute rest.",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.752,
+      "width": 0.45,
+      "size": 0.011,
+      "color": 15526629,
+      "rotation": 0,
+      "height": 0.065,
+      "maxLines": 2,
+      "binding": "focus.detail"
+    },
+    {
+      "id": "source",
+      "kind": "text",
+      "content": "LOCAL · FOCUS PAUSES WHEN YOU STEP AWAY",
+      "format": "text",
+      "x": 0.055,
+      "y": 0.844,
+      "width": 0.49,
+      "size": 0.0085,
+      "color": 12831437,
+      "rotation": 0,
+      "height": 0.05,
+      "maxLines": 2
+    }
+  ],
+  "allowsCustomBackground": false,
+  "informationURL": "https://en.bandainamcoent.eu/elden-ring/elden-ring",
+  "scene": {
+    "source": "Scene.metal",
+    "fragment": "gameEldenRingFragment",
+    "dependencies": [
+      "GameAtmosphere"
+    ],
+    "liveInputs": true,
+    "resolution": "native"
+  },
+  "cover": {
+    "time": 4,
+    "energy": 0.3,
+    "channels": [
+      0.65,
+      0.25
+    ]
+  },
+  "reduceMotionPose": {
+    "time": 4,
+    "energy": 0.25,
+    "channels": [
+      0.65,
+      0.25
+    ]
+  },
+  "fpsCeiling": 30,
+  "metadata": {
+    "version": 1,
+    "collection": "wallpapers",
+    "overview": "The golden grace ring fills during a 25-minute focus session, then turns blue for a five-minute rest. Focus pauses after one minute without input; sleep does not advance it. Choose the duration or restart the timer in Settings. Selecting a scene starts its own session.",
+    "badge": "New",
+    "banner": "Official",
+    "sections": [
+      {
+        "title": "Focus at Grace",
+        "body": "The golden grace ring fills during a 25-minute focus session, then turns blue for a five-minute rest. Focus pauses after one minute without input; sleep does not advance it. Choose the duration or restart the timer in Settings. Selecting a scene starts its own session."
+      },
+      {
+        "title": "Built for your desktop",
+        "body": "Live readings stay readable with Reduce Motion. The lid dims the scene and the pointer adds subtle depth. Settings changes are saved per wallpaper."
+      },
+      {
+        "title": "Artwork & attribution",
+        "body": "AI-generated fan artwork, with the original game logo and official promotional artwork by FromSoftware / Bandai Namco Entertainment. An independent tribute; not affiliated with or endorsed by the game’s creators."
+      }
+    ],
+    "authors": [
+      {
+        "name": "UnfoldMyMac",
+        "role": "Wallpaper design & generated fan artwork",
+        "url": "https://unfoldmymac.com",
+        "logo": "UnfoldMyMacMark"
+      },
+      {
+        "name": "FromSoftware / Bandai Namco Entertainment",
+        "role": "Original game, logo & promotional assets",
+        "url": "https://en.bandainamcoent.eu/elden-ring/elden-ring",
+        "logo": "GameEldenRing"
+      }
+    ],
+    "relatedBrands": [
+      "GameEldenRing"
+    ]
+  },
+  "channels": [
+    {
+      "metric": "focus.progress",
+      "scale": 1,
+      "smoothing": 4
+    },
+    {
+      "metric": "focus.resting",
+      "scale": 1,
+      "smoothing": 4
+    }
+  ],
+  "setup": [
+    {
+      "required": false,
+      "kind": "grace-focus"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "version": 2,
+  "id": "the-workshop",
+  "title": "The Workshop",
+  "subtitle": "Open your Mac. Open your little workshop.",
+  "author": "UnfoldMyMac",
+  "credit": "Original procedural miniature · rendered live on your Mac",
+  "category": "work",
+  "order": 26,
+  "tags": ["Miniature", "Playful", "Lid reactive", "Open apps", "Desktop items", "Craft"],
+  "accent": 12285766,
+  "background": 15197655,
+  "reactiveMetric": "apps.count",
+  "reactiveScale": 12,
+  "idleEnergy": 0,
+  "reactiveSmoothing": 3,
+  "channels": [
+    {"metric": "apps.count", "scale": 12, "smoothing": 3},
+    {"metric": "desktop.items", "scale": 24, "smoothing": 2},
+    {"metric": "desktop.available", "scale": 1, "smoothing": 4},
+    {"metric": "apps.available", "scale": 1, "smoothing": 4}
+  ],
+  "allowsCustomBackground": false,
+  "cover": {"time": 18, "energy": 0.583333, "channels": [0.583333, 0.958333, 1, 1]},
+  "reduceMotionPose": {"time": 18, "energy": 0, "channels": [0, 0, 0, 0]},
+  "setup": [{"kind": "workshop", "required": false}, {"kind": "desktop-folder", "required": false}],
+  "layers": [],
+  "scene": {
+    "source": "Scene.metal",
+    "fragment": "workshopFragment",
+    "dependencies": ["WorkshopGeometry", "WorkshopMaterials"],
+    "mathMode": "fast",
+    "liveInputs": true
+  },
+  "metadata": {
+    "version": 1,
+    "collection": "scenes",
+    "overview": "A tiny maker's studio tucked into a wooden case. Warm lamps, paper parcels, brass tools, and a little wind-up maker turn your everyday Mac into a place where things take shape.",
+    "sections": [
+      {"title": "Open for the day", "body": "Lift your MacBook lid and the wooden case opens. The benches rise, task lamps unfold, and the little maker gets to work. Lower the lid and everything tucks away. Every pose follows your lid, even when you change direction halfway."},
+      {"title": "Your apps light the benches", "body": "Each ordinary open app lights a tool station, up to twelve. Launch an app and a lamp warms on; quit one and it settles down. Hidden and minimized apps still count. Finder, UnfoldMyMac and background helpers are excluded. The optional caption always shows the full count."},
+      {"title": "A shelf for your Desktop", "body": "In **Customize**, choose **Use Desktop items…** to fill the shelves from your Desktop, or another folder you choose. Each immediate file, folder, package or shortcut counts once; hidden items are excluded. Up to twenty-four parcels are drawn, with the exact count in the caption. Finder stacks and mounted-drive icons are separate from this folder count. File names and contents are never displayed or saved."},
+      {"title": "Small rituals", "body": "The maker gently shifts its weight and turns a crank while the front tools settle into a slow rhythm. Task lamps cast warm pools of light. Local time moves the studio from soft daylight into evening. Connect your charger while the scene is playing and a warm current travels around the brass rail, then settles into a quiet connected glow."},
+      {"title": "Make room for your desktop", "body": "Eight original motivating lines rotate with a soft fade every forty-five seconds. In **Customize**, switch the lines or live counts off independently, choose pointer parallax, or mirror the composition. With Reduce Motion the workshop holds a complete open pose and its counts keep updating. The workshop runs without a folder connection; its decorative supplies keep the space welcoming."}
+    ],
+    "authors": [{"name": "UnfoldMyMac", "role": "Design & development", "url": "https://unfoldmymac.com", "logo": "UnfoldMyMacMark"}],
+    "relatedBrands": [],
+    "badge": "New"
+  }
+}

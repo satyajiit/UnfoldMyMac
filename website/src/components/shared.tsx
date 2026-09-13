@@ -23,7 +23,7 @@ export function DownloadCTA() {
 }
 export function Footer() {
   return <footer className="site-footer"><div className="footer-main"><div><Link href="/" className="wordmark"><Image src="/media/logo.webp" width={30} height={30} alt="" />UnfoldMyMac</Link><p>A little more life on your desktop.</p><div className="footer-studio"><span>Made by</span><a href={site.company} className="matterward-logo" aria-label="Matterward Labs"><Image className="matterward-logo-light" src="/brand/matterward/lockup-c-horizontal-on-light.svg" width={160} height={40} alt="" /><Image className="matterward-logo-dark" src="/brand/matterward/lockup-c-horizontal-on-dark.svg" width={160} height={40} alt="" /></a></div></div>
-    <nav aria-label="Footer navigation"><Link href="/download/">Get the app</Link><Link href="/faq/">FAQ</Link><Link href="/privacy/">Privacy</Link><a href="/sitemap.xml">Sitemap</a><a href={site.repo}><Code2 size={16} aria-hidden="true" /> GitHub</a></nav></div>
+    <nav aria-label="Footer navigation"><Link href="/lid-effects/">Lid Effects</Link><Link href="/dynamic-wallpapers/">Dynamic Wallpapers</Link><Link href="/creative-scenes/">Creative Scenes</Link><Link href="/download/">Get the app</Link><Link href="/faq/">FAQ</Link><Link href="/privacy/">Privacy</Link><a href="/sitemap.xml">Sitemap</a><a href={site.repo}><Code2 size={16} aria-hidden="true" /> GitHub</a></nav></div>
     <div className="footer-bottom"><span>© 2026 <a href={site.company}>Matterward Labs Private Limited</a></span><span><a href={sources.license}>Apache 2.0</a><span aria-hidden="true"> · </span><a href={sources.notices}>Credits & notices</a></span></div>
   </footer>;
 }

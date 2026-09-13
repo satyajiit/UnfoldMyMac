@@ -2,7 +2,7 @@ import Foundation
 import UnfoldMyMacCore
 
 /// How a connector is configured in the setup sheet.
-enum WallpaperConnectorForm: Sendable { case toggle, file, url, githubProfile, codexHooks, claudeCode, microphone, garden }
+enum WallpaperConnectorForm: Sendable { case toggle, file, url, githubProfile, codexHooks, claudeCode, microphone, garden, workshop, desktopFolder, weather, restTimer }
 
 /// One kind of data connection a template can ask for: what it is called, which namespaces it feeds, how it is
 /// configured, when a configuration counts as ready and how to build its provider. Adding a connector is one

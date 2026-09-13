@@ -27,7 +27,7 @@ struct WallpaperLocalConnectionSetup: View {
                 TextField("https://example.com/wallpaper.json", text: Binding(get: { connection.path ?? "" }, set: { connection.path = $0.isEmpty ? nil : $0 }))
                     .textFieldStyle(.roundedBorder)
                 Toggle(connector.toggleTitle, isOn: $connection.enabled).toggleStyle(.switch)
-            case .toggle, .githubProfile, .codexHooks, .claudeCode, .microphone, .garden:
+            case .toggle, .githubProfile, .codexHooks, .claudeCode, .microphone, .garden, .workshop, .desktopFolder, .weather, .restTimer:
                 Toggle(connector.toggleTitle, isOn: $connection.enabled).toggleStyle(.switch)
             }
         }.font(UnfoldMyMacType.callout)
