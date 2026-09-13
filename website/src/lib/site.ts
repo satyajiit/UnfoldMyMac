@@ -37,4 +37,5 @@ export const pages = [
   { path: "/blog/", title: "Notes from an open laptop", description: "Practical guides to Lid Effects, Dynamic Wallpapers, Creative Scenes, and local data connections." },
   { path: "/faq/", title: "A few things before you unfold", description: "Answers about supported Macs, lid sensors, Screen Recording, live wallpapers, the iPhone Duo effect on macOS, and your data." },
   { path: "/privacy/", title: "What stays on your Mac", description: "How UnfoldMyMac handles desktop capture, imported artwork, optional connections, and website preferences." },
+  { path: "/legal/", title: "Whose artwork this is", description: "Trademarks, game tributes, publisher logos and promotional artwork, and how to have material taken down within two hours." },
 ];

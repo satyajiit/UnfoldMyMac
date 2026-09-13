@@ -346,3 +346,11 @@ Everyone who helps build UnfoldMyMac is credited through their [commits](https:/
 Licensed under [Apache 2.0](LICENSE).
 
 Space Grotesk retains its SIL Open Font License. Third-party product marks retain their owners' rights. See [NOTICE](NOTICE) for credits and sources.
+
+### Game tributes, logos and brand artwork
+
+Some wallpapers are tributes to games we love. They ship the publisher's own logo and official promotional artwork alongside original shader work and AI-generated fan art. **All of that material belongs to its owners, is excluded from the Apache licence, and is used without any affiliation, sponsorship or endorsement.** [NOTICE](NOTICE) names every file, its owner and where it came from; [UnfoldMyMac/GAME_WALLPAPERS.md](UnfoldMyMac/GAME_WALLPAPERS.md) records the source URL and retrieval date for each one.
+
+The app is free, open source, unmonetised and sells nothing.
+
+**If you hold rights in anything here and want it removed, email [admin@matterwardlabs.com](mailto:admin@matterwardlabs.com) with `TAKEDOWN` in the subject.** We aim to remove it within two hours of reading your message, no argument required, and ship a release without it. [DMCA.md](DMCA.md) is the full policy.

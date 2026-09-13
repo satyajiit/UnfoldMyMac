@@ -60,7 +60,105 @@ illustrate what the wallpaper template system can do with a countdown and a
 still image; it is not sold, and the app is free and open source.
 
 If you hold rights in this artwork and want it removed, email
-admin@matterwardlabs.com and it will be removed in the next release.
+admin@matterwardlabs.com with TAKEDOWN in the subject. It will be removed within
+two hours of the message being read, and a release without it follows. The full
+policy is in DMCA.md at the root of this repository.
+
+Game collection (ten wallpapers under Games & sport)
+----------------------------------------------------
+
+Each of these wallpapers pairs original Metal shader work with material owned by
+the game's publisher. Three different things ship per wallpaper, and they have
+three different origins:
+
+1. The game logo, in Resources/WallpaperMarks/Game*.png, is the publisher's own
+   logo downloaded from Steam's CDN or from PlayStation. The downloaded PNG
+   bytes are unchanged.
+2. The detail-page banner, in Resources/Wallpapers/<id>/Official.png, is the
+   publisher's official promotional artwork, converted from JPEG to PNG so the
+   asset resolver can read it. Nothing else about it was altered.
+3. The animated background, in Resources/Artwork/Game*.png, is AI-generated fan
+   art made for this project and upscaled locally. It is NOT the publisher's
+   artwork, and no publisher asset was used to produce it.
+
+The scene each wallpaper renders -- Scene.metal and GameAtmosphere.metal -- is
+original work by this project and is covered by the Apache licence.
+
+Items 1 and 2 are excluded from the project's Apache license. No part of the
+Apache grant applies to them, and this notice grants no rights to them. The
+retrieval date and exact source URL for every file are recorded in
+UnfoldMyMac/GAME_WALLPAPERS.md.
+
+- Cyberpunk 2077
+    Logo:    Resources/WallpaperMarks/GameCyberpunk.png
+    Banner:  Resources/Wallpapers/cyberpunk-night-city/Official.png
+    Owner:   CD PROJEKT RED
+- Elden Ring
+    Logo:    Resources/WallpaperMarks/GameEldenRing.png
+    Banner:  Resources/Wallpapers/elden-ring-grace/Official.png
+    Owner:   FromSoftware / Bandai Namco Entertainment
+- DOOM Eternal
+    Logo:    Resources/WallpaperMarks/GameDoom.png
+    Banner:  Resources/Wallpapers/doom-ember-citadel/Official.png
+    Owner:   id Software / Bethesda Softworks
+- Forza Horizon 5
+    Logo:    Resources/WallpaperMarks/GameForza.png
+    Banner:  Resources/Wallpapers/forza-horizon-dusk/Official.png
+    Owner:   Playground Games / Xbox Game Studios
+- Hollow Knight
+    Logo:    Resources/WallpaperMarks/GameHollowKnight.png
+    Banner:  Resources/Wallpapers/hollow-knight-greenpath/Official.png
+    Owner:   Team Cherry
+- Black Myth: Wukong
+    Logo:    Resources/WallpaperMarks/GameWukong.png
+    Banner:  Resources/Wallpapers/wukong-cloud-temple/Official.png
+    Owner:   Game Science
+- Red Dead Redemption 2
+    Logo:    Resources/WallpaperMarks/GameRedDead.png
+    Banner:  Resources/Wallpapers/red-dead-sunset/Official.png
+    Owner:   Rockstar Games
+- Baldur's Gate 3
+    Logo:    Resources/WallpaperMarks/GameBaldursGate.png
+    Banner:  Resources/Wallpapers/baldurs-gate-astral/Official.png
+    Owner:   Larian Studios / Wizards of the Coast
+- Ghost of Tsushima
+    Logo:    Resources/WallpaperMarks/GameGhostTsushima.png
+    Banner:  Resources/Wallpapers/ghost-tsushima-maple/Official.png
+    Owner:   Sucker Punch Productions / Sony Interactive Entertainment
+- Marvel's Wolverine
+    Logo:    Resources/WallpaperMarks/GameWolverine.png
+    Banner:  Resources/Wallpapers/wolverine-after-rain/Official.png
+    Owner:   Marvel / Insomniac Games / Sony Interactive Entertainment
+
+Game titles, logos, characters and promotional artwork are trademarks and
+copyrighted works of their respective owners. UnfoldMyMac is not affiliated
+with, sponsored by or endorsed by any of the companies named above. Each
+wallpaper is an independent tribute. The app is free, open source, carries no
+advertising and is not sold; these scenes are included to show what the
+wallpaper template system does with live system data.
+
+If you hold rights in any of this material and want it removed, email
+admin@matterwardlabs.com with TAKEDOWN in the subject. It will be removed within
+two hours of the message being read, and a release without it follows. The full
+policy is in DMCA.md at the root of this repository.
+
+Weather and location data
+-------------------------
+
+Forza Horizon 5, Red Dead Redemption 2 and Ghost of Tsushima read public
+forecast data from Open-Meteo (https://open-meteo.com), licensed CC BY 4.0, with
+city data from GeoNames. Black Myth: Wukong reads public player counts and
+announcements from the Steam Web API. The default endpoints are Open-Meteo's
+public non-commercial service; a commercial distribution must configure a
+licensed service under https://open-meteo.com/en/terms.
+
+Real-ESRGAN
+-----------
+
+The game backgrounds were upscaled with Real-ESRGAN ncnn
+(https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan) as a build-time step. It is
+a tool used to prepare assets, not a dependency of the app, and none of its code
+ships in UnfoldMyMac.
 
 Apple
 iPhone, iOS, macOS, MacBook and Mac are trademarks of Apple Inc. UnfoldMyMac
