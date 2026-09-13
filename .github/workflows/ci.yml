@@ -15,11 +15,15 @@ on:
   push:
     branches: [main]
     paths:
+      # Prose under MacDuo/ changes nothing this workflow builds or runs, and a macOS runner
+      # costs ten times a Linux one. A comma in a README is not worth a build.
       - 'MacDuo/**'
+      - '!MacDuo/**.md'
       - '.github/workflows/ci.yml'
   pull_request:
     paths:
       - 'MacDuo/**'
+      - '!MacDuo/**.md'
       - '.github/workflows/ci.yml'
   workflow_dispatch:
     inputs:
