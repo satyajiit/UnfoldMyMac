@@ -134,6 +134,10 @@ cat >"$manifest" <<JSON
   "verifiedAt": "$(date -u +%Y-%m-%d)"
 }
 JSON
-/usr/bin/plutil -lint "$manifest" >/dev/null || fail "the generated release.json is not valid JSON"
+# -convert, not -lint: plutil only LINTS property lists, so it meets the opening brace of a JSON
+# object with the OpenStep parser and rejects a perfectly good file. Converting to a discarded
+# binary plist is the no-dependency way to make it actually parse the JSON.
+/usr/bin/plutil -convert binary1 -o /dev/null "$manifest" 2>/dev/null ||
+  fail "the generated release.json is not valid JSON"
 echo "website/src/lib/release.json (also written to $manifest):"
 cat "$manifest"
