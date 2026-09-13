@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PageIntro, Sources, Breadcrumbs } from "@/components/shared";
 import { pageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
@@ -31,7 +32,7 @@ export default function LegalPage() {
 
       <h2>Other material</h2>
       <p>Space Grotesk is used under the SIL Open Font License. Weather readings come from Open-Meteo under CC BY 4.0, with city data from GeoNames. Player counts and announcements come from the public Steam Web API. Full credits and sources are in <a href={`${site.repo}/blob/main/NOTICE`}>NOTICE</a>.</p>
-      <p>The app&rsquo;s own code is licensed under <a href={`${site.repo}/blob/main/LICENSE`}>Apache 2.0</a>. Privacy is covered <a href="/privacy/">separately</a>.</p>
+      <p>The app&rsquo;s own code is licensed under <a href={`${site.repo}/blob/main/LICENSE`}>Apache 2.0</a>. Privacy is covered <Link href="/privacy/">separately</Link>.</p>
     </article>
     <Sources />
     <Breadcrumbs path="/legal/" title="Legal" />
