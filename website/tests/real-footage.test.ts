@@ -25,8 +25,9 @@ test("every film plays from YouTube and no video file ships with the site", () =
     assert.equal(showcase(`#${clip.id} a[href='https://www.youtube.com/watch?v=${clip.youtubeId}']`).length, 1);
     assert.equal(showcase(`#${clip.id} track`).length, 0);
     assert.ok(existsSync(path.join("out", clip.poster)), clip.poster);
-    for (const file of [clip.video, clip.hdrVideo, clip.video.replace(".mp4", ".vtt")]) {
-      assert.equal(existsSync(path.join("out", file)), false, `${file} must not ship`);
+    const slug = clip.id.replace(/^real-/, "");
+    for (const file of [`${slug}.mp4`, `${slug}-hdr.mp4`, `${slug}.vtt`]) {
+      assert.equal(existsSync(path.join("out/media/real-life", file)), false, `${file} must not ship`);
     }
   }
 });
@@ -76,7 +77,7 @@ test("README posters link to the uploads and to real showcase anchors", () => {
     const filename = `${clip.id.replace(/^real-/, "")}.jpg`;
     assert.ok(existsSync(`../.github/media/real-life/${filename}`), filename);
     assert.ok(markdown.includes(`.github/media/real-life/${filename}`), filename);
-    assert.ok(markdown.includes(clip.youtubeId!), clip.id);
+    assert.ok(markdown.includes(clip.youtubeId), clip.id);
     assert.ok(markdown.includes(`/showcase/#${clip.id}`), clip.id);
     assert.equal(showcase(`#${clip.id}`).length, 1);
   }

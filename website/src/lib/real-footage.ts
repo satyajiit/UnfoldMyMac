@@ -2,36 +2,38 @@ import timings from "./film-timings.json" with { type: "json" };
 import uploads from "./youtube-videos.json" with { type: "json" };
 import { youtubeId } from "./youtube";
 
-// HEVC Main 10, Level 4.1, as encoded in every delivered HDR file's hvcC box.
-// A bare "hvc1" is rejected by Chrome's canPlayType even when HEVC decoding works.
-export const HDR_MEDIA_TYPE = 'video/mp4; codecs="hvc1.2.4.L123.90"';
-
 export interface RealFootage {
   id: string;
   title: string;
   description: string;
   category: string;
   duration: number;
-  video: string;
-  hdrVideo: string;
   poster: string;
   posterAlt?: string;
-  youtubeId?: string | null;
+  youtubeId: string;
   chapters?: { label: string; start: number }[];
 }
 
 export const formatFilmTime = (seconds: number) => `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
 
+// Every film plays from YouTube and no video file ships with the site, so a missing or
+// malformed upload has nothing to fall back to. Fail the build here rather than render a
+// play button that can never start.
+const upload = (id: keyof typeof uploads): string => {
+  const video = youtubeId(uploads[id]);
+  if (!video) throw new Error(`youtube-videos.json needs a valid YouTube link for "${id}"`);
+  return video;
+};
+
 const footage = (id: keyof typeof timings.clips, title: string, category: string, description: string): RealFootage => ({
   ...timings.clips[id], id: `real-${id}`, title, category, description,
-  video: `/media/real-life/${id}.mp4`, hdrVideo: `/media/real-life/${id}-hdr.mp4`, poster: `/media/real-life/${id}.webp`,
-  youtubeId: youtubeId(uploads[id]),
+  poster: `/media/real-life/${id}.webp`, youtubeId: upload(id),
 });
 
 export const realLifeReel: RealFootage = {
   ...timings.reel, id: "real-reel", title: "Watch the lid.", category: "The full story",
   description: "A Mac app with animations that follow your lid and live wallpapers for your desktop. See where it started, choose a look, then watch it on a real MacBook.",
-  video: "/media/real-life/reel.mp4", hdrVideo: "/media/real-life/reel-hdr.mp4", poster: "/media/real-life/reel.webp", youtubeId: youtubeId(uploads.reel),
+  poster: "/media/real-life/reel.webp", youtubeId: upload("reel"),
 };
 
 export const realLifeClips: RealFootage[] = [

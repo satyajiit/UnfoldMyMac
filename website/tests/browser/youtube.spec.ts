@@ -14,7 +14,7 @@ test.beforeAll(async () => {
       import { createRoot } from 'react-dom/client';
       import { RealFootagePlayer } from './src/components/real-footage-player';
       import { realLifeReel } from './src/lib/real-footage';
-      import { pauseOtherFilms } from './src/components/use-film-playback';
+      import { pauseOtherFilms } from './src/components/use-youtube-playback';
       createRoot(document.getElementById('root')).render(<>
         <RealFootagePlayer featured item={{...realLifeReel, youtubeId:'AbCd_123-xy'}} />
         <button onClick={() => pauseOtherFilms('another-film')}>Play another film</button>
@@ -105,7 +105,7 @@ test("each uploaded film plays its assigned YouTube video and preserves the orig
   await expect(page.locator(".showcase-grid article")).toHaveCount(23);
   await expect(page.locator(".real-film iframe")).toHaveCount(0);
   expect(requests).toEqual([]);
-  for (const item of [realLifeReel, ...realLifeClips].filter(item => item.youtubeId)) {
+  for (const item of [realLifeReel, ...realLifeClips]) {
     const film = page.locator(`#${item.id}`);
     await expect(film).toHaveAttribute("data-provider", "youtube");
     await film.getByRole("button", { name: `Play ${item.title} real-life video` }).click();

@@ -4,7 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import type { RealFootage } from "@/lib/real-footage";
 import { youtubeEmbed } from "@/lib/youtube";
 import { loadYouTubeAPI, type YouTubePlayer } from "./youtube-api";
-import { pauseOtherFilms } from "./use-film-playback";
+
+/** Keep narration from overlapping when two film cards are visible. Every other player
+ *  listens for this and pauses itself. */
+export function pauseOtherFilms(activeId: string) {
+  document.dispatchEvent(new CustomEvent("unfold-film-play", { detail: activeId }));
+}
 
 export function useYouTubePlayback(item: RealFootage) {
   const holder = useRef<HTMLDivElement>(null);
@@ -16,7 +21,7 @@ export function useYouTubePlayback(item: RealFootage) {
 
   useEffect(() => {
     const container = holder.current;
-    if (!loaded || !item.youtubeId || !container) return;
+    if (!loaded || !container) return;
     let disposed = false;
     let started = false;
     const captionsOff = () => {
@@ -38,7 +43,7 @@ export function useYouTubePlayback(item: RealFootage) {
     void loadYouTubeAPI().then(api => {
       if (disposed) return;
       const frame = document.createElement("iframe");
-      frame.src = youtubeEmbed(item.youtubeId!, location.origin, seek.current);
+      frame.src = youtubeEmbed(item.youtubeId, location.origin, seek.current);
       frame.title = `${item.title} on YouTube`;
       frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
       frame.allowFullscreen = true;
