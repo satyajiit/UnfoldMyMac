@@ -11,8 +11,8 @@ First public release.
 
 ### Added
 
-- **13 lid effects.** Frost, Veil, Fade, Curtains, Current and Peekaboo are drawn procedurally in
-  Metal. Reverie, Neon Coast, Rise, Tab Goblin, FCUK It. Ship It., Codex After Dark and Claude Has Notes are
+- **13 lid effects.** Frost, Curtains, Current and Peekaboo are drawn procedurally in Metal. Veil
+  and Fade are native AppKit effects. Reverie, Neon Coast, Rise, Tab Goblin, FCUK It. Ship It., Codex After Dark and Claude Has Notes are
   built from bundled artwork, each with its own reveal.
 - **Your own artwork.** Import an image, choose a Sculpted, Diagonal, Slide or Burst reveal, and
   adjust its depth and edge light. The app keeps its own copy in

@@ -7,9 +7,9 @@ name: Website
 on:
   push:
     branches: [main]
-    paths: ['website/**', '.github/workflows/website.yml']
+    paths: ['website/**', 'README.md', '.github/media/**', '.github/workflows/website.yml']
   pull_request:
-    paths: ['website/**', '.github/workflows/website.yml']
+    paths: ['website/**', 'README.md', '.github/media/**', '.github/workflows/website.yml']
   workflow_dispatch:
     inputs:
       browsers:

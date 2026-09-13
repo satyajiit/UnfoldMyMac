@@ -27,7 +27,7 @@ function FilmPlayButton({ item, failed, play }: { item: RealFootage; failed: boo
 
 function FilmDetails({ item, format }: { item: RealFootage; format: string | null }) {
   return <div className="real-film-caption"><div>
-    <span className="real-film-category">{item.category} <span aria-hidden="true">/</span> Real footage{format ? ` · Playing in ${format}` : " · 4K on YouTube"}</span>
+    <span className="real-film-category">{item.category} <span aria-hidden="true">/</span> Real footage{format ? ` · Playing on ${format}` : " · 4K on YouTube"}</span>
     <h3>{item.title}</h3><p id={`${item.id}-description`}>{item.description}</p>
   </div><div className="real-film-downloads">
     <a className="real-film-download" href={`https://www.youtube.com/watch?v=${item.youtubeId}`}>Watch on YouTube ↗</a>

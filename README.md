@@ -256,13 +256,13 @@ The Swift package has **zero third-party package dependencies**. Your GPU does g
 
 ### Drag, drop, done
 
-The planned release format is a **Developer ID-signed, Apple-notarized DMG**, with an UnfoldMyMac-branded installation window and an Applications shortcut.
+The release is a **Developer ID-signed, Apple-notarized DMG**, with an UnfoldMyMac-branded installation window and an Applications shortcut. It needs an **Apple silicon** Mac running **macOS 26 or later**; there is no Intel build.
 
-1. Download the DMG from [GitHub Releases](https://github.com/satyajiit/UnfoldMyMac/releases).
+1. Download the DMG from [GitHub Releases](https://github.com/satyajiit/UnfoldMyMac/releases/latest).
 2. Open it and drag **UnfoldMyMac** onto **Applications**.
 3. Launch UnfoldMyMac from Applications.
 
-Releases will be packaged, notarized, and published **manually**. GitHub Actions checks builds and tests; publishing stays behind a human-operated button. Until the first DMG is available, use the source build below.
+Releases are packaged, notarized, and published **manually**. GitHub Actions checks builds and tests; publishing stays behind a human-operated button.
 
 ### Build from source
 
@@ -280,7 +280,7 @@ The script builds and opens `MacDuo/dist/UnfoldMyMac.app`. It uses an available 
 2. Try **Preview** to play or scrub it on your desktop.
 3. Turn on lid effects. Use **Effect settings** to adjust the activation angle and completion point.
 
-Lid control needs a MacBook with a readable lid-angle sensor. The app uses an undocumented Apple HID report, so support varies by model. Run `./script/build_and_run.sh --probe` to check your Mac. Manual preview remains available when the sensor is missing, subject to built-in display safety checks.
+Lid control needs a MacBook with a readable lid-angle sensor. The app uses an undocumented Apple HID report, so support varies by model. Run `cd MacDuo && ./script/build_and_run.sh --probe` from a clone to check your Mac. Manual preview remains available when the sensor is missing, subject to built-in display safety checks.
 
 Lid effects target the built-in display and pause when it is closed, asleep, unavailable, or mirrored. Wallpapers can use external displays.
 
