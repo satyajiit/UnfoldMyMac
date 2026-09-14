@@ -136,3 +136,37 @@ test("YouTube API and player failures keep a retryable poster", async ({ page })
   await expect.poll(() => eventCount(page, "play")).toBe(2);
   await expect(page.getByRole("status")).toHaveCount(0);
 });
+
+test("gaming film uses the matching cover and upload at desktop and mobile sizes", async ({ page }) => {
+  const requests: string[] = [];
+  page.on("request", request => { if (/youtube/.test(request.url())) requests.push(request.url()); });
+  await page.route("https://www.youtube.com/iframe_api", route => route.fulfill({ contentType: "application/javascript", body: fakeAPI }));
+  await page.route("https://www.youtube-nocookie.com/**", route => route.fulfill({ contentType: "text/html", body: "<!doctype html><title>Stub player</title>" }));
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/#gaming-wallpapers");
+  const film = page.locator("[data-gaming-film]");
+  await expect(film.locator("img")).toBeVisible();
+  await expect.poll(() => film.locator("img").evaluate((image: HTMLImageElement) => image.currentSrc)).toContain("launch-landscape.webp");
+  await expect(film.locator("iframe")).toHaveCount(0);
+  expect(requests).toEqual([]);
+  await film.getByRole("button", { name: "Play gaming wallpapers film" }).click();
+  await expect(film.locator("iframe")).toHaveAttribute("src", /\/embed\/eYLM1soTuVs\?/);
+  const desktop = await film.locator("iframe").boundingBox();
+  expect(desktop!.width / desktop!.height).toBeCloseTo(16 / 9, 1);
+  expect(new URL((await film.locator("iframe").getAttribute("src"))!).searchParams.get("cc_load_policy")).toBe("0");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await film.scrollIntoViewIfNeeded();
+  await expect(film.locator("iframe")).toHaveCount(0);
+  await expect.poll(() => eventCount(page, "destroy")).toBe(1);
+  await expect.poll(() => film.locator("img").evaluate((image: HTMLImageElement) => image.currentSrc)).toContain("launch-portrait.webp");
+  await expect(film.getByRole("link", { name: "Watch on YouTube" })).toHaveAttribute("href", "https://www.youtube.com/watch?v=2Sx3D9i8-Ew");
+  await film.getByRole("button", { name: "Play gaming wallpapers film" }).click();
+  await expect(film.locator("iframe")).toHaveAttribute("src", /\/embed\/2Sx3D9i8-Ew\?/);
+  const mobile = await film.locator("iframe").boundingBox();
+  expect(mobile!.width / mobile!.height).toBeCloseTo(9 / 16, 2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  expect(await page.evaluate(() => (window as unknown as { __youtubeCaptions(): boolean }).__youtubeCaptions())).toBe(false);
+  await expect(page.locator("#real-reel")).toHaveCount(1);
+  await expect(page.locator("#every-preview")).toHaveCount(1);
+});
