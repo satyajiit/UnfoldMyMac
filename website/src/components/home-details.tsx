@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { site, sources } from "@/lib/site";
+import { lockScreenGuide } from "./lock-screen-section";
 import styles from "./home-details.module.css";
 
 export function LidSetupSection() {
@@ -27,7 +28,7 @@ export function NativeMacSection() {
       <div className={styles.nativeHeading}>
         <span className="section-context">Under the hood</span>
         <h2 id="native-mac-heading">Swift for the app.<br />Metal for the motion.</h2>
-        <p>UnfoldMyMac is written in Swift 6 for macOS 26 and later. SwiftUI handles the interface, AppKit places the desktop windows, and Metal renders dynamic wallpapers, creative scenes, and lid effects on the GPU.</p>
+        <p>UnfoldMyMac is written in Swift 6 for macOS 26 and later. SwiftUI handles the interface, AppKit places the desktop windows, and Metal renders dynamic wallpapers, creative scenes, and lid effects on the GPU. On macOS 26, a sandboxed wallpaper extension hosted by macOS runs the same Metal pipeline for the desktop and lock screen. The scene keeps going with the app closed. While macOS shows it, the app stops drawing its own copy.</p>
       </div>
       <div className={styles.engineGrid}>
         <div className={styles.engineNotes}>
@@ -77,7 +78,8 @@ export function HomeQuestions() {
       </div>
       <div className={styles.answers}>
         <div><h3>Will my Mac’s lid work?</h3><p>Lid control needs a readable angle sensor, and support varies by MacBook model. The app requires macOS 26 or later. Check the <Link href="/download/">requirements</Link> before installing.</p></div>
-        <div><h3>What about an external display?</h3><p>Lid effects stay on the MacBook’s built-in display. Dynamic Wallpapers and Creative Scenes can run across your displays, including external monitors.</p></div>
+        <div><h3>What about an external display?</h3><p>Lid effects stay on the MacBook’s built-in display. The app applies a Dynamic Wallpaper or Creative Scene to your primary display, and other displays keep the wallpaper you chose for them. On macOS 26, System Settings › Wallpaper lets you assign a scene to any display.</p></div>
+        <div><h3>Does it work on the lock screen?</h3><p>Yes, on macOS 26. Choose a scene under System Settings › Screen Saver and macOS plays it on the lock screen, with live readouts while the app is running. <Link href={lockScreenGuide}>How the lock screen works</Link>.</p></div>
         <div><h3>Can I add my own artwork?</h3><p>Import an image and try the Sculpted, Diagonal, Slide, or Burst reveal. The app keeps a local copy. You can also build a wallpaper template using the <a href={sources.developing}>extension guide</a>.</p></div>
       </div>
     </section>

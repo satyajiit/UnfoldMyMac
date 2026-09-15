@@ -48,9 +48,17 @@ The visual template and data provider are separate pieces. That lets the rendere
 
 ## Set playback for your Mac
 
-Wallpapers support 30 or 60 fps playback across displays. The playback policy lowers the maximum to 30 fps under low-power or thermal limits. Sleep stops playback. Reduce Motion disables continuous animation and limits updates.
+Wallpapers support 30 or 60 fps playback on your primary display. The playback policy lowers the maximum to 30 fps under low-power or thermal limits. Sleep stops playback. Reduce Motion disables continuous animation and limits updates.
 
 These are the app’s playback rules, not a promise that every GPU and display combination will sustain the same frame rate. The policy is visible in [WallpaperPlayback.swift](https://github.com/satyajiit/UnfoldMyMac/blob/main/UnfoldMyMac/Sources/UnfoldMyMacCore/Wallpaper/WallpaperPlayback.swift).
+
+<h2 id="put-it-on-the-lock-screen">Put it on the lock screen</h2>
+
+On macOS 26, UnfoldMyMac installs a wallpaper provider extension. Every bundled Dynamic Wallpaper and Creative Scene then appears in System Settings under **UnfoldMyMac — Dynamic Wallpapers**, in both the Wallpaper and Screen Saver panes, each with a rendered thumbnail. macOS keeps two selections per display: the desktop wallpaper, chosen under Wallpaper, and one shared by the lock screen and the screen saver, chosen under Screen Saver. Pick a scene there and it plays on your lock screen at up to 60 fps. Reduce Motion stills it to a slow update rate, Low Power Mode and thermal pressure cap it at 30 fps, and rendering pauses when the display sleeps.
+
+The app tells you where a scene is showing, desktop only or desktop and lock screen, and opens the exact System Settings pane that changes it. **Add to Lock Screen…** in the menu bar opens the Screen Saver pane. The app never selects a provider for you or writes macOS’s wallpaper store; it opens the pane and you choose. Its own **Use wallpaper** button sets a still of the scene as your desktop picture and restores your previous one when you stop.
+
+You do not need the app running. macOS composites the scene itself, so it keeps moving with the app closed and comes back at login. Without the app, the scene plays its idle pose without live data. While the app runs, it keeps the readouts fed on the desktop and the lock screen: Mac metrics, Claude, Codex, GitHub, and the other data connections you enabled. Lid, sound, and pointer reactions belong to the app’s own desktop window, not to the scene macOS hosts. That window draws on your primary display only; through System Settings, macOS lets you assign a scene to each display.
 
 ## Bring your own picture or snapshot
 
@@ -63,6 +71,7 @@ The app stores its own copy of imported artwork, so moving the original does not
 - [Built-in wallpaper collection and data sources](https://github.com/satyajiit/UnfoldMyMac#living-wallpapers)
 - [Playback policy](https://github.com/satyajiit/UnfoldMyMac/blob/main/UnfoldMyMac/Sources/UnfoldMyMacCore/Wallpaper/WallpaperPlayback.swift)
 - [Developer extension guide](https://github.com/satyajiit/UnfoldMyMac/blob/main/UnfoldMyMac/DEVELOPING.md)
+- [Wallpaper engine guide](https://github.com/satyajiit/UnfoldMyMac/blob/main/UnfoldMyMac/WALLPAPER_ENGINE.md)
 - [GTA VI release information and artwork — Rockstar Games](https://www.rockstargames.com/VI)
 - [Aurora forecast — NOAA Space Weather Prediction Center](https://www.swpc.noaa.gov/products/aurora-30-minute-forecast)
 - [Blue Marble: Next Generation — NASA Earth Observatory](https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/)

@@ -39,7 +39,7 @@ for (const route of routes) {
   const html = await readFile(path.join(directory, "index.html"), "utf8");
   const $ = load(html);
   $("script,style,button,input,video,[aria-hidden=true],.lid-demo,.media-details-link,.filter-bar,.result-count,.download-cta,.back-link,.intro-separator").remove();
-  const content = $("main").toArray().map(markdown).join("").replace(/\n{3,}/g, "\n\n").trim();
+  const content = $("main").toArray().map(markdown).join("").replace(/\n[ \t]+\n/g, "\n\n").replace(/\n{3,}/g, "\n\n").trim();
   await mkdir(directory, { recursive: true });
   await writeFile(path.join(directory, "index.md"), `${content}\n\nCanonical: ${site.url}${route.path}\n`);
 }
