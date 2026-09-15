@@ -41,7 +41,7 @@ struct WallpaperPreviewCard: View {
                     .fixedSize().accessibilityLabel(model.isSelectedApplied ? "On your desktop" : "Use wallpaper").accessibilityIdentifier("wallpaper.apply")
                 }
                 HStack {
-                    Label(model.enabled ? "\(model.activeTitle) · All displays" : "Preview only", icon: model.enabled ? .selected : .play)
+                    Label(model.enabled ? "\(model.activeTitle) · Primary display" : "Preview only", icon: model.enabled ? .selected : .play)
                     Spacer(minLength: 0)
                     if model.stats.fps > 0 {
                         Text(String(format: "%.0f fps · %.1f ms GPU", model.stats.fps, model.stats.gpuMilliseconds)).monospacedDigit()

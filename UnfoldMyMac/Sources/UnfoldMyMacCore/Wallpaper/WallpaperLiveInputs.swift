@@ -2,7 +2,10 @@ import Foundation
 
 /// Optional physical inputs. The neutral value is a complete, open, quietly lit garden.
 /// Pulses are elapsed seconds, or -1 when inactive; no events are queued while suspended.
-public struct WallpaperLiveInputs: Equatable, Sendable {
+///
+/// `Codable` because the sandboxed wallpaper extension cannot read the lid angle, the microphone or the
+/// motion sensors itself: the app samples them and sends this value across the provider data bridge.
+public struct WallpaperLiveInputs: Codable, Equatable, Sendable {
     public var lidOpen = 1.0
     public var sound = 0.0
     public var pollen = -1.0

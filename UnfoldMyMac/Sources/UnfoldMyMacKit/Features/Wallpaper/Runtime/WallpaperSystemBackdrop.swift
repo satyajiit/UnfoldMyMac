@@ -1,4 +1,6 @@
 import AppKit
+import ImageIO
+import UniformTypeIdentifiers
 import UnfoldMyMacCore
 
 /// Supplies the system wallpaper sampler with scene colors, outside the animation loop.
@@ -25,8 +27,13 @@ import UnfoldMyMacCore
         var records: [String: Record] = [:]
     }
     static let retainedRecordsPerDisplay = 6
+    /// A still younger than this is never pruned, whatever the count says. `NSWorkspace` reports the
+    /// wallpaper of the current Space only, so a companion another Space is showing right now looks
+    /// unused from here — deleting it would blank that Space's desktop until the user switched back.
+    static let defaultRetentionWindow: TimeInterval = 24 * 60 * 60
     private let access: any WallpaperDesktopImageAccess
     private let directory: URL
+    private let retentionWindow: TimeInterval
     private var journal: Journal?
     private struct Applied { let templateID: String; let backdropKey: String; let imageURL: URL?; let size: CGSize; let url: URL; let previous: URL }
     /// Identity only: holding the pipeline itself would keep its GPU resources alive after a template switch.
@@ -35,13 +42,14 @@ import UnfoldMyMacCore
     private(set) var renders = 0
 
     init(access: any WallpaperDesktopImageAccess = SystemWallpaperDesktopImages(),
-         directory: URL = WallpaperPaths.root.appendingPathComponent("SystemBackdrop", isDirectory: true)) {
-        self.access = access; self.directory = directory
+         directory: URL = WallpaperPaths.root.appendingPathComponent("SystemBackdrop", isDirectory: true),
+         retentionWindow: TimeInterval = WallpaperSystemBackdrop.defaultRetentionWindow) {
+        self.access = access; self.directory = directory; self.retentionWindow = retentionWindow
     }
     func apply(_ pipeline: WallpaperPipeline) throws {
         try loadJournal()
-        var changed = false
-        for display in access.screens {
+        var changed = try retireSecondaryScreens()
+        for display in access.screens where display.isPrimary {
             let screen = WallpaperBackdropScreen(id: display.id, size: pipeline.surface.maximumDimension == nil ? display.nativeSize ?? display.size : display.size)
             guard let current = access.current(on: screen.id) else {
                 throw WallpaperError.unavailable("The current system wallpaper could not be saved for restoration.")
@@ -62,6 +70,23 @@ import UnfoldMyMacCore
         }
         if changed, prune(keeping: Set(access.screens.compactMap { access.current(on: $0.id)?.url.path })) { try saveJournal() }
     }
+    /// Hands back every display the app is no longer responsible for.
+    ///
+    /// The scene used to be installed on all of them. A build that has since scoped itself to the primary
+    /// display would otherwise leave its still frozen on the others forever — the user's own wallpaper
+    /// replaced by a picture of a scene that stopped being drawn. The journal holds each original, so this
+    /// is exact: only a screen currently showing something this app installed is touched at all.
+    private func retireSecondaryScreens() throws -> Bool {
+        var changed = false
+        for screen in access.screens where !screen.isPrimary {
+            guard let current = access.current(on: screen.id), let record = journal?.records[current.url.path],
+                  record.display == screen.id else { continue }
+            try access.set(record.original, on: screen.id)
+            applied[screen.id] = nil
+            changed = true
+        }
+        return changed
+    }
     func restore() throws {
         try loadJournal()
         for screen in access.screens {
@@ -81,10 +106,13 @@ import UnfoldMyMacCore
         // Records survive Stop: a disconnected display or another Space can still show a companion.
     }
     private func render(_ pipeline: WallpaperPipeline, for screen: WallpaperBackdropScreen, original: WallpaperDesktopImage) throws -> Record {
-        let image = try WallpaperCoverRenderer.image(pipeline: pipeline, size: screen.size)
+        // The GPU pass stays on the main actor because the pipeline is main-actor isolated, but the
+        // encode no longer does two full rasters on the way out.
+        let size = MetalSurfaceRenderer<WallpaperPipeline>.drawableSize(points: screen.size, scale: 1, cap: pipeline.surface.maximumDimension)
+        let rendered = try OffscreenRenderer.render(pipeline, frame: WallpaperFrame(pose: pipeline.template.coverPose),
+                                                    width: Int(size.width), height: Int(size.height))
         renders += 1
-        guard let tiff = image.tiffRepresentation, let bitmap = NSBitmapImageRep(data: tiff),
-              let png = bitmap.representation(using: .png, properties: [:]) else { throw WallpaperError.unavailable("The desktop still could not be encoded.") }
+        let png = try Self.png(from: try OffscreenRenderer.cgImage(rendered))
         let encoder = JSONEncoder(); encoder.outputFormatting = .sortedKeys
         var signature = png
         signature.append(try encoder.encode(original)); signature.append(Data(screen.id.utf8))
@@ -102,13 +130,28 @@ import UnfoldMyMacCore
         for display in Set(journal.records.values.map(\.display)) {
             let mine = journal.records.filter { $0.value.display == display }
                 .sorted { ($0.value.installedAt ?? .distantPast) > ($1.value.installedAt ?? .distantPast) }
-            for (path, _) in mine.dropFirst(Self.retainedRecordsPerDisplay) where !current.contains(path) {
+            for (path, record) in mine.dropFirst(Self.retainedRecordsPerDisplay) where !current.contains(path) {
+                guard Date.now.timeIntervalSince(record.installedAt ?? .distantPast) > retentionWindow else { continue }
                 journal.records[path] = nil; removed = true
                 try? FileManager.default.removeItem(atPath: path)
             }
         }
         self.journal = journal
         return removed
+    }
+    /// PNG straight from the CGImage. The old route went `NSImage` → `tiffRepresentation` →
+    /// `NSBitmapImageRep` → PNG, which re-encoded the full raster twice: at desktop resolution that was
+    /// long enough on the main actor to drop frames from the very scene the still was made from.
+    private static func png(from image: CGImage) throws -> Data {
+        let data = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(data, UTType.png.identifier as CFString, 1, nil) else {
+            throw WallpaperError.unavailable("The desktop still could not be encoded.")
+        }
+        CGImageDestinationAddImage(destination, image, nil)
+        guard CGImageDestinationFinalize(destination) else {
+            throw WallpaperError.unavailable("The desktop still could not be encoded.")
+        }
+        return data as Data
     }
     private func loadJournal() throws {
         guard journal == nil else { return }

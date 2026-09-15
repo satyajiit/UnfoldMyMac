@@ -2,6 +2,10 @@
 public enum AppIdentity {
     public static let name = "UnfoldMyMac"
     public static let bundleIdentifier = "com.unfoldmymac"
+    /// The wallpaper provider extension, which renders scenes on the desktop and the lock screen.
+    /// The app and the extension both derive the shared bridge container from this one constant, so
+    /// they can never disagree about where live data is exchanged.
+    public static let wallpaperExtensionIdentifier = bundleIdentifier + ".wallpaper"
 
     /// Public destinations the app links to. Stored as strings so this type stays free of
     /// force-unwrapped URLs; `AppIdentityTests` proves each one parses and points where it claims.

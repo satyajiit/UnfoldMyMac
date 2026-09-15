@@ -17,7 +17,7 @@ struct WallpaperSettingsPage: View {
                         }.pickerStyle(.segmented).accessibilityIdentifier("wallpaper.fps")
                         Text("Automatically slows in Low Power Mode or under thermal pressure, and pauses when your display sleeps. Reduce Motion keeps a still scene with live data.")
                             .font(UnfoldMyMacType.callout).modifier(SecondaryTextStyle())
-                        Text("Desktop playback uses all connected displays. Stopping reveals your existing wallpaper.")
+                        Text("Desktop playback uses your primary display; other displays keep their own wallpaper. Stopping reveals your existing wallpaper.")
                             .font(UnfoldMyMacType.callout).modifier(SecondaryTextStyle())
                     }
                 }

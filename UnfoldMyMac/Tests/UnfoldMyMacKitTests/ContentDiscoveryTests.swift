@@ -60,7 +60,7 @@ import UnfoldMyMacCore
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
     let model = WallpaperModel(preferences: InMemoryPreferencesStore(), environment: FakeSystemEnvironment(), displays: FakeDisplay(),
-                               surfaces: DesktopSurfaceRegistry(), gpu: try TestGPU.context(), coverDirectory: directory)
+                               surfaces: DesktopSurfaceRegistry(), gpu: try TestGPU.context(), coverDirectory: directory, providerLink: .isolated())
     defer { model.shutdown() }
     model.start(); model.setBrowsing(true); model.select("pulse")
     #expect(model.previewFPS == 0 && model.previewData.snapshot.sources.isEmpty)

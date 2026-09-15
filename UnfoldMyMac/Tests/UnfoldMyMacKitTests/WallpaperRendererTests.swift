@@ -75,7 +75,7 @@ import UnfoldMyMacCore
     let template = try #require(WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false).templates.first)
     let coordinator = WallpaperDesktopCoordinator(surfaces: DesktopSurfaceRegistry(), displays: FakeDisplay())
     coordinator.show(pipeline: try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog), source: WallpaperDataHub(), framesPerSecond: 60)
-    #expect(coordinator.windows.count == NSScreen.screens.count)
+    #expect(coordinator.windows.count == 1, "The scene is drawn on the primary display and nowhere else")
     for window in coordinator.windows {
         let screen = window.screen!
         print("Wallpaper geometry: screen=\(screen.frame), window=\(window.frame), content=\(window.contentView!.frame), safe=\(window.contentView!.safeAreaInsets)")

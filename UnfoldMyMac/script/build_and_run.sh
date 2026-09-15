@@ -43,11 +43,31 @@ if [ -d "$BUILD_DIR/$RESOURCE_BUNDLE" ]; then
   "$PROJECT_DIR/script/compile_shaders.sh" "$BUILD_DIR/$EXECUTABLE" "$APP_BUNDLE/Contents/Resources/$RESOURCE_BUNDLE"
 fi
 cp "$PROJECT_DIR/../LICENSE" "$PROJECT_DIR/../NOTICE" "$APP_BUNDLE/Contents/Resources/"
+# The macOS 26 wallpaper provider. It renders the same Metal scenes as the app on the desktop and
+# the lock screen, and it must carry its own copy of the Kit resource bundle: inside the appex,
+# Bundle.main is the appex, so BundleResources resolves shaders and templates relative to it.
+EXTENSION_NAME="UnfoldMyMacWallpaperExtension"
+EXTENSION_BUNDLE="$APP_BUNDLE/Contents/PlugIns/$EXTENSION_NAME.appex"
+EXTENSION_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PROJECT_DIR/WallpaperExtension.plist")"
+rm -rf "$EXTENSION_BUNDLE"
+mkdir -p "$EXTENSION_BUNDLE/Contents/MacOS" "$EXTENSION_BUNDLE/Contents/Resources"
+cp "$BUILD_DIR/$EXTENSION_NAME" "$EXTENSION_BUNDLE/Contents/MacOS/$EXTENSION_NAME"
+cp "$PROJECT_DIR/WallpaperExtension.plist" "$EXTENSION_BUNDLE/Contents/Info.plist"
+# Stamped from the app so the appex can never advertise a version the app does not have.
+for KEY in CFBundleShortVersionString CFBundleVersion; do
+  /usr/libexec/PlistBuddy -c "Set :$KEY $(/usr/libexec/PlistBuddy -c "Print :$KEY" "$PROJECT_DIR/Info.plist")" "$EXTENSION_BUNDLE/Contents/Info.plist"
+done
+if [ -d "$APP_BUNDLE/Contents/Resources/$RESOURCE_BUNDLE" ]; then
+  cp -R "$APP_BUNDLE/Contents/Resources/$RESOURCE_BUNDLE" "$EXTENSION_BUNDLE/Contents/Resources/"
+fi
 IDENTITY="${UNFOLDMYMAC_SIGN_IDENTITY:-${LUMA_SIGN_IDENTITY:-${MACDUO_SIGN_IDENTITY:-}}}"
 if [ -z "$IDENTITY" ]; then
   IDENTITY="$(/usr/bin/security find-identity -v -p codesigning | /usr/bin/sed -n 's/.*"\(Apple Development: .*\)"/\1/p' | /usr/bin/head -1)"
 fi
 IDENTITY="${IDENTITY:--}"
+# Inside out: a nested bundle signed after its container invalidates the container's signature.
+# The appex is sandboxed and the app is not, so they are signed against different entitlement files.
+/usr/bin/codesign --force --sign "$IDENTITY" --identifier "$EXTENSION_ID" --entitlements "$PROJECT_DIR/WallpaperExtension.entitlements" "$EXTENSION_BUNDLE"
 /usr/bin/codesign --force --sign "$IDENTITY" --identifier "$BUNDLE_ID" --entitlements "$PROJECT_DIR/UnfoldMyMac.entitlements" "$APP_BUNDLE"
 case "$MODE" in
   --build) echo "Built $APP_BUNDLE"; exit 0 ;;

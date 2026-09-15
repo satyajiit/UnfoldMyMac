@@ -1,6 +1,6 @@
 # Living wallpapers
 
-The wallpaper feature puts a Metal scene on every display, below the desktop icons, and feeds it live data from the Mac and from local developer tools. It is a separate feature beside the lid effects with its own preferences, desktop surfaces, connections and previews. This guide covers the engine, the template format and how to add scenes, shaders and data sources. See [DEVELOPING.md](DEVELOPING.md) for the package and [VALIDATION.md](VALIDATION.md) for measured results.
+The wallpaper feature puts a Metal scene on the primary display, below the desktop icons, and feeds it live data from the Mac and from local developer tools. It is a separate feature beside the lid effects with its own preferences, desktop surfaces, connections and previews. This guide covers the engine, the template format and how to add scenes, shaders and data sources. See [DEVELOPING.md](DEVELOPING.md) for the package and [VALIDATION.md](VALIDATION.md) for measured results.
 
 ## Collection
 
@@ -44,7 +44,7 @@ AppDependencies.live() → WallpaperFeature.make
       MacWallpaperProvider, ClaudeWallpaperProvider, CodexWallpaperProvider, CodexActivityProvider,
       GitHubWallpaperProvider, CountdownWallpaperProvider, AuroraWallpaperProvider, WallpaperSessionProvider,
       WallpaperJSONProvider, WallpaperHTTPProvider
-    WallpaperDesktopCoordinator  one WallpaperDesktopWindowController per display
+    WallpaperDesktopCoordinator  one WallpaperDesktopWindowController, on the primary display
       WallpaperSurfaceModel      template, style sheet, snapshot and per-display RenderStats the windows observe
       WallpaperDesktopWindowController  AppKit window + WallpaperSurfaceRenderer + NSHostingView(WallpaperLayersRoot)
         WallpaperSurfaceRenderer DisplayLinkFrameDriver + WallpaperFrameSmoother + presentation stats

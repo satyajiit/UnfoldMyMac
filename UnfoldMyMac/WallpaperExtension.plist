@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  The wallpaper provider extension. build_and_run.sh copies this into
+  Contents/PlugIns/UnfoldMyMacWallpaperExtension.appex/Contents/Info.plist and stamps the two
+  version keys from the app's Info.plist, so the appex can never claim a version the app does not.
+
+  EXExtensionPointIdentifier com.apple.wallpaper is the single ExtensionKit point every macOS 26
+  wallpaper provider shares — Apple's eleven bundled ones included. The point declares
+  EXRequiredEntitlements = {com.apple.private.wallpaper.extension: true}, which macOS 26.6 does not
+  enforce: Apple's own WallpaperAerialsExtension.appex does not carry that entitlement either. The
+  provider is written so that losing this point costs the lock screen and nothing else.
+
+  CFBundlePackageType XPC! is required; ExtensionKit does not consider a bundle of any other type.
+-->
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>UnfoldMyMac Wallpaper</string>
+	<key>CFBundleExecutable</key>
+	<string>UnfoldMyMacWallpaperExtension</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.unfoldmymac.wallpaper</string>
+	<key>CFBundleName</key>
+	<string>UnfoldMyMacWallpaperExtension</string>
+	<key>CFBundlePackageType</key>
+	<string>XPC!</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.2</string>
+	<key>CFBundleVersion</key>
+	<string>3</string>
+	<key>EXAppExtensionAttributes</key>
+	<dict>
+		<key>EXExtensionPointIdentifier</key>
+		<string>com.apple.wallpaper</string>
+	</dict>
+	<key>LSMinimumSystemVersion</key>
+	<string>26.0</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2026 Satyajit Pradhan / Matterward Labs Private Limited. Licensed under Apache-2.0.</string>
+</dict>
+</plist>

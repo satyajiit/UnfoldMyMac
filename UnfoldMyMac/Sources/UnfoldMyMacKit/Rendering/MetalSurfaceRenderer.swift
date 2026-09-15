@@ -5,9 +5,17 @@ import QuartzCore
 /// Owns the drawable lifecycle for one pipeline on one layer: in-flight accounting, the cached render pass,
 /// metrics and the never-drop-a-drawable error path. Pacing is external: `render(_:)` draws on demand,
 /// `DisplayLinkFrameDriver` draws on a display link.
+///
+/// The layer is the surface; the view is optional. In the app a `MetalSurfaceView` owns the layer and
+/// reports layout and visibility. In the wallpaper extension there is no view at all: the layer belongs to
+/// a remote `CAContext` the WindowServer composites, and geometry arrives from the host instead of from
+/// AppKit. Both paths share one drawable lifecycle, so there is only ever one place that gets in-flight
+/// accounting and the cleared-frame error path right.
 @MainActor final class MetalSurfaceRenderer<Pipeline: MetalPipeline> {
     let pipeline: Pipeline
-    let surfaceView: MetalSurfaceView
+    /// Present only when AppKit hosts the surface; nil for the extension's remote-context layer.
+    let surfaceView: MetalSurfaceView?
+    let layer: CAMetalLayer
     let metrics = FrameMetrics()
     private(set) var submittedFrames = 0
     private(set) var skippedFrames = 0
@@ -15,16 +23,22 @@ import QuartzCore
     private var lastSubmitted: (frame: Pipeline.Frame, generation: Int)?
     private var acknowledgedFailures = 0
 
-    var view: NSView { surfaceView }
-    var layer: CAMetalLayer { surfaceView.surfaceLayer }
     var lastGPUTime: Double { metrics.lastGPUSeconds }
     var isReady: Bool { pipeline.isReady }
 
-    init(pipeline: Pipeline) {
+    /// AppKit-hosted: the renderer creates the view and follows its layout.
+    convenience init(pipeline: Pipeline) {
+        let view = MetalSurfaceView(opaque: pipeline.surface.isOpaque)
+        self.init(pipeline: pipeline, layer: view.surfaceLayer, surfaceView: view)
+        view.onLayout = { [weak self] in self?.layoutDrawable() }
+    }
+    /// Layer-hosted: the caller owns the layer and its geometry. Used by the wallpaper extension, whose
+    /// layer is attached to a remote `CAContext` and sized from `WallpaperCreationRequest.destination`.
+    init(pipeline: Pipeline, layer: CAMetalLayer, surfaceView: MetalSurfaceView? = nil) {
         self.pipeline = pipeline
+        self.surfaceView = surfaceView
+        self.layer = layer
         let surface = pipeline.surface
-        surfaceView = MetalSurfaceView(opaque: surface.isOpaque)
-        let layer = surfaceView.surfaceLayer
         layer.device = pipeline.gpu.device
         layer.pixelFormat = surface.pixelFormat
         layer.framebufferOnly = true
@@ -36,13 +50,12 @@ import QuartzCore
         pass.colorAttachments[0].loadAction = surface.loadAction
         pass.colorAttachments[0].storeAction = .store
         pass.colorAttachments[0].clearColor = surface.clearColor
-        surfaceView.onLayout = { [weak self] in self?.layoutDrawable() }
     }
 
     /// Sizes the view and its drawable before the view has a window. A stopped renderer can be prepared again.
     func prepare(size: CGSize, scale: CGFloat) {
-        surfaceView.onLayout = { [weak self] in self?.layoutDrawable() }
-        surfaceView.frame = CGRect(origin: .zero, size: size)
+        surfaceView?.onLayout = { [weak self] in self?.layoutDrawable() }
+        surfaceView?.frame = CGRect(origin: .zero, size: size)
         layer.contentsScale = scale
         setDrawableSize(Self.drawableSize(points: size, scale: scale, cap: pipeline.surface.maximumDimension))
     }
@@ -78,8 +91,8 @@ import QuartzCore
     func stop() {
         pipeline.didStop()
         lastSubmitted = nil
-        surfaceView.onLayout = nil
-        surfaceView.removeFromSuperview()
+        surfaceView?.onLayout = nil
+        surfaceView?.removeFromSuperview()
     }
 
     private func encodeClear(_ command: MTLCommandBuffer, texture: MTLTexture) {
@@ -91,6 +104,7 @@ import QuartzCore
         command.makeRenderCommandEncoder(descriptor: clear)?.endEncoding()
     }
     private func layoutDrawable() {
+        guard let surfaceView else { return }
         let size = surfaceView.bounds.size
         guard size.width > 0, size.height > 0 else { return }
         let scale = surfaceView.window?.backingScaleFactor ?? layer.contentsScale

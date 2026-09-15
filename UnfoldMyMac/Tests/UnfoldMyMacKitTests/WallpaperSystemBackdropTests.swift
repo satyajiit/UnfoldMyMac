@@ -3,7 +3,7 @@ import Testing
 @testable import UnfoldMyMacKit
 
 @MainActor private final class FakeDesktopImages: WallpaperDesktopImageAccess {
-    var screens: [WallpaperBackdropScreen] = [.init(id: "display", size: CGSize(width: 800, height: 520))]
+    var screens: [WallpaperBackdropScreen] = [.init(id: "display", size: CGSize(width: 800, height: 520), isPrimary: true)]
     var images = ["display": WallpaperDesktopImage(url: URL(fileURLWithPath: "/original.heic"),
         options: [.imageScaling: 3, .allowClipping: false, .fillColor: NSColor.red])]
     var writes = 0

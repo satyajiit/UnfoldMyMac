@@ -52,6 +52,8 @@ import UnfoldMyMacCore
     @objc private func showQuickMenu(_ sender: Any?) {
         let state = QuickMenuState(status: effects.status, effectEnabled: effects.enabled, isPreviewing: effects.isPreviewing,
                                    selectedEffect: effects.settings.effect, wallpaperEnabled: wallpaper.enabled,
+                                   wallpaperOnLockScreen: wallpaper.providerLink.status.lockScreenState,
+                                   wallpaperProviderInstalled: WallpaperProviderLink.isInstalled,
                                    effects: effects.registry.descriptors, update: updateEntry)
         let menu = makeMenu(QuickMenuBuilder.menu(for: state).items)
         item?.menu = menu; item?.button?.performClick(nil); item?.menu = nil
@@ -84,6 +86,10 @@ import UnfoldMyMacCore
         case .stopWallpaper: wallpaper.stopWallpaper()
         case .openApp: window.show()
         case .showSettings: shell.show(.settings); window.show()
+        case .openWallpaperSettings: WallpaperProviderLink.openSystemSettings(.wallpaper)
+        // The lock screen is the `Idle` slot, and that is chosen in the Screen Saver pane — sending the
+        // user to Wallpaper, as this used to, lands them on the setting they have already made.
+        case .openLockScreenSettings: WallpaperProviderLink.openSystemSettings(.screenSaver)
         case .checkForUpdates: updates.checkNow(.manual); shell.show(.settings); window.show()
         case .installUpdate: updates.showPrompt(); window.show()
         case .starRepository: if let url = URL(string: AppIdentity.repository) { workspace.open(url) }

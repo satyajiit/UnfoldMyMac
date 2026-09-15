@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Entitlements for the wallpaper provider extension. Like UnfoldMyMac.entitlements this is a
+  reviewed artifact: sign_release.sh asserts the embedded entitlements match this file exactly.
+
+  App Sandbox is ON and mandatory — the opposite of the app, and not a matter of taste.
+  ExtensionKit refuses to register a wallpaper extension without it, and WallpaperAgent spawns the
+  process into that sandbox regardless. Everything the provider does is reachable from inside it:
+  Metal and the runtime MSL compile (Metal's compiler is a separate XPC service, proven working in
+  the sandbox), dlopen of a system framework, Darwin notifications, and reading and writing its own
+  container.
+
+  This is precisely why the data bridge exists. The sandbox means the extension cannot read
+  ~/.claude, ~/.codex, the IOKit lid angle or the microphone, so the unsandboxed app samples all of
+  those and writes a snapshot into this extension's container for it to read. No entitlement here
+  would change that, and none is requested to try.
+
+  Deliberately absent:
+
+  com.apple.private.wallpaper.extension. Declared by the extension point and not enforced; it is an
+  Apple-private entitlement no third-party certificate can carry. Requesting it would make the
+  signature invalid rather than make anything work.
+
+  com.apple.security.network.client, files.user-selected.read-only, device.audio-input and the
+  personal-information family. The provider opens no sockets, no panels and no devices; it reads one
+  JSON file the app wrote into its own container and renders Metal.
+
+  com.apple.security.cs.allow-jit and allow-unsigned-executable-memory. makeLibrary(source:) hands
+  MSL to the out-of-process Metal compiler and receives GPU code; no W^X page is ever mapped in this
+  process. Verified in the sandbox, not assumed.
+
+  com.apple.security.get-task-allow. Absent, as in the app: its presence is the most common cause of
+  an Invalid notarization verdict.
+-->
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+</dict>
+</plist>

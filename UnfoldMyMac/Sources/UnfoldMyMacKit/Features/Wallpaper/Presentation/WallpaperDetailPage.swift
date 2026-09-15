@@ -32,6 +32,10 @@ struct WallpaperDetailPage: View {
                     }
                 }.frame(maxWidth: 640).frame(maxWidth: .infinity)
                 actions
+                WallpaperDisplayRow(displays: model.displayTargets)
+                if WallpaperProviderLink.isInstalled {
+                    WallpaperLockScreenCard(status: model.providerLink.status, applied: applied)
+                }
                 HStack {
                     Text(previewing ? "Live preview · Your desktop changes only when you choose Use." : "Preview the real design before adding it to your desktop.")
                     Spacer()

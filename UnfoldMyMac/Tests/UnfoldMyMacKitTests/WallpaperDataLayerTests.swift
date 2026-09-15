@@ -82,7 +82,10 @@ private func temporaryDirectory() throws -> URL {
 }
 
 @MainActor private final class PruningDesktopImages: WallpaperDesktopImageAccess {
-    var screens: [WallpaperBackdropScreen] = [.init(id: "one", size: CGSize(width: 320, height: 200)), .init(id: "two", size: CGSize(width: 200, height: 320))]
+    /// Two displays, one of them primary — the app installs a still on the first and leaves the second
+    /// showing whatever its owner chose.
+    var screens: [WallpaperBackdropScreen] = [.init(id: "one", size: CGSize(width: 320, height: 200), isPrimary: true),
+                                              .init(id: "two", size: CGSize(width: 200, height: 320))]
     var images = ["one": WallpaperDesktopImage(url: URL(fileURLWithPath: "/one.heic")), "two": WallpaperDesktopImage(url: URL(fileURLWithPath: "/two.heic"))]
     func current(on screen: String) -> WallpaperDesktopImage? { images[screen] }
     func set(_ image: WallpaperDesktopImage, on screen: String) throws { images[screen] = image }
@@ -95,18 +98,62 @@ private func temporaryDirectory() throws -> URL {
     let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
     let templates = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false).templates
     #expect(templates.count > WallpaperSystemBackdrop.retainedRecordsPerDisplay)
-    let backdrop = WallpaperSystemBackdrop(access: access, directory: root)
+    // retentionWindow 0: this exercises the count cap on its own. The age guard, which is what keeps a
+    // still another Space is showing from being deleted, is proved separately below.
+    let backdrop = WallpaperSystemBackdrop(access: access, directory: root, retentionWindow: 0)
     for template in templates { try backdrop.apply(WallpaperPipeline(template: template, gpu: gpu, shaders: catalog)) }
     func stills() throws -> [URL] { try FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys: nil).filter { $0.pathExtension == "png" } }
-    #expect(try stills().count == 2 * WallpaperSystemBackdrop.retainedRecordsPerDisplay, "Each display keeps its newest companions only")
-    #expect(backdrop.renders == 2 * templates.count)
-    for screen in access.screens { #expect(FileManager.default.fileExists(atPath: access.images[screen.id]!.url.path)) }
-    let restarted = WallpaperSystemBackdrop(access: access, directory: root)
+    #expect(try stills().count == WallpaperSystemBackdrop.retainedRecordsPerDisplay, "The display keeps its newest companions only")
+    #expect(backdrop.renders == templates.count, "Only the primary display is rendered for")
+    #expect(FileManager.default.fileExists(atPath: access.images["one"]!.url.path))
+    #expect(access.images["two"] == originals["two"], "A display the app does not draw on keeps its own wallpaper")
+    let restarted = WallpaperSystemBackdrop(access: access, directory: root, retentionWindow: 0)
     try restarted.apply(WallpaperPipeline(template: templates.last!, gpu: gpu, shaders: catalog))
     #expect(restarted.renders == 0, "A still rendered on an earlier launch is reused")
     try restarted.apply(WallpaperPipeline(template: templates[templates.count - 2], gpu: gpu, shaders: catalog))
     #expect(restarted.renders == 0)
-    #expect(try stills().count == 2 * WallpaperSystemBackdrop.retainedRecordsPerDisplay)
+    #expect(try stills().count == WallpaperSystemBackdrop.retainedRecordsPerDisplay)
     try restarted.restore()
     #expect(access.images == originals, "Pruning never loses the user's wallpaper")
+}
+
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func aDisplayTheAppNoLongerDrawsOnGetsItsOwnWallpaperBack() throws {
+    // Earlier builds installed a still on every screen. Scoping to the primary display without handing the
+    // others back would leave the user's own wallpaper replaced, on a screen nothing draws on any more, by
+    // a frozen picture of a scene that stopped running — and no control in the app would undo it.
+    let root = try temporaryDirectory()
+    defer { try? FileManager.default.removeItem(at: root) }
+    let access = PruningDesktopImages(), originals = access.images
+    let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
+    let template = try #require(WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false).templates.first)
+    let pipeline = try WallpaperPipeline(template: template, gpu: gpu, shaders: catalog)
+
+    // Stand in for what an earlier build left behind: both displays journalled, both showing our still.
+    let everyScreen = WallpaperSystemBackdrop(access: access, directory: root)
+    access.screens = access.screens.map { .init(id: $0.id, size: $0.size, nativeSize: $0.nativeSize, name: $0.name, isPrimary: true) }
+    try everyScreen.apply(pipeline)
+    #expect(access.images["two"] != originals["two"], "The fixture has to start from the state being repaired")
+
+    access.screens = [.init(id: "one", size: CGSize(width: 320, height: 200), isPrimary: true),
+                      .init(id: "two", size: CGSize(width: 200, height: 320))]
+    try WallpaperSystemBackdrop(access: access, directory: root).apply(pipeline)
+    #expect(access.images["two"] == originals["two"], "The secondary display is handed back what its owner chose")
+    #expect(access.images["one"] != originals["one"], "The primary display still carries the scene's still")
+}
+
+@Test(.requiresGPU, .tags(.gpu)) @MainActor func systemBackdropKeepsRecentStillsOtherSpacesMayStillBeShowing() throws {
+    // NSWorkspace reports the wallpaper of the current Space only, so a companion another Space is
+    // showing looks unused from here. Pruning it by count alone blanks that Space until the user
+    // switches back, which is why recent stills are retained whatever the count says.
+    let root = try temporaryDirectory()
+    defer { try? FileManager.default.removeItem(at: root) }
+    let access = PruningDesktopImages()
+    let catalog = WallpaperShaderCatalog(), gpu = try TestGPU.context()
+    let templates = try WallpaperTemplateRegistry(shaders: catalog, loadUserTemplates: false).templates
+    #expect(templates.count > WallpaperSystemBackdrop.retainedRecordsPerDisplay)
+    let backdrop = WallpaperSystemBackdrop(access: access, directory: root)
+    for template in templates { try backdrop.apply(WallpaperPipeline(template: template, gpu: gpu, shaders: catalog)) }
+    let stills = try FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys: nil).filter { $0.pathExtension == "png" }
+    #expect(stills.count == templates.count, "Nothing rendered in the last day is pruned")
+    #expect(FileManager.default.fileExists(atPath: access.images["one"]!.url.path))
 }

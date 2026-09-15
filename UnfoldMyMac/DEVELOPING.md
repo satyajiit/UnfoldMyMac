@@ -35,13 +35,66 @@ Continuous integration (`.github/workflows/ci.yml`) builds every test target, ru
 
 ## Package layout
 
-Three SwiftPM targets. `UnfoldMyMacCore` imports Foundation only; `UnfoldMyMacKit` depends on it and holds AppKit, SwiftUI and Metal; the `UnfoldMyMac` executable's `main.swift` only calls `UnfoldMyMacApp.main`. Keep that direction.
+Five SwiftPM targets. `UnfoldMyMacCore` imports Foundation only; `UnfoldMyMacKit` depends on it and holds AppKit, SwiftUI and Metal; the `UnfoldMyMac` executable's `main.swift` only calls `UnfoldMyMacApp.main`. Keep that direction.
+
+`UnfoldMyMacWallpaperExtension` is the macOS 26 wallpaper provider, packaged as a `.appex` inside the app, and its `main.swift` is the same kind of shim: it calls `UnfoldMyMacWallpaperProvider`. Everything it does lives in `Features/WallpaperProvider/` inside the Kit, where it can reach the whole render stack at `internal` visibility, so the desktop and the lock screen run the same code rather than two copies of it. `UnfoldMyMacWallpaperBridge` is a header-only ObjC target holding the reconstructed private protocols, so the Swift side sees them without a bridging header.
+
+The bridge between the two is one-way by construction. `WallpaperHostProxy` has no push channel, so the
+extension learns nothing except when the app writes its container file and posts a Darwin notification —
+and the extension stamps its heartbeat only while handling one of those. The app therefore keeps talking
+to it every four seconds even when it has nothing to send and its own wallpaper switch is off, because
+that is the only way it can tell a provider that is rendering from one that stopped. Drop that and the
+silence latches: the app reads the old stamp as a dead provider, stops writing, and the stamp stays old —
+the lock screen falls back to dashes and the app decides the system wallpaper is free to overwrite.
+`WallpaperProviderLinkTests` pins the whole loop.
+
+macOS keeps **two** wallpaper selections per display, and conflating them is the mistake this code is
+shaped to prevent. `Index.plist` holds a `Desktop` slot and an `Idle` slot per display; the lock screen and
+the screen saver are the same `Idle` slot, chosen in the Screen Saver pane rather than the Wallpaper pane.
+A provider selected as the desktop wallpaper therefore fills only the first, and the lock screen goes on
+painting an exported still of whatever is in the second. So the heartbeat reports the *roles* the host
+actually holds — never a surface count, which cannot tell the two apart — and `WallpaperLockScreenCard`
+says which of the two it has and links to the matching pane.
+
+Nothing in the framework names that role. `WallpaperCreationRequestXPC`, dumped on macOS 26.6, is exactly
+`size`, `colorSpace`, `scaleFactor`, `directDisplayID`, `isPreview`, `presentationMode`, `systemAppearance`,
+`debugBackgrounds`, a cache directory and the choice's payload blob — there is no content type. So
+`presentationMode` is the discriminator: `default` is the desktop, `idle` is the screen saver and `locked`
+is the lock screen, and the host sets it per surface at acquire (three acquires arriving in the same
+millisecond carry `default`, `default` and `idle`). `WallpaperProviderRequest.Role` maps it, an unknown
+mode maps to `desktop` because claiming the lock screen wrongly is the failure being prevented, and a
+request with no presentation mode at all sets `identifiesDestination` false so the store never reuses a
+`CAContext` across two surfaces it cannot tell apart. `WallpaperProviderMirror.describeOnce` dumps the
+whole request shape to the log the first time that field goes missing, which is how the above was found.
+
+The heartbeat still cannot answer the question on its own, because a lock-screen surface exists only while
+the lock screen is being shown: between unlocking and the next lock there is nothing to report, and
+reading that silence as "not chosen for the lock screen" is the same wrong answer in a different place.
+`WallpaperSlotIndex` closes that gap by **reading** — never writing — the `Idle` slot out of
+`~/Library/Application Support/com.apple.wallpaper/Store/Index.plist`. macOS exposes no public API for the
+screen-saver selection, the file is a private format, so every failure to read or understand it returns
+nil and the live surfaces decide instead. Writing that file stays forbidden: `WallpaperAgent` owns it in
+memory with scheduled flushes, a lost update can drop wallpaper configuration for every display and Space
+at once, and `wallpaperexportd` mirrors the damage to the Preboot volume.
+
+The heartbeat also carries the rate the display link was asked for *and* the rate frames actually reached
+the screen (`WallpaperProviderSurface` feeds `DisplayLinkFrameDriver.onStats`, and the extension logs
+`frames … presented=<n>fps configured=<n>`). Those are different facts. A surface draws one frame in its
+initialiser, before the link exists, so a link that never ticks leaves a still on screen that is
+indistinguishable from a live scene to anything that only counts surfaces or reads back a configured rate
+— and once the link is attached, `nextDrawable` raises, so nothing else can put a frame up. The app reads
+the measured rate and calls the difference `.stalled` rather than reporting it as live.
+
+Two things about that target are load-bearing and invisible. It links with `-Xlinker -e -Xlinker _NSExtensionMain`: ExtensionKit requires that Mach-O entry point, and with Swift's `@main` alone the process initialises, logs and exits in milliseconds without ever accepting a connection, while the host reports only `NSCocoaErrorDomain 4099`. And the appex carries its own copy of the Kit resource bundle, because inside it `Bundle.main` is the appex and `BundleResources` resolves shaders and templates relative to that. `script/sign_release.sh` asserts both.
 
 ```text
 UnfoldMyMac/
   Package.swift
   script/                        build_and_run.sh, compile_shaders.sh, make_icon.sh
   Sources/UnfoldMyMac/main.swift → UnfoldMyMacApp.main
+  Sources/UnfoldMyMacWallpaperExtension/main.swift → UnfoldMyMacWallpaperProvider
+  Sources/UnfoldMyMacWallpaperBridge/  header-only ObjC: the private wallpaper XPC protocols and CAContext
+  WallpaperExtension.plist / .entitlements   the appex's reviewed Info.plist and sandbox entitlement
   Sources/UnfoldMyMacCore/       Identity, Effects, Settings, Design, Wallpaper: value types, contracts, rules
   Sources/UnfoldMyMacKit/
     App/                         UnfoldMyMacApp (CLI modes + launch), AppDependencies, AppController, AppShellModel,
@@ -54,6 +107,9 @@ UnfoldMyMac/
     DesignSystem/                palette, typography, icons, cards, buttons, NativeSwitch, environment keys
     Features/Effects/            Catalog, Pipelines, Library, Runtime, Presentation
     Features/Wallpaper/          Catalog, Connections, Data, Rendering, Runtime, Presentation
+    Features/WallpaperProvider/  the macOS 26 wallpaper provider: runtime bridging to WallpaperExtensionKit,
+                                 XPC service and configuration, remote-context surface, readout renderer,
+                                 settings view models, and the app↔extension data bridge and its app-side link
     Features/Updates/            Data (feed, download), Verify (signature, SHA-256), Install (mount, stage, swap),
                                  Runtime, Presentation
     Resources/                   Effects/Effects.json, Library/Artworks.json, Artwork, Covers, Fonts, Brand,
@@ -63,7 +119,7 @@ UnfoldMyMac/
   Tests/UnfoldMyMacKitTests/     + Support/ (fakes, traits, settle helper), Fixtures/ (goldens, v1 templates)
 ```
 
-Conventions: one type per file, files under 200 lines, `internal` by default with `private(set)` state, `public` only on `UnfoldMyMacApp`. Every class is `final`. Owners of system resources implement `isolated deinit`. Blocking I/O lives in actors. Errors are typed (`GPUError`, `EffectSessionError`, `WallpaperError`, `LibraryError`, `BundleResourcesError`, `UpdateError`); tuning numbers are named constants (`EffectTuning`, `GPUTuning`, `WallpaperCanvas`). `BundleResources` is the only place that reads the resource bundle.
+Conventions: one type per file, files under 200 lines, `internal` by default with `private(set)` state, `public` only on `UnfoldMyMacApp` and `UnfoldMyMacWallpaperProvider`. Every class is `final`. Owners of system resources implement `isolated deinit`. Blocking I/O lives in actors. Errors are typed (`GPUError`, `EffectSessionError`, `WallpaperError`, `LibraryError`, `BundleResourcesError`, `UpdateError`); tuning numbers are named constants (`EffectTuning`, `GPUTuning`, `WallpaperCanvas`). `BundleResources` is the only place that reads the resource bundle.
 
 ## Architecture
 

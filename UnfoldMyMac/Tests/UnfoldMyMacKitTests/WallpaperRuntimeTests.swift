@@ -97,14 +97,14 @@ private func temporaryDirectory() -> URL { FileManager.default.temporaryDirector
     weak var released: WallpaperModel?
     do {
         let model = WallpaperModel(preferences: UserDefaultsPreferencesStore(defaults: defaults), environment: FakeSystemEnvironment(), displays: FakeDisplay(),
-                                   surfaces: DesktopSurfaceRegistry(), gpu: try TestGPU.context(), coverDirectory: directory)
+                                   surfaces: DesktopSurfaceRegistry(), gpu: try TestGPU.context(), coverDirectory: directory, providerLink: .isolated())
         released = model
         model.start()
         #expect(model.previewPipeline?.template.id == "pulse" && model.activePipeline == nil)
         #expect(model.covers.rendered == 0 && model.thumbnails.isEmpty, "Launch builds only the preview pipeline (P17)")
         model.setBrowsing(true); model.setPreviewVisible(true)
         model.apply()
-        #expect(model.enabled && model.desktop.isShowing && model.desktop.windows.count == NSScreen.screens.count)
+        #expect(model.enabled && model.desktop.isShowing && model.desktop.windows.count == 1)
         #expect(model.stats == RenderStats(), "Desktop stats start empty and come from the slowest display")
         model.desktop.surface.record(RenderStats(fps: 60), for: 1)
         model.desktop.surface.record(RenderStats(fps: 24), for: 2)
@@ -136,7 +136,7 @@ private func temporaryDirectory() -> URL { FileManager.default.temporaryDirector
     let directory = temporaryDirectory()
     defer { try? FileManager.default.removeItem(at: directory) }
     let model = WallpaperModel(preferences: UserDefaultsPreferencesStore(defaults: defaults), environment: FakeSystemEnvironment(), displays: FakeDisplay(),
-                               surfaces: DesktopSurfaceRegistry(), gpu: try TestGPU.context(), coverDirectory: directory)
+                               surfaces: DesktopSurfaceRegistry(), gpu: try TestGPU.context(), coverDirectory: directory, providerLink: .isolated())
     model.start(); model.setBrowsing(true); model.setPreviewVisible(true)
     var pipelines: [WeakPipeline] = []
     var controllers: [WeakController] = []

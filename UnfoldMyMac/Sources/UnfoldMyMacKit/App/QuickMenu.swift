@@ -4,7 +4,7 @@ import UnfoldMyMacCore
 struct QuickMenu: Equatable, Sendable {
     enum Action: Equatable, Sendable {
         case toggleEffect, selectEffect(EffectID), stopPreview, showWallpaper, stopWallpaper, openApp, showSettings,
-             checkForUpdates, installUpdate, starRepository, quit
+             openWallpaperSettings, openLockScreenSettings, checkForUpdates, installUpdate, starRepository, quit
     }
     indirect enum Item: Equatable, Sendable {
         case label(String)
@@ -21,6 +21,13 @@ struct QuickMenuState {
     var isPreviewing: Bool
     var selectedEffect: EffectID
     var wallpaperEnabled: Bool
+    /// Whether macOS is compositing our provider on the lock screen specifically — not merely whether it
+    /// is compositing it at all. Those are different selections in the system's wallpaper store, and the
+    /// menu used to read the second as the first and promise a lock screen the user did not have. Nil
+    /// while the answer has not come back yet, and the row then says nothing rather than guessing.
+    var wallpaperOnLockScreen: Bool?
+    /// False in a build without the provider `.appex`, where the row would promise something absent.
+    var wallpaperProviderInstalled = false
     var effects: [EffectDescriptor]
     var update: QuickMenuUpdate = .unavailable
 }

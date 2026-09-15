@@ -14,6 +14,8 @@ import QuartzCore
     private var link: CAMetalDisplayLink?
     private(set) var framesPerSecond = 0
     private var occluded = false
+    /// Whether the link was last reconciled as running, so the activity callback reports edges, not calls.
+    private var active = false
     private var lastPresentation = 0.0, sampleStart = 0.0
     var isPaused: Bool { link?.isPaused ?? true }
 
@@ -26,7 +28,7 @@ import QuartzCore
         link.isPaused = true
         link.add(to: .main, forMode: .common)
         self.link = link
-        renderer.surfaceView.onVisibilityChanged = { [weak self] visible in
+        renderer.surfaceView?.onVisibilityChanged = { [weak self] visible in
             guard let self else { return }
             occluded = !visible; applyPause()
         }
@@ -34,16 +36,22 @@ import QuartzCore
     isolated deinit { stop() }
 
     func configure(framesPerSecond fps: Int) {
-        guard framesPerSecond != fps else { return }
-        framesPerSecond = fps
-        let rate = Float(max(1, fps))
-        link?.preferredFrameRateRange = CAFrameRateRange(minimum: rate, maximum: rate, preferred: rate)
-        lastPresentation = 0; sampleStart = 0; renderer.metrics.reset()
+        if framesPerSecond != fps {
+            framesPerSecond = fps
+            let rate = Float(max(1, fps))
+            link?.preferredFrameRateRange = CAFrameRateRange(minimum: rate, maximum: rate, preferred: rate)
+            lastPresentation = 0; sampleStart = 0; renderer.metrics.reset()
+        }
+        // The pause is reconciled on every call, including one that changes nothing. The rate and the
+        // link's paused flag are two separate facts, and the earlier early-return let them disagree: a
+        // surface that reached 60 fps while still paused could never be unpaused again, because every
+        // later call asking for the same 60 returned before it got here.
         applyPause()
     }
     func stop() {
         link?.invalidate(); link = nil
-        renderer.surfaceView.onVisibilityChanged = nil
+        renderer.surfaceView?.onVisibilityChanged = nil
+        active = false
         onActivityChanged?(false); onActivityChanged = nil
         onStats = nil; frameSource = nil; framesPerSecond = 0
         renderer.stop()
@@ -52,7 +60,10 @@ import QuartzCore
         let paused = framesPerSecond == 0 || occluded
         if paused { lastPresentation = 0 }
         link?.isPaused = paused
-        onActivityChanged?(!paused)
+        // Reconciling on every call means this runs often; the callback still only fires on a real edge.
+        guard active != !paused else { return }
+        active = !paused
+        onActivityChanged?(active)
     }
 
     func metalDisplayLink(_ link: CAMetalDisplayLink, needsUpdate update: CAMetalDisplayLink.Update) { tick(update) }

@@ -12,6 +12,11 @@ enum QuickMenuBuilder {
         if state.isPreviewing { items.append(.action("Stop Preview", .stopPreview)) }
         items.append(.separator)
         items.append(.action("Wallpaper…", .showWallpaper))
+        if state.wallpaperProviderInstalled, let onLockScreen = state.wallpaperOnLockScreen {
+            items.append(onLockScreen
+                ? .label("On desktop & lock screen")
+                : .action("Add to Lock Screen…", .openLockScreenSettings))
+        }
         if state.wallpaperEnabled { items.append(.action("Stop Wallpaper", .stopWallpaper)) }
         items.append(.separator)
         items.append(.action("Open \(AppIdentity.name)…", .openApp))

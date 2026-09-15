@@ -30,3 +30,31 @@ import UnfoldMyMacCore
     #expect(live.items.contains(.action("Turn Effect Off", .toggleEffect)))
     #expect(live.items.contains(.action("Stop Preview", .stopPreview)) && live.items.contains(.action("Stop Wallpaper", .stopWallpaper)))
 }
+
+@Test @MainActor func theMenuOffersTheLockScreenOnlyWhenThereIsAProviderToOfferIt() {
+    let effects = EffectRegistry.builtIn().descriptors
+    var state = QuickMenuState(status: "Ready", effectEnabled: false, isPreviewing: false,
+                               selectedEffect: effects[0].id, wallpaperEnabled: false, effects: [effects[0]])
+    // The Screen Saver pane, not Wallpaper: the lock screen is the system's `Idle` slot, and sending the
+    // user to the pane they have already used is the shape of the bug this row was added to fix.
+    let add = QuickMenu.Item.action("Add to Lock Screen…", .openLockScreenSettings)
+    let on = QuickMenu.Item.label("On desktop & lock screen")
+
+    // A build without the appex must not promise something it cannot do.
+    let without = QuickMenuBuilder.menu(for: state)
+    #expect(!without.items.contains(add) && !without.items.contains(on))
+
+    // Installed, but the provider has not answered yet: neither line is true, so neither is shown.
+    state.wallpaperProviderInstalled = true
+    let checking = QuickMenuBuilder.menu(for: state)
+    #expect(!checking.items.contains(add) && !checking.items.contains(on))
+
+    state.wallpaperOnLockScreen = false
+    let offered = QuickMenuBuilder.menu(for: state)
+    #expect(offered.items.contains(add) && !offered.items.contains(on))
+
+    // Already on the lock screen: say so rather than offering to do it again.
+    state.wallpaperOnLockScreen = true
+    let live = QuickMenuBuilder.menu(for: state)
+    #expect(live.items.contains(on) && !live.items.contains(add))
+}

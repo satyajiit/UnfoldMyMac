@@ -8,7 +8,12 @@ import UnfoldMyMacCore
     private var smoother: WallpaperFrameSmoother
     private let inputs: WallpaperInputService?
     private let consumerID = UUID()
-    var surfaceView: MetalSurfaceView { driver.renderer.surfaceView }
+    /// The app's wallpaper surfaces are always view-backed; the extension renders the same pipelines
+    /// through `WallpaperProviderSurface` instead, which owns a remote-context layer and no view.
+    var surfaceView: MetalSurfaceView {
+        guard let view = driver.renderer.surfaceView else { preconditionFailure("A desktop wallpaper surface is always view-backed") }
+        return view
+    }
     var onStats: ((RenderStats) -> Void)? {
         get { driver.onStats }
         set { driver.onStats = newValue }

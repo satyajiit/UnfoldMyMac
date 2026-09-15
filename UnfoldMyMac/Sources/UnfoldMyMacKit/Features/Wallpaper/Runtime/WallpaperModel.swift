@@ -10,6 +10,9 @@ import UnfoldMyMacCore
     let setup: WallpaperSetupController
     let desktop: WallpaperDesktopCoordinator
     let inputs: WallpaperInputService
+    /// The bridge to the wallpaper provider extension: it feeds the sandboxed renderer live data and
+    /// reports whether macOS is showing it. When it is, the app's own desktop windows stand down.
+    let providerLink: WallpaperProviderLink
     private(set) var selectedID: String
     private(set) var previewPipeline: WallpaperPipeline?
     private(set) var activePipeline: WallpaperPipeline?
@@ -26,25 +29,18 @@ import UnfoldMyMacCore
     @ObservationIgnored private var browsing = false
     @ObservationIgnored private var previewVisible = false
 
-    var templates: [WallpaperTemplate] { catalog.templates }
-    var thumbnails: [String: NSImage] { covers.images }
     var preferences: WallpaperPreferences { prefs.preferences }
     var data: WallpaperDataHub { feeds.desktop }
     var previewData: WallpaperDataHub { feeds.preview }
-    var selected: WallpaperTemplate? { catalog.template(selectedID) }
     var enabled: Bool { prefs.enabled }
     var previewFPS: Int { browsing && previewVisible ? min(playback.framesPerSecond, selected?.fpsCeiling ?? .max) : 0 }
-    var activeTitle: String { catalog.template(preferences.templateID)?.title ?? "Wallpaper" }
-    var isSelectedApplied: Bool { enabled && preferences.templateID == selectedID }
-    var previewSnapshot: WallpaperSnapshot { isSelectedApplied ? data.snapshot : previewData.snapshot }
-    /// The slowest desktop display while applied; the preview card's own surface otherwise.
-    var stats: RenderStats { enabled ? desktop.surface.worstStats : previewStats }
 
     init(preferences store: any PreferencesStore, environment: any SystemEnvironmentObserving, displays: any DisplayProviding,
          surfaces: DesktopSurfaceRegistry, gpu: GPUContext?, systemBackdrop: WallpaperSystemBackdrop? = nil,
          connectors: WallpaperConnectorRegistry = .standard, coverDirectory: URL = WallpaperCoverStore.defaultDirectory,
-         inputs: WallpaperInputService = WallpaperInputService()) {
-        self.inputs = inputs
+         inputs: WallpaperInputService = WallpaperInputService(),
+         providerLink: WallpaperProviderLink = WallpaperProviderLink()) {
+        self.inputs = inputs; self.providerLink = providerLink
         let shaders = WallpaperShaderCatalog()
         let factory = gpu.map { WallpaperPipelineFactory(gpu: $0, shaders: shaders) }
         let prefs = WallpaperPreferencesController(store: store)
@@ -56,6 +52,7 @@ import UnfoldMyMacCore
         feeds = WallpaperDataCoordinator(registry: connectors)
         desktop = WallpaperDesktopCoordinator(surfaces: surfaces, displays: displays, inputs: inputs)
         systemState = SystemStateSubscriber(environment: environment)
+        providerLink.onStatusChanged = { [weak self] _ in self?.providerStatusChanged() }
         setup.onChange = { [weak self] in self?.connectionsChanged() }
         setup.onApply = { [weak self] id in self?.select(id); self?.apply() }
     }
@@ -69,8 +66,10 @@ import UnfoldMyMacCore
             try preparePreview()
             if !catalog.errors.isEmpty { error = catalog.errors.joined(separator: "\n") }
             if enabled, let selected, !setup.isReady(selected) { prefs.disable() }
-            // Off: a still left behind by a crash is restored once the window is up; NSWorkspace round trips cost ~100 ms.
-            if enabled { apply() } else { Task { [weak self] in self?.syncSystemBackdrop() } }
+            // Off is not idle: macOS may already be showing our provider, and only this app can feed it.
+            // Both branches therefore reconcile the whole picture. A still left behind by a crash is
+            // restored once we know the screen is ours; NSWorkspace round trips cost ~100 ms.
+            if enabled { apply() } else { Task { [weak self] in self?.rebuildDesktop() } }
             systemState.start { [weak self] event in self?.systemChanged(event) }
         } catch { self.error = error.localizedDescription; prefs.disable(save: false) }
     }
@@ -92,7 +91,9 @@ import UnfoldMyMacCore
     }
     func stopWallpaper() {
         prefs.disable(); desktop.stop(); activePipeline = nil
-        refreshPlayback(); syncSystemBackdrop()
+        // Not `syncSystemBackdrop` alone: the provider may still be the system's wallpaper, and the link
+        // has to be told the app's own scene is gone so it keeps feeding the right one.
+        refreshPlayback(); rebuildDesktop()
     }
     func setBrowsing(_ value: Bool) { browsing = value; refreshPlayback() }
     func setPreviewVisible(_ value: Bool) {
@@ -106,56 +107,64 @@ import UnfoldMyMacCore
         select(selectedID)
         if isSelectedApplied { apply() }
     }
-    /// Copies `url` in as the shared custom background and switches image-based scenes to it.
-    func importBackground(_ url: URL) {
-        Task { [weak self] in
-            do { try await WallpaperBackgroundImporter.save(url); self?.setCustomBackground(true) }
-            catch { self?.error = error.localizedDescription }
-        }
-    }
-    func importTemplate(_ url: URL) {
-        do {
-            guard let factory else { return }
-            let template = try catalog.importTemplate(url) { try factory.validate($0) }
-            covers.invalidate(template.id); covers.request([template])
-            select(template.id)
-        } catch { self.error = error.localizedDescription }
-    }
-    func renameTemplate(_ id: String, title: String) {
-        do {
-            try catalog.rename(id, title: title)
-            guard let template = catalog.template(id) else { return }
-            covers.invalidate(id); covers.request([template])
-            if selectedID == id { select(id) }
-        } catch { self.error = error.localizedDescription }
-    }
-    /// Removes an imported template; a desktop showing it stops first and the preview moves to the first scene.
-    func removeTemplate(_ id: String) {
-        do {
-            if enabled, preferences.templateID == id { stopWallpaper() }
-            try catalog.remove(id); covers.invalidate(id)
-            if selectedID == id { previewPipeline = nil; if let first = templates.first?.id { select(first) } }
-        } catch { self.error = error.localizedDescription }
-    }
     func receiveStats(_ value: RenderStats) { previewStats = value }
     func shutdown() {
         browsing = false; systemState.stop(); desktop.stop(); covers.cancel(); activity.setRendering(false)
+        providerLink.stop()
         feeds.reset(); setup.cancel(); inputs.stop()
         do { try systemBackdrop?.restore() } catch { self.error = error.localizedDescription }
         playback = .init(); activePipeline = nil; previewPipeline = nil
     }
+
+    /// The validator the catalog runs an imported template through, or nil without a GPU.
+    var pipelineFactory: WallpaperPipelineFactory? { factory }
+    /// Drops the preview pipeline. A template that no longer exists must not keep its GPU resources alive.
+    func discardPreview() { previewPipeline = nil }
 
     private func preparePreview() throws {
         guard let selected, let factory else { return }
         let image = WallpaperPipelineFactory.backgroundImage(for: selected, customBackground: preferences.customBackground)
         previewPipeline = try factory.make(selected, imageURL: image, assets: catalog.assets(for: selected.id))
     }
+    /// macOS started or stopped showing our provider. That changes who draws the desktop, which scene the
+    /// data feed must follow, and whether the app may touch the system wallpaper at all.
+    private func providerStatusChanged() {
+        refreshPlayback()
+        rebuildDesktop()
+    }
+    /// The scene the data feed must follow.
+    ///
+    /// While macOS is showing our provider that is the provider's scene, not the app's. The user may have
+    /// picked a different one in System Settings, or switched the app's own wallpaper off entirely, and
+    /// the readouts on the desktop and the lock screen still have to be the right ones — sampling the
+    /// wrong template is exactly how a scene ends up showing dashes where its numbers belong.
+    private var dataTemplate: WallpaperTemplate? {
+        // A stalled provider is still the system's wallpaper — frozen, but ours — so its scene is still
+        // the one to sample. Dropping it here hands the wrong numbers to the surface on screen.
+        switch providerLink.status {
+        case .live(let id, _), .stalled(let id): return id.flatMap(catalog.template) ?? activePipeline?.template
+        case .idle, .unknown, .failed: return enabled ? activePipeline?.template : nil
+        }
+    }
     private func rebuildDesktop() {
+        // Feeding the provider is the app's job whenever macOS is showing it, whatever the app's own
+        // wallpaper toggle says: nothing else can read ~/.claude, the lid angle or the microphone.
+        providerLink.update(enabled: enabled || providerLink.status.isLive,
+                            templateID: enabled ? preferences.templateID : nil, source: feeds.desktop)
         syncSystemBackdrop()
         guard enabled, let activePipeline else { return }
+        // macOS is compositing the scene itself, on the desktop and the lock screen. Putting our own
+        // windows up as well would render every frame twice for the same picture.
+        guard !providerLink.status.isLive else { desktop.stop(); return }
         desktop.show(pipeline: activePipeline, source: feeds.desktop, framesPerSecond: playback.framesPerSecond, styleSheet: catalog.style)
     }
+    /// Colours the system wallpaper sampler behind our own desktop windows.
+    ///
+    /// This writes the user's system wallpaper, so it runs only once we know macOS is not already showing
+    /// our provider — otherwise applying a still here would silently replace the user's choice of our own
+    /// extension with a picture of it, and take the lock screen with it.
     private func syncSystemBackdrop() {
+        guard providerLink.status.allowsSystemWallpaperChanges else { return }
         do {
             if enabled, let activePipeline { try systemBackdrop?.apply(activePipeline) }
             else { try systemBackdrop?.restore() }
@@ -180,7 +189,7 @@ import UnfoldMyMacCore
         inputs.configure(connections: setup.effectiveConnections, suspended: next.sleeping, reducedMotion: next.reducedMotion)
         activity.setRendering(next.enabled && !next.sleeping && next.animates)
         desktop.setFramesPerSecond(min(next.framesPerSecond, activePipeline?.template.fpsCeiling ?? .max))
-        feeds.update(desktop: enabled ? activePipeline?.template : nil, preview: browsing && previewVisible && !isSelectedApplied ? selected : nil,
-                     connections: setup.connections, sampling: next.shouldSample)
+        feeds.update(desktop: dataTemplate, preview: browsing && previewVisible && !isSelectedApplied ? selected : nil,
+                     connections: setup.connections, sampling: next.shouldSample || (providerLink.status.isLive && !next.sleeping))
     }
 }

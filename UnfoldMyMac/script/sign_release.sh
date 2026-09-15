@@ -14,6 +14,7 @@ PROJECT_DIR="$(cd "$HERE/.." && pwd)"
 REPO_ROOT="$(cd "$PROJECT_DIR/.." && pwd)"
 IDENTITY="${UNFOLDMYMAC_SIGN_IDENTITY:-}"
 ENTITLEMENTS="$PROJECT_DIR/UnfoldMyMac.entitlements"
+EXTENSION_ENTITLEMENTS="$PROJECT_DIR/WallpaperExtension.entitlements"
 APP="${1:-}"
 
 fail() { echo "✖ sign_release: $*" >&2; exit 1; }
@@ -22,6 +23,7 @@ fail() { echo "✖ sign_release: $*" >&2; exit 1; }
 [ -d "$APP" ] && [ "${APP##*.}" = "app" ] || fail "not an application bundle: $APP"
 APP="$(cd "$(dirname "$APP")" && pwd)/$(basename "$APP")"
 [ -f "$ENTITLEMENTS" ] || fail "missing reviewed entitlements at $ENTITLEMENTS"
+[ -f "$EXTENSION_ENTITLEMENTS" ] || fail "missing reviewed entitlements at $EXTENSION_ENTITLEMENTS"
 
 case "$IDENTITY" in
   "Developer ID Application:"*) ;;
@@ -38,6 +40,7 @@ BUNDLE_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Conten
 EXECUTABLE="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP/Contents/Info.plist")"
 RESOURCES="$APP/Contents/Resources"
 KIT_BUNDLE="$RESOURCES/UnfoldMyMac_UnfoldMyMacKit.bundle"
+EXTENSION="$APP/Contents/PlugIns/UnfoldMyMacWallpaperExtension.appex"
 
 # ── Bundle shape, asserted before anything is sealed ────────────────────────
 #
@@ -60,6 +63,35 @@ stray_md="$(/usr/bin/find "$APP" -type f -name '*.md' -print -quit)"
 [ -z "$stray_md" ] || fail "Markdown shipped inside the bundle: $stray_md"
 stray_ds="$(/usr/bin/find "$APP" -name '.DS_Store' -print -quit)"
 [ -z "$stray_ds" ] || fail ".DS_Store shipped inside the bundle: $stray_ds"
+
+# ── The wallpaper provider ──────────────────────────────────────────────────
+#
+# Each of these is a silent failure in the field. A missing extension point identifier means the
+# appex registers nowhere and the lock screen quietly keeps the user's old wallpaper. A missing
+# resource bundle means the provider launches and renders black, because inside an appex
+# Bundle.main is the appex and BundleResources resolves shaders relative to it.
+#
+# _NSExtensionMain is the one that costs a day. ExtensionKit requires it as the Mach-O entry
+# point; with Swift's @main alone the process starts, logs, and exits in milliseconds without
+# ever accepting a connection, and the host reports only a bare NSCocoaErrorDomain 4099.
+echo "→ checking the wallpaper provider"
+[ -d "$EXTENSION" ] || fail "missing the wallpaper provider at Contents/PlugIns/UnfoldMyMacWallpaperExtension.appex"
+EXTENSION_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$EXTENSION/Contents/Info.plist")"
+EXTENSION_EXEC="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$EXTENSION/Contents/Info.plist")"
+[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundlePackageType' "$EXTENSION/Contents/Info.plist")" = "XPC!" ] \
+  || fail "the provider's CFBundlePackageType must be XPC!; ExtensionKit ignores any other type"
+[ "$(/usr/libexec/PlistBuddy -c 'Print :EXAppExtensionAttributes:EXExtensionPointIdentifier' "$EXTENSION/Contents/Info.plist")" = "com.apple.wallpaper" ] \
+  || fail "the provider does not declare the com.apple.wallpaper extension point"
+for KEY in CFBundleShortVersionString CFBundleVersion; do
+  [ "$(/usr/libexec/PlistBuddy -c "Print :$KEY" "$EXTENSION/Contents/Info.plist")" = "$(/usr/libexec/PlistBuddy -c "Print :$KEY" "$APP/Contents/Info.plist")" ] \
+    || fail "the provider's $KEY does not match the app's"
+done
+[ -s "$EXTENSION/Contents/Resources/UnfoldMyMac_UnfoldMyMacKit.bundle/Shaders/Compiled/index.json" ] \
+  || fail "the provider has no precompiled shaders; it would compile every scene on the user's Mac at first paint"
+/usr/bin/dyld_info -imports "$EXTENSION/Contents/MacOS/$EXTENSION_EXEC" 2>/dev/null | grep -q '_NSExtensionMain' \
+  || fail "the provider does not import _NSExtensionMain. Link it with -Xlinker -e -Xlinker _NSExtensionMain;
+     without that entry point the extension exits before serving a single XPC call."
+echo "  ✓ $EXTENSION_ID, extension point, matching version, precompiled shaders, _NSExtensionMain"
 
 archs="$(/usr/bin/lipo -archs "$APP/Contents/MacOS/$EXECUTABLE")"
 expected_archs="${UNFOLDMYMAC_ARCHS:-arm64}"
@@ -86,8 +118,19 @@ while IFS= read -r -d '' item; do
   /usr/bin/file -b "$item" | grep -q 'Mach-O' || continue
   /usr/bin/codesign --force --timestamp --options runtime --sign "$IDENTITY" "$item"
   nested=$(( nested + 1 ))
-done < <(/usr/bin/find "$APP/Contents" -name '*.metallib' -prune -o -type f -print0)
+done < <(/usr/bin/find "$APP/Contents" -path "$EXTENSION" -prune -o -name '*.metallib' -prune -o -type f -print0)
 echo "  ✓ $nested nested Mach-O items"
+
+# The appex is pruned from the loop above and sealed here instead: it is a bundle with its own
+# identifier and its own reviewed entitlements, and it is sandboxed where the app is not. Signing
+# only its executable would leave the bundle unsealed; signing it after the app would invalidate
+# the app's seal.
+echo "→ sealing the wallpaper provider"
+/usr/bin/codesign --force --timestamp --options runtime \
+  --entitlements "$EXTENSION_ENTITLEMENTS" \
+  --identifier "$EXTENSION_ID" \
+  --sign "$IDENTITY" "$EXTENSION"
+echo "  ✓ $EXTENSION_ID"
 
 # ── Seal ────────────────────────────────────────────────────────────────────
 echo "→ sealing $APP"
@@ -124,6 +167,24 @@ embedded: $(keys_of "$actual" | tr '\n' ' ')
 reviewed: $(keys_of "$ENTITLEMENTS" | tr '\n' ' ')"
 fi
 echo "  ✓ entitlements match $ENTITLEMENTS (no get-task-allow)"
+
+# The provider's set is reviewed separately because it is a different set: the app is
+# unsandboxed and the extension must be sandboxed, which is what ExtensionKit requires.
+provider="$(mktemp)"; trap 'rm -f "$actual" "$provider"' EXIT
+/usr/bin/codesign -d --entitlements - --xml "$EXTENSION" >"$provider" 2>/dev/null || true
+case "$(cat "$provider")" in
+  *get-task-allow*) fail "com.apple.security.get-task-allow is embedded in the provider" ;;
+esac
+[ -s "$provider" ] || fail "the provider carries no entitlements; ExtensionKit refuses a wallpaper extension without com.apple.security.app-sandbox"
+[ "$(keys_of "$provider")" = "$(keys_of "$EXTENSION_ENTITLEMENTS")" ] \
+  || fail "the provider's embedded entitlements differ from the reviewed set in $EXTENSION_ENTITLEMENTS:
+embedded: $(keys_of "$provider" | tr '\n' ' ')
+reviewed: $(keys_of "$EXTENSION_ENTITLEMENTS" | tr '\n' ' ')"
+case "$(cat "$provider")" in
+  *app-sandbox*) ;;
+  *) fail "the provider is not sandboxed; ExtensionKit would refuse to register it" ;;
+esac
+echo "  ✓ provider entitlements match $EXTENSION_ENTITLEMENTS (sandboxed, no get-task-allow)"
 
 # ── Does the hardened bundle actually run? ──────────────────────────────────
 #

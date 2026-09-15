@@ -146,7 +146,7 @@ private func temporaryDirectory() -> URL { FileManager.default.temporaryDirector
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     let model = WallpaperModel(preferences: UserDefaultsPreferencesStore(defaults: defaults), environment: FakeSystemEnvironment(), displays: FakeDisplay(),
-                               surfaces: DesktopSurfaceRegistry(), gpu: try TestGPU.context(), coverDirectory: temporaryDirectory())
+                               surfaces: DesktopSurfaceRegistry(), gpu: try TestGPU.context(), coverDirectory: temporaryDirectory(), providerLink: .isolated())
     model.start(); model.setBrowsing(true); model.setPreviewVisible(true)
     defer { model.shutdown() }
     #expect(model.previewFPS == 60, "No ceiling declared: playback decides")

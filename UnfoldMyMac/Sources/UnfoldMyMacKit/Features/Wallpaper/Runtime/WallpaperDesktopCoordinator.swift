@@ -2,8 +2,13 @@ import AppKit
 import Observation
 import UnfoldMyMacCore
 
-/// Puts the active scene on every display and keeps it fed: one window controller per screen, one surface
-/// model they all observe, and one observation of the desktop data hub.
+/// Puts the active scene on the primary display and keeps it fed: one window controller, one surface
+/// model it observes, and one observation of the desktop data hub.
+///
+/// The primary display only, deliberately. The scene is composed for one screen — its readouts, marks and
+/// safe areas are placed against a single aspect ratio — and painting the same composition across a
+/// built-in panel and an ultrawide gives the second one a layout nobody designed. Until the scene can be
+/// laid out per display, the other screens keep the wallpaper their owner chose.
 @MainActor final class WallpaperDesktopCoordinator {
     let surface = WallpaperSurfaceModel()
     private(set) var controllers: [WallpaperDesktopWindowController] = []
@@ -26,7 +31,7 @@ import UnfoldMyMacCore
         close()
         self.pipeline = pipeline; self.framesPerSecond = framesPerSecond
         surface.reset(template: pipeline.template, styleSheet: styleSheet); surface.setAnimated(framesPerSecond > 1)
-        for screen in NSScreen.screens {
+        if let screen = primaryScreen {
             controllers.append(WallpaperDesktopWindowController(screen: screen, displayID: displays.displayID(of: screen) ?? 0, pipeline: pipeline, surface: surface, inputs: inputs))
         }
         surfaces.update(Set(windows.compactMap { CGWindowID(exactly: $0.windowNumber) }))
@@ -48,6 +53,17 @@ import UnfoldMyMacCore
     }
     isolated deinit { observation?.cancel(); close() }
 
+    /// The display carrying the menu bar, falling back to the first screen AppKit reports. The fallback
+    /// matters on a Mac whose menu-bar display has just been disconnected: `CGMainDisplayID` can name a
+    /// display `NSScreen` no longer lists, and returning nothing there would leave the desktop blank
+    /// rather than move the scene to the screen that is still attached.
+    private var primaryScreen: NSScreen? {
+        let primary = CGMainDisplayID()
+        return NSScreen.screens.first { displays.displayID(of: $0) == primary } ?? NSScreen.screens.first
+    }
+    /// The display the scene is drawn on, for the interface to name. Computed from the same screen the
+    /// windows are built on, so the row can never name one display while another shows the wallpaper.
+    var target: WallpaperBackdropScreen? { primaryScreen.map { WallpaperBackdropScreen($0) } }
     private func apply(snapshot: WallpaperSnapshot) { surface.update(snapshot: snapshot); push() }
     private func push() {
         guard let pipeline else { return }

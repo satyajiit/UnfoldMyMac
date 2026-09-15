@@ -57,7 +57,7 @@ import UnfoldMyMacCore
     let suite = "template-apply-" + UUID().uuidString
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
-    let model = WallpaperModel(preferences: UserDefaultsPreferencesStore(defaults: defaults), environment: FakeSystemEnvironment(), displays: FakeDisplay(), surfaces: DesktopSurfaceRegistry(), gpu: try TestGPU.context(), coverDirectory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString))
+    let model = WallpaperModel(preferences: UserDefaultsPreferencesStore(defaults: defaults), environment: FakeSystemEnvironment(), displays: FakeDisplay(), surfaces: DesktopSurfaceRegistry(), gpu: try TestGPU.context(), coverDirectory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString), providerLink: .isolated())
     model.start(); model.apply()
     defer { model.shutdown() }
     #expect(model.enabled && model.activePipeline?.template.id == "pulse")
